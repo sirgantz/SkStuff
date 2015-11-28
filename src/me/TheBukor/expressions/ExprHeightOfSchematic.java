@@ -44,13 +44,13 @@ public class ExprHeightOfSchematic extends SimpleExpression<Integer> {
 
 	@Override
 	public String toString(@Nullable Event e, boolean arg1) {
-		return "the height of the schematic " + schematic.toString(e, false);
+		return "the height of the schematic " + schematic.toString(e, false) + " in the folder " + new String(folder.getSingle(e) != null ? folder.toString(e, false) : "plugins/WorldEdit/schematics");
 	}
 
 	@Override
 	@Nullable
 	protected Integer[] get(Event e) {
-		String f = (folder.getSingle(e) != null) ? folder.getSingle(e) : "plugins/WorldEdit/";
+		String f = (folder.getSingle(e) != null) ? folder.getSingle(e) : "plugins/WorldEdit/schematics/";
 		String schem = schematic.getSingle(e);
 		File schemFile = new File((f.endsWith("/")) ? f : f + "/" + new String(schem.endsWith(".schematic") ? schem : schem + ".schematic"));
 		Integer h = null;

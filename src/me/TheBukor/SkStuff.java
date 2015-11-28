@@ -56,7 +56,7 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerExpression(ExprNBTv1_8_R1.class, NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of %entity/block/itemstack%", "%entity/block/itemstack%'s nbt[[ ]tag[s]]");
 				Skript.registerExpression(ExprItemNBTv1_8_R1.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
 				Skript.registerExpression(ExprTagOfv1_8_R1.class, Object.class, ExpressionType.SIMPLE, "[nbt[ ]]tag %string% of [nbt [compound]] %compound%");
-				Classes.registerClass(new ClassInfo<NBTTagCompound>(NBTTagCompound.class, "compound").name("NBT Tag Compound").parser(new Parser<NBTTagCompound>() {
+				Classes.registerClass(new ClassInfo<NBTTagCompound>(NBTTagCompound.class, "[nbt] compound[s]").name("NBT Tag Compound").parser(new Parser<NBTTagCompound>() {
 
 					@Override
 					public String getVariableNamePattern() {
@@ -93,7 +93,7 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerExpression(ExprNBTv1_8_R2.class, net.minecraft.server.v1_8_R2.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of %entity/block/itemstack%", "%entity/block/itemstack%'s nbt[[ ]tag[s]]");
 				Skript.registerExpression(ExprItemNBTv1_8_R2.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
 				Skript.registerExpression(ExprTagOfv1_8_R2.class, Object.class, ExpressionType.SIMPLE, "[nbt[ ]]tag %string% of [nbt [compound]] %compound%");
-				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_8_R2.NBTTagCompound>(net.minecraft.server.v1_8_R2.NBTTagCompound.class, "compound").name("NBT Tag Compound").parser(new Parser<net.minecraft.server.v1_8_R2.NBTTagCompound>() {
+				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_8_R2.NBTTagCompound>(net.minecraft.server.v1_8_R2.NBTTagCompound.class, "[nbt] compound[s]").name("NBT Tag Compound").parser(new Parser<net.minecraft.server.v1_8_R2.NBTTagCompound>() {
 
 					@Override
 					public String getVariableNamePattern() {
@@ -173,7 +173,6 @@ public class SkStuff extends JavaPlugin {
 				condAmount += 1;
 				evtAmount  += 1;
 				exprAmount += 12;
-				typeAmount += 1;
 				Skript.registerCondition(CondSelectionContains.class, "[(world[ ]edit|we)] selection of %player% (contains|has) %location%", "%player%'s [(world[ ]edit|we)] selection (contains|has) %location%", "[(world[ ]edit|we)] selection of %player% does(n't| not) (contain|have) %location%", "%player%'s [(world[ ]edit|we)] selection does(n't| not) (contain|have) %location%");
 				Skript.registerEffect(EffExecuteWorldEdit.class, "make %player% execute (world[ ]edit|we) [operation] set (using|with) %itemstack% [[with] limit [of] %integer% [blocks]]", "execute %player% (world[ ]edit|we) [operation] set (using|with) %itemstack% [[with] limit [of] %integer% [blocks]");
 				Skript.registerExpression(ExprSelectionOfPlayer.class, Location.class, ExpressionType.PROPERTY, "[(world[ ]edit|we)] selection of %player%", "%player%'s [(world[ ]edit|we)] selection");
