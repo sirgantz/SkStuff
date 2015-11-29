@@ -40,7 +40,7 @@ public class EffDrawLineWE extends Effect {
 
 	@Override
 	public String toString(@Nullable Event e, boolean arg1) {
-		return "draw a line using an edit session with " + block.toString(e, false);
+		return "draw a line from " + location1.toString(e, false) + " to " + location2.toString(e, false) + " using an edit session with " + block.toString(e, false) + " and thickness " + thickness.toString(e, false);
 	}
 
 	@Override
@@ -50,7 +50,6 @@ public class EffDrawLineWE extends Effect {
 		EditSession session = editSession.getSingle(e);
 		ItemStack b = block.getSingle(e);
 		Double thick = thickness.getSingle(e);
-		if (thick == null) thick = (double) 1;
 		if (b.getType().isBlock()) {
 			try {
 				session.drawLine(new SingleBlockPattern(new BaseBlock(b.getTypeId(), b.getDurability())), BukkitUtil.toVector(pos1), BukkitUtil.toVector(pos2), thick, filled);

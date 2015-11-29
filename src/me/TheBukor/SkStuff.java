@@ -20,7 +20,6 @@ import me.TheBukor.effects.EffDrawLineWE;
 import me.TheBukor.effects.EffUndoRedoSession;
 import me.TheBukor.expressions.ExprAreaOfSelection;
 import me.TheBukor.expressions.ExprChangedBlocksSession;
-import me.TheBukor.expressions.ExprEditSession;
 import me.TheBukor.expressions.ExprEditSessionLimit;
 import me.TheBukor.expressions.ExprHeightOfSchematic;
 import me.TheBukor.expressions.ExprHeightOfSelection;
@@ -32,6 +31,7 @@ import me.TheBukor.expressions.ExprLengthOfSelection;
 import me.TheBukor.expressions.ExprNBTv1_8_R1;
 import me.TheBukor.expressions.ExprNBTv1_8_R2;
 import me.TheBukor.expressions.ExprNBTv1_8_R3;
+import me.TheBukor.expressions.ExprNewEditSession;
 import me.TheBukor.expressions.ExprSelectionOfPlayer;
 import me.TheBukor.expressions.ExprSelectionPos1;
 import me.TheBukor.expressions.ExprSelectionPos2;
@@ -182,11 +182,11 @@ public class SkStuff extends JavaPlugin {
 				typeAmount += 1;
 				Skript.registerCondition(CondSelectionContains.class, "[(world[ ]edit|we)] selection of %player% (contains|has) %location%", "%player%'s [(world[ ]edit|we)] selection (contains|has) %location%", "[(world[ ]edit|we)] selection of %player% does(n't| not) (contain|have) %location%", "%player%'s [(world[ ]edit|we)] selection does(n't| not) (contain|have) %location%");
 				// EXPERIMENTAL EFFECTS/EXPRESSIONS
-				Skript.registerEffect(EffDrawLineWE.class, "(create|draw|make) [a] (no(n|t)(-| )hollow|filled) line from %location% to %location% (using|with) [edit[ ]session] %editsession% (using|with) [block] %itemstack% [[(and|with)] thick[ness] %-double%]", "(create|draw|make) [a] hollow line from %location% to %location% (using|with) [edit[ ]session] %editsession% (using|with) [block] %itemstack% [[(and|with)] thick[ness] %-double%]");
+				Skript.registerEffect(EffDrawLineWE.class, "(create|draw|make) [a] (no(n|t)(-| )hollow|filled) line from %location% to %location% (using|with) [edit[ ]session] %editsession% (using|with) [block] %itemstack% [(and|with)] thick[ness] %double%", "(create|draw|make) [a] hollow line from %location% to %location% (using|with) [edit[ ]session] %editsession% (using|with) [block] %itemstack% [(and|with)] thick[ness] %double%");
 				Skript.registerEffect(EffUndoRedoSession.class, "undo [last] (change|edit)[s] (of|from) [edit[ ]session] %editsession%", "redo [last] (change|edit)[s] (of|from) [edit[ ]session] %editsession%");
 				Skript.registerExpression(ExprEditSessionLimit.class, Integer.class, ExpressionType.PROPERTY, "[block] limit [change] of [edit[ ]session] %editsession%");
 				Skript.registerExpression(ExprChangedBlocksSession.class, Integer.class, ExpressionType.PROPERTY, "number of [all] changed blocks (in|of) [edit[ ]session] %editsession%");
-				Skript.registerExpression(ExprEditSession.class, EditSession.class, ExpressionType.PROPERTY, "[new] edit[ ]session (for|from|of) %player%", "[new] %player% edit[ ]session");
+				Skript.registerExpression(ExprNewEditSession.class, EditSession.class, ExpressionType.PROPERTY, "[create] [a] new edit[ ]session in [world] %world% [with] [max[imum]] [block] limit [change] [of] %integer%");
 				// END OF EXPERIMENTAL EFFS/EXPRS
 				Skript.registerExpression(ExprSelectionOfPlayer.class, Location.class, ExpressionType.PROPERTY, "[(world[ ]edit|we)] selection of %player%", "%player%'s [(world[ ]edit|we)] selection");
 				Skript.registerExpression(ExprSelectionPos1.class, Location.class, ExpressionType.PROPERTY, "[(world[ ]edit|we)] po(s|int)[ ]1 of %player%", "%player%'s [(world[ ]edit|we)] po(s|int)[ ]1");

@@ -53,11 +53,12 @@ public class ExprEditSessionLimit extends SimpleExpression<Integer> {
 	@Override
 	public void change(Event e, @Nullable Object[] delta, ChangeMode mode) {
 		EditSession session = editSession.getSingle(e);
+		if (session == null) return;
 		if (mode == ChangeMode.SET) {
 			Integer newLimit = (Integer) delta[0];
-			session.setBlockChangeLimit(newLimit);
-		} else if (mode == ChangeMode.DELETE || mode == ChangeMode.RESET) {
-			session.setBlockChangeLimit(we.getLocalConfiguration().defaultChangeLimit);
+			session.setBlockChangeLimit(Integer.valueOf(newLimit));
+		} else if (mode == ChangeMode.RESET) {
+			session.setBlockChangeLimit(Integer.valueOf(we.getLocalConfiguration().defaultChangeLimit));
 		}
 	}
 
