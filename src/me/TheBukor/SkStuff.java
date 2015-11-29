@@ -56,7 +56,7 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerExpression(ExprNBTv1_8_R1.class, NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of %entity/block/itemstack%", "%entity/block/itemstack%'s nbt[[ ]tag[s]]");
 				Skript.registerExpression(ExprItemNBTv1_8_R1.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
 				Skript.registerExpression(ExprTagOfv1_8_R1.class, Object.class, ExpressionType.SIMPLE, "[nbt[ ]]tag %string% of [nbt [compound]] %compound%");
-				Classes.registerClass(new ClassInfo<NBTTagCompound>(NBTTagCompound.class, "[nbt] compound[s]").name("NBT Tag Compound").parser(new Parser<NBTTagCompound>() {
+				Classes.registerClass(new ClassInfo<NBTTagCompound>(NBTTagCompound.class, "compound").name("NBT Tag Compound").parser(new Parser<NBTTagCompound>() {
 
 					@Override
 					public String getVariableNamePattern() {
@@ -93,7 +93,7 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerExpression(ExprNBTv1_8_R2.class, net.minecraft.server.v1_8_R2.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of %entity/block/itemstack%", "%entity/block/itemstack%'s nbt[[ ]tag[s]]");
 				Skript.registerExpression(ExprItemNBTv1_8_R2.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
 				Skript.registerExpression(ExprTagOfv1_8_R2.class, Object.class, ExpressionType.SIMPLE, "[nbt[ ]]tag %string% of [nbt [compound]] %compound%");
-				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_8_R2.NBTTagCompound>(net.minecraft.server.v1_8_R2.NBTTagCompound.class, "[nbt] compound[s]").name("NBT Tag Compound").parser(new Parser<net.minecraft.server.v1_8_R2.NBTTagCompound>() {
+				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_8_R2.NBTTagCompound>(net.minecraft.server.v1_8_R2.NBTTagCompound.class, "compound").name("NBT Tag Compound").parser(new Parser<net.minecraft.server.v1_8_R2.NBTTagCompound>() {
 
 					@Override
 					public String getVariableNamePattern() {
@@ -134,7 +134,7 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerExpression(ExprNBTv1_8_R3.class, net.minecraft.server.v1_8_R3.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of %entity/block/itemstack%", "%entity/block/itemstack%'s nbt[[ ]tag[s]]");
 				Skript.registerExpression(ExprItemNBTv1_8_R3.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
 				Skript.registerExpression(ExprTagOfv1_8_R3.class, Object.class, ExpressionType.SIMPLE, "[nbt[ ]]tag %string% of [nbt [compound]] %compound%");
-				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_8_R3.NBTTagCompound>(net.minecraft.server.v1_8_R3.NBTTagCompound.class, "[nbt] compound[s]").name("NBT Compound").parser(new Parser<net.minecraft.server.v1_8_R3.NBTTagCompound>() {
+				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_8_R3.NBTTagCompound>(net.minecraft.server.v1_8_R3.NBTTagCompound.class, "compound").name("NBT Compound").parser(new Parser<net.minecraft.server.v1_8_R3.NBTTagCompound>() {
 
 					@Override
 					public String getVariableNamePattern() {

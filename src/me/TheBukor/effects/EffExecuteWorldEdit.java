@@ -12,6 +12,7 @@ import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
+import com.sk89q.worldedit.world.World;
 
 import ch.njol.skript.lang.Effect;
 import ch.njol.skript.lang.Expression;
@@ -44,12 +45,16 @@ public class EffExecuteWorldEdit extends Effect {
 		Player p = player.getSingle(e);
 		ItemStack b = block.getSingle(e);
 		Integer limit = blockLimit.getSingle(e);
+		if (limit == null) limit = we.getWorldEdit().getConfiguration().defaultChangeLimit;
 		if (we.getSelection(p) != null) {
 			if (b.getType().isBlock()) {
 				try {
 					EditSession session = we.createEditSession(p);
-					session.setBlockChangeLimit(limit != null ? limit : 4096);
-					session.setBlocks(we.getSession(p).getRegion(), new BaseBlock(b.getTypeId()));
+					p.sendMessage(Boolean.toString(session.isQueueEnabled()));
+					session.enableQueue();
+					session.setBlockChangeLimit(limit);
+					session.setBlocks(we.getSession(p).getSelection((World) we.wrapPlayer(p).getWorld()), new BaseBlock(b.getTypeId(), b.getDurability()));
+					we.getSession(p).remember(session);
 				} catch (MaxChangedBlocksException | IncompleteRegionException ex) {
 					return;
 				}
