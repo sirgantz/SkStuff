@@ -44,15 +44,15 @@ public class ExprWidthOfSchematic extends SimpleExpression<Integer> {
 
 	@Override
 	public String toString(@Nullable Event e, boolean arg1) {
-		return "the width of the schematic " + schematic.toString(e, false) + " in the folder " + new String(folder.getSingle(e) != null ? folder.toString(e, false) : "plugins/WorldEdit/schematics");
+		return "the width of the schematic " + schematic.toString(e, false) + " in the folder " + (folder.getSingle(e) == null ? "plugins/WorldEdit/schematics" : folder.toString(e, false));
 	}
 
 	@Override
 	@Nullable
 	protected Integer[] get(Event e) {
-		String f = (folder.getSingle(e) != null) ? folder.getSingle(e) : "plugins/WorldEdit/schematics/";
+		String f = (folder.getSingle(e) == null) ? "plugins/WorldEdit/schematics/" : folder.getSingle(e);
 		String schem = schematic.getSingle(e);
-		File schemFile = new File((f.endsWith("/")) ? f : f + "/" + new String(schem.endsWith(".schematic") ? schem : schem + ".schematic"));
+		File schemFile = new File((f.endsWith("/")) ? f : (f + "/") + (schem.endsWith(".schematic") ? schem : (schem + ".schematic")));
 		Integer w = null;
 		try {
 			w = MCEditSchematicFormat.getFormat(schemFile).load(schemFile).getWidth();

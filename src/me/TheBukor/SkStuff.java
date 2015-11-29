@@ -7,6 +7,8 @@ import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.sk89q.worldedit.EditSession;
+
 import ch.njol.skript.Skript;
 import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Parser;
@@ -14,8 +16,12 @@ import ch.njol.skript.lang.ExpressionType;
 import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
 import me.TheBukor.conditions.CondSelectionContains;
-import me.TheBukor.effects.EffExecuteWorldEdit;
+import me.TheBukor.effects.EffDrawLineWE;
+import me.TheBukor.effects.EffUndoRedoSession;
 import me.TheBukor.expressions.ExprAreaOfSelection;
+import me.TheBukor.expressions.ExprChangedBlocksSession;
+import me.TheBukor.expressions.ExprEditSession;
+import me.TheBukor.expressions.ExprEditSessionLimit;
 import me.TheBukor.expressions.ExprHeightOfSchematic;
 import me.TheBukor.expressions.ExprHeightOfSelection;
 import me.TheBukor.expressions.ExprItemNBTv1_8_R1;
@@ -44,7 +50,7 @@ public class SkStuff extends JavaPlugin {
 	private int condAmount = 0;
 	private int exprAmount = 0;
 	private int typeAmount = 0;
-	private int evtAmount = 0;
+	private int effAmount = 0;
 	public void onEnable() {
 		if (Bukkit.getPluginManager().getPlugin("Skript") != null) {
 			Skript.registerAddon(this);
@@ -65,7 +71,7 @@ public class SkStuff extends JavaPlugin {
 
 					@Override
 					@Nullable
-					public NBTTagCompound parse(String s, ParseContext arg1) {
+					public NBTTagCompound parse(String s, ParseContext context) {
 						NBTTagCompound NBT = new NBTTagCompound();
 						NBTTagCompound NBT1 = MojangsonParser.parse(s);
 						NBT1.a(NBT);
@@ -84,7 +90,7 @@ public class SkStuff extends JavaPlugin {
 					public String toVariableNameString(NBTTagCompound compound) {
 						return compound.toString();
 					}
-			}));
+				}));
 			}
 			if (Bukkit.getVersion().contains("(MC: 1.8.3)")){
 				getLogger().info("Successfully found 1.8.3! Registering version specific expressions...");
@@ -102,7 +108,7 @@ public class SkStuff extends JavaPlugin {
 
 					@Override
 					@Nullable
-					public net.minecraft.server.v1_8_R2.NBTTagCompound parse(String s, ParseContext arg1) {
+					public net.minecraft.server.v1_8_R2.NBTTagCompound parse(String s, ParseContext context) {
 						net.minecraft.server.v1_8_R2.NBTTagCompound NBT = new net.minecraft.server.v1_8_R2.NBTTagCompound();
 						try {
 							net.minecraft.server.v1_8_R2.NBTTagCompound NBT1 = net.minecraft.server.v1_8_R2.MojangsonParser.parse(s);
@@ -125,7 +131,7 @@ public class SkStuff extends JavaPlugin {
 					public String toVariableNameString(net.minecraft.server.v1_8_R2.NBTTagCompound compound) {
 						return compound.toString();
 					}
-			}));
+				}));
 			}
 			if (Bukkit.getVersion().contains("(MC: 1.8.4)") || Bukkit.getVersion().contains("(MC: 1.8.5)") || Bukkit.getVersion().contains("(MC: 1.8.6)") || Bukkit.getVersion().contains("(MC: 1.8.7)") || Bukkit.getVersion().contains("(MC: 1.8.8)")) {
 				getLogger().info("Successfully found 1.8.4 - 1.8.8! Registering version specific expressions...");
@@ -143,7 +149,7 @@ public class SkStuff extends JavaPlugin {
 
 					@Override
 					@Nullable
-					public net.minecraft.server.v1_8_R3.NBTTagCompound parse(String s, ParseContext arg1) {
+					public net.minecraft.server.v1_8_R3.NBTTagCompound parse(String s, ParseContext context) {
 						net.minecraft.server.v1_8_R3.NBTTagCompound NBT = new net.minecraft.server.v1_8_R3.NBTTagCompound();
 						try {
 							net.minecraft.server.v1_8_R3.NBTTagCompound NBT1 = net.minecraft.server.v1_8_R3.MojangsonParser.parse(s);
@@ -166,15 +172,22 @@ public class SkStuff extends JavaPlugin {
 					public String toVariableNameString(net.minecraft.server.v1_8_R3.NBTTagCompound compound) {
 						return compound.toString();
 					}
-			}));
+				}));
 			}
 			if (Bukkit.getPluginManager().getPlugin("WorldEdit") != null) {
 				getLogger().info("WorldEdit found! Registering WorldEdit stuff...");
 				condAmount += 1;
-				evtAmount  += 1;
-				exprAmount += 12;
+				effAmount += 2;
+				exprAmount += 15;
+				typeAmount += 1;
 				Skript.registerCondition(CondSelectionContains.class, "[(world[ ]edit|we)] selection of %player% (contains|has) %location%", "%player%'s [(world[ ]edit|we)] selection (contains|has) %location%", "[(world[ ]edit|we)] selection of %player% does(n't| not) (contain|have) %location%", "%player%'s [(world[ ]edit|we)] selection does(n't| not) (contain|have) %location%");
-				Skript.registerEffect(EffExecuteWorldEdit.class, "make %player% execute (world[ ]edit|we) [operation] set (using|with) %itemstack% [[with] limit [of] %integer% [blocks]]", "execute %player% (world[ ]edit|we) [operation] set (using|with) %itemstack% [[with] limit [of] %integer% [blocks]");
+				// EXPERIMENTAL EFFECTS/EXPRESSIONS
+				Skript.registerEffect(EffDrawLineWE.class, "(create|draw|make) [a] (no(n|t)(-| )hollow|filled) line from %location% to %location% (using|with) [edit[ ]session] %editsession% (using|with) [block] %itemstack% [[(and|with)] thick[ness] %-double%]", "(create|draw|make) [a] hollow line from %location% to %location% (using|with) [edit[ ]session] %editsession% (using|with) [block] %itemstack% [[(and|with)] thick[ness] %-double%]");
+				Skript.registerEffect(EffUndoRedoSession.class, "undo [last] (change|edit)[s] (of|from) [edit[ ]session] %editsession%", "redo [last] (change|edit)[s] (of|from) [edit[ ]session] %editsession%");
+				Skript.registerExpression(ExprEditSessionLimit.class, Integer.class, ExpressionType.PROPERTY, "[block] limit [change] of [edit[ ]session] %editsession%");
+				Skript.registerExpression(ExprChangedBlocksSession.class, Integer.class, ExpressionType.PROPERTY, "number of [all] changed blocks (in|of) [edit[ ]session] %editsession%");
+				Skript.registerExpression(ExprEditSession.class, EditSession.class, ExpressionType.PROPERTY, "[new] edit[ ]session (for|from|of) %player%", "[new] %player% edit[ ]session");
+				// END OF EXPERIMENTAL EFFS/EXPRS
 				Skript.registerExpression(ExprSelectionOfPlayer.class, Location.class, ExpressionType.PROPERTY, "[(world[ ]edit|we)] selection of %player%", "%player%'s [(world[ ]edit|we)] selection");
 				Skript.registerExpression(ExprSelectionPos1.class, Location.class, ExpressionType.PROPERTY, "[(world[ ]edit|we)] po(s|int)[ ]1 of %player%", "%player%'s [(world[ ]edit|we)] po(s|int)[ ]1");
 				Skript.registerExpression(ExprSelectionPos2.class, Location.class, ExpressionType.PROPERTY, "[(world[ ]edit|we)] po(s|int)[ ]2 of %player%", "%player%'s [(world[ ]edit|we)] po(s|int)[ ]2");
@@ -183,29 +196,46 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerExpression(ExprLengthOfSelection.class, Integer.class, ExpressionType.SIMPLE, "(z( |-)size|length) of [(world[ ]edit|we)] selection of %player%", "%player%'s [(world[ ]edit|we) ]selection (z( |-)size|length)");
 				Skript.registerExpression(ExprHeightOfSelection.class, Integer.class, ExpressionType.SIMPLE, "(y( |-)size|height) of [(world[ ]edit|we)] selection of %player%", "%player%'s [(world[ ]edit|we) ]selection (y( |-)size|height)");
 				Skript.registerExpression(ExprAreaOfSelection.class, Integer.class, ExpressionType.SIMPLE, "area of [(world[ ]edit|we)] selection of %player%", "%player%'s [(world[ ]edit|we)] selection area");
-				Skript.registerExpression(ExprVolumeOfSchematic.class, Integer.class, ExpressionType.SIMPLE, "volume of schem[atic] %string% [from [folder] %string%]");
-				Skript.registerExpression(ExprWidthOfSchematic.class, Integer.class, ExpressionType.SIMPLE, "(x( |-)size|width) of schem[atic] %string% [from [folder] %string%]");
-				Skript.registerExpression(ExprHeightOfSchematic.class, Integer.class, ExpressionType.SIMPLE, "(y( |-)size|height) of schem[atic] %string% [from [folder] %string%]");
-				Skript.registerExpression(ExprLengthOfSchematic.class, Integer.class, ExpressionType.SIMPLE, "(z( |-)size|length) of schem[atic] %string% [from [folder] %string%]");
-				}
-				String pluralCond = "s";
-				String pluralType = "s";
-				String pluralEvt = "s";
-				if (condAmount == 1) {
-					pluralCond = "";
-				}
-				if (typeAmount == 1) {
-					pluralType = "";
-				}
-				if (evtAmount == 1) {
-					pluralEvt = "";
-				}
-				getLogger().info("Everything ready! Loaded a total of " + condAmount + " condition" + pluralCond + ", " + evtAmount + "event" + pluralEvt + ", " + exprAmount + " expressions and " + typeAmount + " type" + pluralType + "!");
-			} else {
-				getLogger().info("Unable to find Skript, disabling SkStuff...");
-				this.onDisable();
+				Skript.registerExpression(ExprVolumeOfSchematic.class, Integer.class, ExpressionType.SIMPLE, "volume of schem[atic] %string% [from [folder] %-string%]");
+				Skript.registerExpression(ExprWidthOfSchematic.class, Integer.class, ExpressionType.SIMPLE, "(x( |-)size|width) of schem[atic] %string% [from [folder] %-string%]");
+				Skript.registerExpression(ExprHeightOfSchematic.class, Integer.class, ExpressionType.SIMPLE, "(y( |-)size|height) of schem[atic] %string% [from [folder] %-string%]");
+				Skript.registerExpression(ExprLengthOfSchematic.class, Integer.class, ExpressionType.SIMPLE, "(z( |-)size|length) of schem[atic] %string% [from [folder] %-string%]");
+				Classes.registerClass(new ClassInfo<EditSession>(EditSession.class, "editsession").name("Edit Session").parser(new Parser<EditSession>() {
+
+					@Override
+					public String getVariableNamePattern() {
+						return ".+";
+					}
+
+					@Override
+					@Nullable
+					public EditSession parse(String s, ParseContext context) {
+						return null;
+					}
+
+					@Override
+					public boolean canParse(ParseContext context) {
+						return false;
+					}
+
+					@Override
+					public String toString(EditSession editSession, int arg1) {
+						return null;
+					}
+
+					@Override
+					public String toVariableNameString(EditSession editSession) {
+						return null;
+					}
+
+				}));
 			}
+			getLogger().info("Everything ready! Loaded a total of " + condAmount + (condAmount == 1 ? " condition, " : " conditions, ") + effAmount + (effAmount == 1 ? " effect, " : " effects, ") + exprAmount + (exprAmount == 1 ? " expression" : " expressions and ") + typeAmount + (typeAmount == 1 ? " type!" : " types!"));
+		} else {
+			getLogger().info("Unable to find Skript, disabling SkStuff...");
+			this.onDisable();
 		}
+	}
 
 	public void onDisable() {
 		getLogger().info("SkStuff " + this.getDescription().getVersion() + " has been successfully disabled");
