@@ -9,9 +9,11 @@ import org.bukkit.event.Event;
 
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.Vector;
+import com.sk89q.worldedit.bukkit.BukkitUtil;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldedit.world.World;
 
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
@@ -44,19 +46,18 @@ public class ExprSelectionPos1 extends SimpleExpression<Location> {
 		return "the WorldEdit point 1 selection of " + player.toString(e, false);
 	}
 
-	@SuppressWarnings("deprecation")
 	@Override
 	@Nullable
 	protected Location[] get(Event e) {
 		Player p = player.getSingle(e);
 		Region region = null;
 		try {
-			region = we.getSession(p).getRegion();
+			region = we.getSession(p).getSelection((World) BukkitUtil.getLocalWorld(we.getSelection(p).getWorld()));
 		} catch (IncompleteRegionException ex) {
 			return null;
 		}
 		if (!(region instanceof CuboidRegion)) {
-			return null;
+			return null; //Who uses polygonal and other selection types anyways?
 		}
 		CuboidRegion cuboid = (CuboidRegion) region;
 		Vector pos = cuboid.getPos1();

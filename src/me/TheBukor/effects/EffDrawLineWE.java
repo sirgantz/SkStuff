@@ -10,7 +10,8 @@ import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.bukkit.BukkitUtil;
-import com.sk89q.worldedit.patterns.SingleBlockPattern;
+import com.sk89q.worldedit.function.pattern.BlockPattern;
+import com.sk89q.worldedit.patterns.Pattern;
 
 import ch.njol.skript.lang.Effect;
 import ch.njol.skript.lang.Expression;
@@ -52,7 +53,7 @@ public class EffDrawLineWE extends Effect {
 		Double thick = thickness.getSingle(e);
 		if (b.getType().isBlock()) {
 			try {
-				session.drawLine(new SingleBlockPattern(new BaseBlock(b.getTypeId(), b.getDurability())), BukkitUtil.toVector(pos1), BukkitUtil.toVector(pos2), thick, filled);
+				session.drawLine((Pattern) new BlockPattern(new BaseBlock(b.getTypeId(), b.getDurability())), BukkitUtil.toVector(pos1), BukkitUtil.toVector(pos2), thick, filled);
 				session.flushQueue();
 			} catch (MaxChangedBlocksException ex) {
 				return;

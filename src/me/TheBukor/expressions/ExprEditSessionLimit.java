@@ -46,14 +46,16 @@ public class ExprEditSessionLimit extends SimpleExpression<Integer> {
 	@Nullable
 	protected Integer[] get(Event e) {
 		EditSession session = editSession.getSingle(e);
-		if (session == null) return null;
+		if (session == null)
+			return null;
 		return new Integer[] { session.getBlockChangeLimit() };
 	}
 	
 	@Override
 	public void change(Event e, @Nullable Object[] delta, ChangeMode mode) {
 		EditSession session = editSession.getSingle(e);
-		if (session == null) return;
+		if (session == null) 
+			return;
 		if (mode == ChangeMode.SET) {
 			Integer newLimit = (Integer) delta[0];
 			session.setBlockChangeLimit(Integer.valueOf(newLimit));

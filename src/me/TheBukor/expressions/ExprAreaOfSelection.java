@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
+import com.sk89q.worldedit.bukkit.selections.Selection;
 
 import javax.annotation.Nullable;
 
@@ -41,11 +42,10 @@ public class ExprAreaOfSelection extends SimpleExpression<Integer> {
 	@Override
 	@Nullable
 	protected Integer[] get(Event e) {
-		WorldEditPlugin worldEdit = (WorldEditPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
-		if (worldEdit.getSelection(player.getSingle(e)) == null) {
+		WorldEditPlugin we = (WorldEditPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
+		Selection sel = we.getSelection(player.getSingle(e));
+		if (sel == null)
 			return null;
-		}
-		return new Integer[] { (worldEdit.getSelection(player.getSingle(e)).getWidth() * worldEdit.getSelection(player.getSingle(e)).getLength()) };
+		return new Integer[] { sel.getWidth() * sel.getLength() };
 	}
-
 }

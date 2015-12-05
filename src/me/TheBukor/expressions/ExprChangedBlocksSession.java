@@ -39,7 +39,8 @@ public class ExprChangedBlocksSession extends SimpleExpression<Integer> {
 	@Nullable
 	protected Integer[] get(Event e) {
 		EditSession session = editSession.getSingle(e);
-		if (session == null) return null;
+		if (session == null)
+			return null;
 		return new Integer[] { session.getBlockChangeCount() };
 	}
 }

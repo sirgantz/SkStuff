@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
+import com.sk89q.worldedit.bukkit.selections.Selection;
 
 import javax.annotation.Nullable;
 
@@ -35,17 +36,16 @@ public class ExprVolumeOfSelection extends SimpleExpression<Integer> {
 
 	@Override
 	public String toString(@Nullable Event e, boolean arg1) {
-		return "the volume of the WorldEdit selection of " + player.toString(e, false);
+		return "the width of the WorldEdit selection of " + player.toString(e, false);
 	}
 
 	@Override
 	@Nullable
 	protected Integer[] get(Event e) {
-		WorldEditPlugin worldEdit = (WorldEditPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
-		if (worldEdit.getSelection(player.getSingle(e)) == null) {
+		WorldEditPlugin we = (WorldEditPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
+		Selection sel = we.getSelection(player.getSingle(e));
+		if (sel == null)
 			return null;
-		}
-		return new Integer[] { worldEdit.getSelection(player.getSingle(e)).getArea() };
+		return new Integer[] { sel.getArea() };
 	}
-
 }

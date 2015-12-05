@@ -18,6 +18,7 @@ import ch.njol.skript.registrations.Classes;
 import me.TheBukor.conditions.CondSelectionContains;
 import me.TheBukor.effects.EffDrawLineWE;
 import me.TheBukor.effects.EffUndoRedoSession;
+import me.TheBukor.expressions.ExprAreaOfSchematic;
 import me.TheBukor.expressions.ExprAreaOfSelection;
 import me.TheBukor.expressions.ExprChangedBlocksSession;
 import me.TheBukor.expressions.ExprEditSessionLimit;
@@ -60,11 +61,12 @@ public class SkStuff extends JavaPlugin {
 			getLogger().info("SkStuff " + this.getDescription().getVersion() + " has been successfully enabled!");
 			if (Bukkit.getVersion().contains("(MC: 1.8)")){
 				getLogger().info("Successfully found 1.8! Registering version specific expressions...");
-				exprAmount += 3;
+				exprAmount += 4;
 				typeAmount += 1;
 				Skript.registerExpression(ExprNBTv1_8_R1.class, NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of %entity/block/itemstack%", "%entity/block/itemstack%'s nbt[[ ]tag[s]]");
 				Skript.registerExpression(ExprItemNBTv1_8_R1.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
 				Skript.registerExpression(ExprTagOfv1_8_R1.class, Object.class, ExpressionType.SIMPLE, "[nbt[ ]]tag %string% of [nbt [compound]] %compound%");
+				//WARNING! HIGHLY EXPERIMENTAL, IT CAN CORRUPT WORLDS AT CURRENT VERSION, USE AT YOUR OWN RISK!
 				Skript.registerExpression(ExprFileNBTv1_8_R1.class, NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of [file] %string%");
 				Classes.registerClass(new ClassInfo<NBTTagCompound>(NBTTagCompound.class, "compound").name("NBT Tag Compound").parser(new Parser<NBTTagCompound>() {
 
@@ -98,11 +100,12 @@ public class SkStuff extends JavaPlugin {
 			}
 			if (Bukkit.getVersion().contains("(MC: 1.8.3)")){
 				getLogger().info("Successfully found 1.8.3! Registering version specific expressions...");
-				exprAmount += 3;
+				exprAmount += 4;
 				typeAmount += 1;
 				Skript.registerExpression(ExprNBTv1_8_R2.class, net.minecraft.server.v1_8_R2.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of %entity/block/itemstack%", "%entity/block/itemstack%'s nbt[[ ]tag[s]]");
 				Skript.registerExpression(ExprItemNBTv1_8_R2.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
 				Skript.registerExpression(ExprTagOfv1_8_R2.class, Object.class, ExpressionType.SIMPLE, "[nbt[ ]]tag %string% of [nbt [compound]] %compound%");
+				//WARNING! HIGHLY EXPERIMENTAL, IT CAN CORRUPT WORLDS AT CURRENT VERSION, USE AT YOUR OWN RISK!
 				Skript.registerExpression(ExprFileNBTv1_8_R2.class, net.minecraft.server.v1_8_R2.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of [file] %string%");
 				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_8_R2.NBTTagCompound>(net.minecraft.server.v1_8_R2.NBTTagCompound.class, "compound").name("NBT Tag Compound").parser(new Parser<net.minecraft.server.v1_8_R2.NBTTagCompound>() {
 
@@ -140,11 +143,12 @@ public class SkStuff extends JavaPlugin {
 			}
 			if (Bukkit.getVersion().contains("(MC: 1.8.4)") || Bukkit.getVersion().contains("(MC: 1.8.5)") || Bukkit.getVersion().contains("(MC: 1.8.6)") || Bukkit.getVersion().contains("(MC: 1.8.7)") || Bukkit.getVersion().contains("(MC: 1.8.8)")) {
 				getLogger().info("Successfully found 1.8.4 - 1.8.8! Registering version specific expressions...");
-				exprAmount += 3;
+				exprAmount += 4;
 				typeAmount += 1;
 				Skript.registerExpression(ExprNBTv1_8_R3.class, net.minecraft.server.v1_8_R3.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of %entity/block/itemstack%", "%entity/block/itemstack%'s nbt[[ ]tag[s]]");
 				Skript.registerExpression(ExprItemNBTv1_8_R3.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
 				Skript.registerExpression(ExprTagOfv1_8_R3.class, Object.class, ExpressionType.SIMPLE, "[nbt[ ]]tag %string% of [nbt [compound]] %compound%");
+				//WARNING! HIGHLY EXPERIMENTAL, IT CAN CORRUPT WORLDS AT CURRENT VERSION, USE AT YOUR OWN RISK!
 				Skript.registerExpression(ExprFileNBTv1_8_R3.class, net.minecraft.server.v1_8_R3.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of [file] %string%");
 				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_8_R3.NBTTagCompound>(net.minecraft.server.v1_8_R3.NBTTagCompound.class, "compound").name("NBT Compound").parser(new Parser<net.minecraft.server.v1_8_R3.NBTTagCompound>() {
 
@@ -184,7 +188,7 @@ public class SkStuff extends JavaPlugin {
 				getLogger().info("WorldEdit found! Registering WorldEdit stuff...");
 				condAmount += 1;
 				effAmount += 2;
-				exprAmount += 15;
+				exprAmount += 16;
 				typeAmount += 1;
 				Skript.registerCondition(CondSelectionContains.class, "[(world[ ]edit|we)] selection of %player% (contains|has) %location%", "%player%'s [(world[ ]edit|we)] selection (contains|has) %location%", "[(world[ ]edit|we)] selection of %player% does(n't| not) (contain|have) %location%", "%player%'s [(world[ ]edit|we)] selection does(n't| not) (contain|have) %location%");
 				// EXPERIMENTAL EFFECTS/EXPRESSIONS
@@ -202,10 +206,11 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerExpression(ExprLengthOfSelection.class, Integer.class, ExpressionType.SIMPLE, "(z( |-)size|length) of [(world[ ]edit|we)] selection of %player%", "%player%'s [(world[ ]edit|we) ]selection (z( |-)size|length)");
 				Skript.registerExpression(ExprHeightOfSelection.class, Integer.class, ExpressionType.SIMPLE, "(y( |-)size|height) of [(world[ ]edit|we)] selection of %player%", "%player%'s [(world[ ]edit|we) ]selection (y( |-)size|height)");
 				Skript.registerExpression(ExprAreaOfSelection.class, Integer.class, ExpressionType.SIMPLE, "area of [(world[ ]edit|we)] selection of %player%", "%player%'s [(world[ ]edit|we)] selection area");
-				Skript.registerExpression(ExprVolumeOfSchematic.class, Integer.class, ExpressionType.SIMPLE, "volume of schem[atic] %string%");
-				Skript.registerExpression(ExprWidthOfSchematic.class, Integer.class, ExpressionType.SIMPLE, "(x( |-)size|width) of schem[atic] %string%");
-				Skript.registerExpression(ExprHeightOfSchematic.class, Integer.class, ExpressionType.SIMPLE, "(y( |-)size|height) of schem[atic] %string%");
-				Skript.registerExpression(ExprLengthOfSchematic.class, Integer.class, ExpressionType.SIMPLE, "(z( |-)size|length) of schem[atic] %string%");
+				Skript.registerExpression(ExprVolumeOfSchematic.class, Integer.class, ExpressionType.SIMPLE, "volume of schem[atic] [from] %string%");
+				Skript.registerExpression(ExprWidthOfSchematic.class, Integer.class, ExpressionType.SIMPLE, "(x( |-)size|width) of schem[atic] [from] %string%");
+				Skript.registerExpression(ExprHeightOfSchematic.class, Integer.class, ExpressionType.SIMPLE, "(y( |-)size|height) of schem[atic] [from] %string%");
+				Skript.registerExpression(ExprLengthOfSchematic.class, Integer.class, ExpressionType.SIMPLE, "(z( |-)size|length) of schem[atic] [from] %string%");
+				Skript.registerExpression(ExprAreaOfSchematic.class, Integer.class, ExpressionType.SIMPLE, "area of schem[atic] [from] %string%");
 				Classes.registerClass(new ClassInfo<EditSession>(EditSession.class, "editsession").name("Edit Session").parser(new Parser<EditSession>() {
 
 					@Override
@@ -239,11 +244,11 @@ public class SkStuff extends JavaPlugin {
 			getLogger().info("Everything ready! Loaded a total of " + condAmount + (condAmount == 1 ? " condition, " : " conditions, ") + effAmount + (effAmount == 1 ? " effect, " : " effects, ") + exprAmount + (exprAmount == 1 ? " expression" : " expressions and ") + typeAmount + (typeAmount == 1 ? " type!" : " types!"));
 		} else {
 			getLogger().info("Unable to find Skript, disabling SkStuff...");
-			this.onDisable();
+			Bukkit.getPluginManager().disablePlugin(this);;
 		}
 	}
 
 	public void onDisable() {
-		getLogger().info("SkStuff " + this.getDescription().getVersion() + " has been successfully disabled");
+		getLogger().info("SkStuff " + this.getDescription().getVersion() + " has been successfully disabled.");
 	}
 }
