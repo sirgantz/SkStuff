@@ -27,11 +27,19 @@ import me.TheBukor.expressions.ExprFileNBTv1_8_R2;
 import me.TheBukor.expressions.ExprFileNBTv1_8_R3;
 import me.TheBukor.expressions.ExprHeightOfSchematic;
 import me.TheBukor.expressions.ExprHeightOfSelection;
+import me.TheBukor.expressions.ExprItemNBTv1_7_R1;
+import me.TheBukor.expressions.ExprItemNBTv1_7_R2;
+import me.TheBukor.expressions.ExprItemNBTv1_7_R3;
+import me.TheBukor.expressions.ExprItemNBTv1_7_R4;
 import me.TheBukor.expressions.ExprItemNBTv1_8_R1;
 import me.TheBukor.expressions.ExprItemNBTv1_8_R2;
 import me.TheBukor.expressions.ExprItemNBTv1_8_R3;
 import me.TheBukor.expressions.ExprLengthOfSchematic;
 import me.TheBukor.expressions.ExprLengthOfSelection;
+import me.TheBukor.expressions.ExprNBTv1_7_R1;
+import me.TheBukor.expressions.ExprNBTv1_7_R2;
+import me.TheBukor.expressions.ExprNBTv1_7_R3;
+import me.TheBukor.expressions.ExprNBTv1_7_R4;
 import me.TheBukor.expressions.ExprNBTv1_8_R1;
 import me.TheBukor.expressions.ExprNBTv1_8_R2;
 import me.TheBukor.expressions.ExprNBTv1_8_R3;
@@ -39,6 +47,10 @@ import me.TheBukor.expressions.ExprNewEditSession;
 import me.TheBukor.expressions.ExprSelectionOfPlayer;
 import me.TheBukor.expressions.ExprSelectionPos1;
 import me.TheBukor.expressions.ExprSelectionPos2;
+import me.TheBukor.expressions.ExprTagOfv1_7_R1;
+import me.TheBukor.expressions.ExprTagOfv1_7_R2;
+import me.TheBukor.expressions.ExprTagOfv1_7_R3;
+import me.TheBukor.expressions.ExprTagOfv1_7_R4;
 import me.TheBukor.expressions.ExprTagOfv1_8_R1;
 import me.TheBukor.expressions.ExprTagOfv1_8_R2;
 import me.TheBukor.expressions.ExprTagOfv1_8_R3;
@@ -59,7 +71,160 @@ public class SkStuff extends JavaPlugin {
 		if (Bukkit.getPluginManager().getPlugin("Skript") != null) {
 			Skript.registerAddon(this);
 			getLogger().info("SkStuff " + this.getDescription().getVersion() + " has been successfully enabled!");
-			if (Bukkit.getVersion().contains("(MC: 1.8)")){
+			if (Bukkit.getVersion().contains("(MC: 1.7.2)")) {
+				getLogger().info("Successfully found 1.7.2! Registering version specific expressions...");
+				exprAmount += 3;
+				typeAmount += 1;
+				Skript.registerExpression(ExprNBTv1_7_R1.class, net.minecraft.server.v1_7_R1.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of %entity/block/itemstack%", "%entity/block/itemstack%'s nbt[[ ]tag[s]]");
+				Skript.registerExpression(ExprItemNBTv1_7_R1.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
+				Skript.registerExpression(ExprTagOfv1_7_R1.class, Object.class, ExpressionType.SIMPLE, "[nbt[ ]]tag %string% of [nbt [compound]] %compound%");
+				//WARNING! HIGHLY EXPERIMENTAL, IT CAN CORRUPT WORLDS AT CURRENT VERSION, USE AT YOUR OWN RISK!
+				//Skript.registerExpression(ExprFileNBTv1_7_R1.class, net.minecraft.server.v1_7_R1.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of [file] %string%");
+				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_7_R1.NBTTagCompound>(net.minecraft.server.v1_7_R1.NBTTagCompound.class, "compound").name("NBT Tag Compound").parser(new Parser<net.minecraft.server.v1_7_R1.NBTTagCompound>() {
+					@Override
+					public String getVariableNamePattern() {
+						return ".+";
+					}
+
+					@Override
+					@Nullable
+					public net.minecraft.server.v1_7_R1.NBTTagCompound parse(String s, ParseContext context) {
+						net.minecraft.server.v1_7_R1.NBTTagCompound NBT = new net.minecraft.server.v1_7_R1.NBTTagCompound();
+						net.minecraft.server.v1_7_R1.NBTTagCompound NBT1 = (net.minecraft.server.v1_7_R1.NBTTagCompound) net.minecraft.server.v1_7_R1.MojangsonParser.a(s);
+						NBT.set("", NBT1);
+						if (NBT.isEmpty() || NBT == null) {
+							return null;
+						}
+						return NBT;
+					}
+
+					@Override
+					public String toString(net.minecraft.server.v1_7_R1.NBTTagCompound compound, int arg1) {
+						return compound.toString();
+					}
+
+					@Override
+					public String toVariableNameString(net.minecraft.server.v1_7_R1.NBTTagCompound compound) {
+						return compound.toString();
+					}
+				}));
+			}
+			if (Bukkit.getVersion().contains("(MC: 1.7.5)")) {
+				getLogger().info("Successfully found 1.7.5! Registering version specific expressions...");
+				exprAmount += 3;
+				typeAmount += 1;
+				Skript.registerExpression(ExprNBTv1_7_R2.class, net.minecraft.server.v1_7_R2.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of %entity/block/itemstack%", "%entity/block/itemstack%'s nbt[[ ]tag[s]]");
+				Skript.registerExpression(ExprItemNBTv1_7_R2.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
+				Skript.registerExpression(ExprTagOfv1_7_R2.class, Object.class, ExpressionType.SIMPLE, "[nbt[ ]]tag %string% of [nbt [compound]] %compound%");
+				//WARNING! HIGHLY EXPERIMENTAL, IT CAN CORRUPT WORLDS AT CURRENT VERSION, USE AT YOUR OWN RISK!
+				//Skript.registerExpression(ExprFileNBTv1_7_R2.class, net.minecraft.server.v1_7_R2.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of [file] %string%");
+				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_7_R2.NBTTagCompound>(net.minecraft.server.v1_7_R2.NBTTagCompound.class, "compound").name("NBT Tag Compound").parser(new Parser<net.minecraft.server.v1_7_R2.NBTTagCompound>() {
+					@Override
+					public String getVariableNamePattern() {
+						return ".+";
+					}
+
+					@Override
+					@Nullable
+					public net.minecraft.server.v1_7_R2.NBTTagCompound parse(String s, ParseContext context) {
+						net.minecraft.server.v1_7_R2.NBTTagCompound NBT = new net.minecraft.server.v1_7_R2.NBTTagCompound();
+						net.minecraft.server.v1_7_R2.NBTTagCompound NBT1 = (net.minecraft.server.v1_7_R2.NBTTagCompound) net.minecraft.server.v1_7_R2.MojangsonParser.parse(s);
+						NBT.set("", NBT1);
+						if (NBT.isEmpty() || NBT == null) {
+							return null;
+						}
+						return NBT;
+					}
+
+					@Override
+					public String toString(net.minecraft.server.v1_7_R2.NBTTagCompound compound, int arg1) {
+						return compound.toString();
+					}
+
+					@Override
+					public String toVariableNameString(net.minecraft.server.v1_7_R2.NBTTagCompound compound) {
+						return compound.toString();
+					}
+				}));
+			}
+			if (Bukkit.getVersion().contains("(MC: 1.7.9)")) {
+				getLogger().info("Successfully found 1.7.9! Registering version specific expressions...");
+				exprAmount += 3;
+				typeAmount += 1;
+				Skript.registerExpression(ExprNBTv1_7_R3.class, net.minecraft.server.v1_7_R3.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of %entity/block/itemstack%", "%entity/block/itemstack%'s nbt[[ ]tag[s]]");
+				Skript.registerExpression(ExprItemNBTv1_7_R3.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
+				Skript.registerExpression(ExprTagOfv1_7_R3.class, Object.class, ExpressionType.SIMPLE, "[nbt[ ]]tag %string% of [nbt [compound]] %compound%");
+				//WARNING! HIGHLY EXPERIMENTAL, IT CAN CORRUPT WORLDS AT CURRENT VERSION, USE AT YOUR OWN RISK!
+				//Skript.registerExpression(ExprFileNBTv1_7_R3.class, net.minecraft.server.v1_7_R3.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of [file] %string%");
+				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_7_R3.NBTTagCompound>(net.minecraft.server.v1_7_R3.NBTTagCompound.class, "compound").name("NBT Tag Compound").parser(new Parser<net.minecraft.server.v1_7_R3.NBTTagCompound>() {
+					@Override
+					public String getVariableNamePattern() {
+						return ".+";
+					}
+
+					@Override
+					@Nullable
+					public net.minecraft.server.v1_7_R3.NBTTagCompound parse(String s, ParseContext context) {
+						net.minecraft.server.v1_7_R3.NBTTagCompound NBT = new net.minecraft.server.v1_7_R3.NBTTagCompound();
+						net.minecraft.server.v1_7_R3.NBTTagCompound NBT1 = (net.minecraft.server.v1_7_R3.NBTTagCompound) net.minecraft.server.v1_7_R3.MojangsonParser.parse(s);
+						NBT.set("", NBT1);
+						if (NBT.isEmpty() || NBT == null) {
+							return null;
+						}
+						return NBT;
+					}
+
+					@Override
+					public String toString(net.minecraft.server.v1_7_R3.NBTTagCompound compound, int arg1) {
+						return compound.toString();
+					}
+
+					@Override
+					public String toVariableNameString(net.minecraft.server.v1_7_R3.NBTTagCompound compound) {
+						return compound.toString();
+					}
+				}));
+			}
+			if (Bukkit.getVersion().contains("(MC: 1.7.10)")) {
+				getLogger().info("Successfully found 1.7.10! Registering version specific expressions...");
+				exprAmount += 3;
+				typeAmount += 1;
+				Skript.registerExpression(ExprNBTv1_7_R4.class, net.minecraft.server.v1_7_R4.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of %entity/block/itemstack%", "%entity/block/itemstack%'s nbt[[ ]tag[s]]");
+				Skript.registerExpression(ExprItemNBTv1_7_R4.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
+				Skript.registerExpression(ExprTagOfv1_7_R4.class, Object.class, ExpressionType.SIMPLE, "[nbt[ ]]tag %string% of [nbt [compound]] %compound%");
+				//WARNING! HIGHLY EXPERIMENTAL, IT CAN CORRUPT WORLDS AT CURRENT VERSION, USE AT YOUR OWN RISK!
+				//Skript.registerExpression(ExprFileNBTv1_7_R4.class, net.minecraft.server.v1_7_R4.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of [file] %string%");
+				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_7_R4.NBTTagCompound>(net.minecraft.server.v1_7_R4.NBTTagCompound.class, "compound").name("NBT Tag Compound").parser(new Parser<net.minecraft.server.v1_7_R4.NBTTagCompound>() {
+
+					@Override
+					public String getVariableNamePattern() {
+						return ".+";
+					}
+
+					@Override
+					@Nullable
+					public net.minecraft.server.v1_7_R4.NBTTagCompound parse(String s, ParseContext context) {
+						net.minecraft.server.v1_7_R4.NBTTagCompound NBT = new net.minecraft.server.v1_7_R4.NBTTagCompound();
+						net.minecraft.server.v1_7_R4.NBTTagCompound NBT1 = (net.minecraft.server.v1_7_R4.NBTTagCompound) net.minecraft.server.v1_7_R4.MojangsonParser.parse(s);
+						NBT.set("", NBT1);
+						if (NBT.isEmpty() || NBT == null) {
+							return null;
+						}
+						return NBT;
+					}
+
+					@Override
+					public String toString(net.minecraft.server.v1_7_R4.NBTTagCompound compound, int arg1) {
+						return compound.toString();
+					}
+
+					@Override
+					public String toVariableNameString(net.minecraft.server.v1_7_R4.NBTTagCompound compound) {
+						return compound.toString();
+					}
+				}));
+			}
+			if (Bukkit.getVersion().contains("(MC: 1.8)")) {
 				getLogger().info("Successfully found 1.8! Registering version specific expressions...");
 				exprAmount += 4;
 				typeAmount += 1;
@@ -80,7 +245,7 @@ public class SkStuff extends JavaPlugin {
 					public NBTTagCompound parse(String s, ParseContext context) {
 						NBTTagCompound NBT = new NBTTagCompound();
 						NBTTagCompound NBT1 = MojangsonParser.parse(s);
-						NBT1.a(NBT);
+						NBT.a(NBT1);
 						if (NBT.isEmpty() || NBT == null) {
 							return null;
 						}
@@ -98,7 +263,7 @@ public class SkStuff extends JavaPlugin {
 					}
 				}));
 			}
-			if (Bukkit.getVersion().contains("(MC: 1.8.3)")){
+			if (Bukkit.getVersion().contains("(MC: 1.8.3)")) {
 				getLogger().info("Successfully found 1.8.3! Registering version specific expressions...");
 				exprAmount += 4;
 				typeAmount += 1;

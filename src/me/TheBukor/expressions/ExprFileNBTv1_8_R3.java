@@ -11,6 +11,7 @@ import java.util.zip.ZipException;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 
 import ch.njol.skript.Skript;
@@ -85,6 +86,7 @@ public class ExprFileNBTv1_8_R3 extends SimpleExpression<NBTTagCompound> {
 				NBTTagCompound NBT1 = MojangsonParser.parse(tags);
 				NBT.a(NBT1);
 				NBTCompressedStreamTools.a(NBT, os);
+				Bukkit.broadcastMessage("First - " + NBT.toString() + "\n\nSecond: " + NBT1.toString());
 				fis.close();
 				os.close();
 			} catch (EOFException ex) {
@@ -100,9 +102,11 @@ public class ExprFileNBTv1_8_R3 extends SimpleExpression<NBTTagCompound> {
 			try {
 				InputStream fis = new FileInputStream(file);
 				NBTTagCompound NBT = NBTCompressedStreamTools.a(fis);
+				Bukkit.broadcastMessage("First - " + NBT.toString());
 				OutputStream os = new FileOutputStream(file);
 				NBT.remove(tags);
 				NBTCompressedStreamTools.a(NBT, os);
+				Bukkit.broadcastMessage("\n\nSecond: " + NBT.toString());
 				fis.close();
 				os.close();
 			} catch (EOFException ex) {

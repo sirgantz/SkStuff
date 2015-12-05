@@ -34,8 +34,8 @@ public class CondSelectionContains extends Condition {
 	}
 
 	@Override
-	public boolean check(Event e) {
-		WorldEditPlugin we = (WorldEditPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
+	public boolean check(final Event e) {
+		final WorldEditPlugin we = (WorldEditPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
 		if (we.getSelection(player.getSingle(e)) == null) {
 			return false;
 		}
