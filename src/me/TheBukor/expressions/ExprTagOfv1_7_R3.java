@@ -2,14 +2,16 @@ package me.TheBukor.expressions;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 
+import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
+import ch.njol.util.coll.CollectionUtils;
 import net.minecraft.server.v1_7_R3.NBTTagCompound;
-import net.minecraft.server.v1_7_R3.NBTTagList;
 
 public class ExprTagOfv1_7_R3 extends SimpleExpression<Object> {
 	private Expression<String> string;
@@ -39,7 +41,7 @@ public class ExprTagOfv1_7_R3 extends SimpleExpression<Object> {
 	@Nullable
 	protected Object[] get(Event e) {
 		NBTTagCompound NBT = compound.getSingle(e);
-		if (NBT.isEmpty() || NBT == null) return null; //The NBT can be empty/inexistant for items
+		if (NBT == null || NBT.isEmpty()) return null; //The NBT can be empty/inexistant for items
 		String tag = string.getSingle(e);
 		if (NBT.get(tag) == null) return null; //The tag doesn't exist? Return <none>.
 		Byte id = NBT.get(tag).getTypeId();
@@ -68,7 +70,8 @@ public class ExprTagOfv1_7_R3 extends SimpleExpression<Object> {
 			returned = new String[] { NBT.getString(tag) };
 			break;
 		case 9: //List, will need to make a new type if getCompound() doesn't work here
-			returned = new NBTTagList[] { NBT.getList(tag, 5) }; //Is the int argument the type ID?
+			Bukkit.broadcastMessage("LIST!");
+			returned = new Object[] { NBT.getList(tag, 0).toString() }; //Is the int argument the type ID?
 			break;
 		case 10:
 			returned = new NBTTagCompound[] { NBT.getCompound(tag) };
@@ -79,5 +82,86 @@ public class ExprTagOfv1_7_R3 extends SimpleExpression<Object> {
 			break;
 		}
 		return returned;
+	}
+
+	@Override
+	public void change(Event e, @Nullable Object[] delta, ChangeMode mode) {
+		NBTTagCompound NBT = compound.getSingle(e);
+		if (NBT == null) NBT = new NBTTagCompound(); //If the NBT isn't set, create an empty one
+		String tag = string.getSingle(e);
+		Object newValue = delta[0];
+		if (mode == ChangeMode.SET) {
+			if (newValue instanceof Byte) {
+				NBT.setByte(tag, (byte) newValue);
+			} else if (newValue instanceof Short) {
+				NBT.setShort(tag, (short) newValue);
+			} else if (newValue instanceof Integer) {
+				NBT.setInt(tag, (int) newValue);;
+			} else if (newValue instanceof Long) {
+				NBT.setLong(tag, (long) newValue);
+			} else if (newValue instanceof Float) {
+				NBT.setFloat(tag, (float) newValue);
+			} else if (newValue instanceof Double) {
+				NBT.setDouble(tag, (double) newValue);
+			} else if (newValue instanceof String) {
+				NBT.setString(tag, (String) newValue);
+			} else {
+				return; //Non-supported type or maybe an error occured?
+			}
+		} else if (mode == ChangeMode.ADD) {
+			if (newValue instanceof Byte) {
+				newValue = NBT.getByte(tag) + (byte) newValue; 
+				NBT.setByte(tag, (byte) newValue);
+			} else if (newValue instanceof Short) {
+				newValue = NBT.getShort(tag) + (short) newValue;
+				NBT.setShort(tag, (short) newValue);
+			} else if (newValue instanceof Integer) {
+				newValue = NBT.getInt(tag) + (int) newValue;
+				NBT.setInt(tag, (int) newValue);
+			} else if (newValue instanceof Long) {
+				newValue = NBT.getLong(tag) + (long) newValue;
+				NBT.setLong(tag, (long) newValue);
+			} else if (newValue instanceof Float) {
+				newValue = NBT.getFloat(tag) + (float) newValue;
+				NBT.setFloat(tag, (float) newValue);
+			} else if (newValue instanceof Double) {
+				newValue = NBT.getDouble(tag) + (double) newValue;
+				NBT.setDouble(tag, (double) newValue);
+			} else {
+				return; //Non-supported type or maybe an error occured?
+			}
+		} else if (mode == ChangeMode.REMOVE) {
+			if (newValue instanceof Byte) {
+				newValue = NBT.getByte(tag) - (byte) newValue; 
+				NBT.setByte(tag, (byte) newValue);
+			} else if (newValue instanceof Short) {
+				newValue = NBT.getShort(tag) - (short) newValue;
+				NBT.setShort(tag, (short) newValue);
+			} else if (newValue instanceof Integer) {
+				newValue = NBT.getInt(tag) - (int) newValue;
+				NBT.setInt(tag, (int) newValue);
+			} else if (newValue instanceof Long) {
+				newValue = NBT.getLong(tag) - (long) newValue;
+				NBT.setLong(tag, (long) newValue);
+			} else if (newValue instanceof Float) {
+				newValue = NBT.getFloat(tag) - (float) newValue;
+				NBT.setFloat(tag, (float) newValue);
+			} else if (newValue instanceof Double) {
+				newValue = NBT.getDouble(tag) - (double) newValue;
+				NBT.setDouble(tag, (double) newValue);
+			} else {
+				return; //Non-supported type or maybe an error occured?
+			}
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	@Nullable
+	public Class<?>[] acceptChange(ChangeMode mode) {
+		if (mode == ChangeMode.SET || mode == ChangeMode.ADD || mode == ChangeMode.REMOVE) {
+			return CollectionUtils.array(Object.class);
+		}
+		return null;
 	}
 }

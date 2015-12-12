@@ -17,9 +17,9 @@ public class EffUndoRedoSession extends Effect {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean arg2, ParseResult arg3) {
+	public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean arg2, ParseResult result) {
 		editSession = (Expression<EditSession>) expr[0];
-		if (matchedPattern == 1) redo = true;
+		if (result.mark == 1) redo = true;
 		return true;
 	}
 

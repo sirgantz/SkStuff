@@ -17,6 +17,9 @@ import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
 import me.TheBukor.conditions.CondSelectionContains;
 import me.TheBukor.effects.EffDrawLineWE;
+import me.TheBukor.effects.EffMakePyramid;
+import me.TheBukor.effects.EffMakeSphere;
+import me.TheBukor.effects.EffRememberChanges;
 import me.TheBukor.effects.EffUndoRedoSession;
 import me.TheBukor.expressions.ExprAreaOfSchematic;
 import me.TheBukor.expressions.ExprAreaOfSelection;
@@ -67,6 +70,7 @@ public class SkStuff extends JavaPlugin {
 	private int exprAmount = 0;
 	private int typeAmount = 0;
 	private int effAmount = 0;
+
 	public void onEnable() {
 		if (Bukkit.getPluginManager().getPlugin("Skript") != null) {
 			Skript.registerAddon(this);
@@ -79,23 +83,26 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerExpression(ExprItemNBTv1_7_R1.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
 				Skript.registerExpression(ExprTagOfv1_7_R1.class, Object.class, ExpressionType.SIMPLE, "[nbt[ ]]tag %string% of [nbt [compound]] %compound%");
 				//WARNING! HIGHLY EXPERIMENTAL, IT CAN CORRUPT WORLDS AT CURRENT VERSION, USE AT YOUR OWN RISK!
-				//Skript.registerExpression(ExprFileNBTv1_7_R1.class, net.minecraft.server.v1_7_R1.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of [file] %string%");
-				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_7_R1.NBTTagCompound>(net.minecraft.server.v1_7_R1.NBTTagCompound.class, "compound").name("NBT Tag Compound").parser(new Parser<net.minecraft.server.v1_7_R1.NBTTagCompound>() {
+				//Skript.registerExpression(ExprFileNBTv1_7_R1.class, net.minecraft.server.v1_7_R1.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] from [file] %string%");
+				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_7_R1.NBTTagCompound>(net.minecraft.server.v1_7_R1.NBTTagCompound.class, "compound").name("NBT Tag Compound").user("((nbt)?( ?tag)?) ?compounds?").parser(new Parser<net.minecraft.server.v1_7_R1.NBTTagCompound>() {
 					@Override
 					public String getVariableNamePattern() {
-						return ".+";
+						return "{.+:.+}";
 					}
 
 					@Override
 					@Nullable
 					public net.minecraft.server.v1_7_R1.NBTTagCompound parse(String s, ParseContext context) {
-						net.minecraft.server.v1_7_R1.NBTTagCompound NBT = new net.minecraft.server.v1_7_R1.NBTTagCompound();
-						net.minecraft.server.v1_7_R1.NBTTagCompound NBT1 = (net.minecraft.server.v1_7_R1.NBTTagCompound) net.minecraft.server.v1_7_R1.MojangsonParser.a(s);
-						NBT.set("", NBT1);
-						if (NBT.isEmpty() || NBT == null) {
-							return null;
+						if (s.startsWith("{")) {
+							net.minecraft.server.v1_7_R1.NBTTagCompound NBT = new net.minecraft.server.v1_7_R1.NBTTagCompound();
+							net.minecraft.server.v1_7_R1.NBTTagCompound NBT1 = (net.minecraft.server.v1_7_R1.NBTTagCompound) net.minecraft.server.v1_7_R1.MojangsonParser.a(s);
+							NBT.set("", NBT1);
+							if (NBT.isEmpty() || NBT == null) {
+								return null;
+							}
+							return NBT;
 						}
-						return NBT;
+						return null;
 					}
 
 					@Override
@@ -117,23 +124,26 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerExpression(ExprItemNBTv1_7_R2.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
 				Skript.registerExpression(ExprTagOfv1_7_R2.class, Object.class, ExpressionType.SIMPLE, "[nbt[ ]]tag %string% of [nbt [compound]] %compound%");
 				//WARNING! HIGHLY EXPERIMENTAL, IT CAN CORRUPT WORLDS AT CURRENT VERSION, USE AT YOUR OWN RISK!
-				//Skript.registerExpression(ExprFileNBTv1_7_R2.class, net.minecraft.server.v1_7_R2.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of [file] %string%");
-				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_7_R2.NBTTagCompound>(net.minecraft.server.v1_7_R2.NBTTagCompound.class, "compound").name("NBT Tag Compound").parser(new Parser<net.minecraft.server.v1_7_R2.NBTTagCompound>() {
+				//Skript.registerExpression(ExprFileNBTv1_7_R2.class, net.minecraft.server.v1_7_R2.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] from [file] %string%");
+				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_7_R2.NBTTagCompound>(net.minecraft.server.v1_7_R2.NBTTagCompound.class, "compound").name("NBT Tag Compound").user("((nbt)?( ?tag)?) ?compounds?").parser(new Parser<net.minecraft.server.v1_7_R2.NBTTagCompound>() {
 					@Override
 					public String getVariableNamePattern() {
-						return ".+";
+						return "nbt:{.+:.+}";
 					}
 
 					@Override
 					@Nullable
 					public net.minecraft.server.v1_7_R2.NBTTagCompound parse(String s, ParseContext context) {
-						net.minecraft.server.v1_7_R2.NBTTagCompound NBT = new net.minecraft.server.v1_7_R2.NBTTagCompound();
-						net.minecraft.server.v1_7_R2.NBTTagCompound NBT1 = (net.minecraft.server.v1_7_R2.NBTTagCompound) net.minecraft.server.v1_7_R2.MojangsonParser.parse(s);
-						NBT.set("", NBT1);
-						if (NBT.isEmpty() || NBT == null) {
-							return null;
+						if (s.startsWith("{")) {
+							net.minecraft.server.v1_7_R2.NBTTagCompound NBT = new net.minecraft.server.v1_7_R2.NBTTagCompound();
+							net.minecraft.server.v1_7_R2.NBTTagCompound NBT1 = (net.minecraft.server.v1_7_R2.NBTTagCompound) net.minecraft.server.v1_7_R2.MojangsonParser.parse(s);
+							NBT.set("", NBT1);
+							if (NBT.isEmpty() || NBT == null) {
+								return null;
+							}
+							return NBT;
 						}
-						return NBT;
+						return null;
 					}
 
 					@Override
@@ -143,7 +153,7 @@ public class SkStuff extends JavaPlugin {
 
 					@Override
 					public String toVariableNameString(net.minecraft.server.v1_7_R2.NBTTagCompound compound) {
-						return compound.toString();
+						return "nbt:" + compound.toString();
 					}
 				}));
 			}
@@ -155,23 +165,26 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerExpression(ExprItemNBTv1_7_R3.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
 				Skript.registerExpression(ExprTagOfv1_7_R3.class, Object.class, ExpressionType.SIMPLE, "[nbt[ ]]tag %string% of [nbt [compound]] %compound%");
 				//WARNING! HIGHLY EXPERIMENTAL, IT CAN CORRUPT WORLDS AT CURRENT VERSION, USE AT YOUR OWN RISK!
-				//Skript.registerExpression(ExprFileNBTv1_7_R3.class, net.minecraft.server.v1_7_R3.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of [file] %string%");
-				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_7_R3.NBTTagCompound>(net.minecraft.server.v1_7_R3.NBTTagCompound.class, "compound").name("NBT Tag Compound").parser(new Parser<net.minecraft.server.v1_7_R3.NBTTagCompound>() {
+				//Skript.registerExpression(ExprFileNBTv1_7_R3.class, net.minecraft.server.v1_7_R3.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] from [file] %string%");
+				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_7_R3.NBTTagCompound>(net.minecraft.server.v1_7_R3.NBTTagCompound.class, "compound").name("NBT Tag Compound").user("((nbt)?( ?tag)?) ?compounds?").parser(new Parser<net.minecraft.server.v1_7_R3.NBTTagCompound>() {
 					@Override
 					public String getVariableNamePattern() {
-						return ".+";
+						return "nbt:{.+:.+}";
 					}
 
 					@Override
 					@Nullable
 					public net.minecraft.server.v1_7_R3.NBTTagCompound parse(String s, ParseContext context) {
-						net.minecraft.server.v1_7_R3.NBTTagCompound NBT = new net.minecraft.server.v1_7_R3.NBTTagCompound();
-						net.minecraft.server.v1_7_R3.NBTTagCompound NBT1 = (net.minecraft.server.v1_7_R3.NBTTagCompound) net.minecraft.server.v1_7_R3.MojangsonParser.parse(s);
-						NBT.set("", NBT1);
-						if (NBT.isEmpty() || NBT == null) {
-							return null;
+						if (s.startsWith("{")) {
+							net.minecraft.server.v1_7_R3.NBTTagCompound NBT = new net.minecraft.server.v1_7_R3.NBTTagCompound();
+							net.minecraft.server.v1_7_R3.NBTTagCompound NBT1 = (net.minecraft.server.v1_7_R3.NBTTagCompound) net.minecraft.server.v1_7_R3.MojangsonParser.parse(s);
+							NBT.set("", NBT1);
+							if (NBT.isEmpty() || NBT == null) {
+								return null;
+							}
+							return NBT;
 						}
-						return NBT;
+						return null;
 					}
 
 					@Override
@@ -181,7 +194,7 @@ public class SkStuff extends JavaPlugin {
 
 					@Override
 					public String toVariableNameString(net.minecraft.server.v1_7_R3.NBTTagCompound compound) {
-						return compound.toString();
+						return "nbt:" + compound.toString();
 					}
 				}));
 			}
@@ -193,24 +206,27 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerExpression(ExprItemNBTv1_7_R4.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
 				Skript.registerExpression(ExprTagOfv1_7_R4.class, Object.class, ExpressionType.SIMPLE, "[nbt[ ]]tag %string% of [nbt [compound]] %compound%");
 				//WARNING! HIGHLY EXPERIMENTAL, IT CAN CORRUPT WORLDS AT CURRENT VERSION, USE AT YOUR OWN RISK!
-				//Skript.registerExpression(ExprFileNBTv1_7_R4.class, net.minecraft.server.v1_7_R4.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of [file] %string%");
-				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_7_R4.NBTTagCompound>(net.minecraft.server.v1_7_R4.NBTTagCompound.class, "compound").name("NBT Tag Compound").parser(new Parser<net.minecraft.server.v1_7_R4.NBTTagCompound>() {
+				//Skript.registerExpression(ExprFileNBTv1_7_R4.class, net.minecraft.server.v1_7_R4.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] from [file] %string%");
+				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_7_R4.NBTTagCompound>(net.minecraft.server.v1_7_R4.NBTTagCompound.class, "compound").user("((nbt)?( ?tag)?) ?compounds?").name("NBT Tag Compound").parser(new Parser<net.minecraft.server.v1_7_R4.NBTTagCompound>() {
 
 					@Override
 					public String getVariableNamePattern() {
-						return ".+";
+						return "nbt:{.+:.+}";
 					}
 
 					@Override
 					@Nullable
 					public net.minecraft.server.v1_7_R4.NBTTagCompound parse(String s, ParseContext context) {
-						net.minecraft.server.v1_7_R4.NBTTagCompound NBT = new net.minecraft.server.v1_7_R4.NBTTagCompound();
-						net.minecraft.server.v1_7_R4.NBTTagCompound NBT1 = (net.minecraft.server.v1_7_R4.NBTTagCompound) net.minecraft.server.v1_7_R4.MojangsonParser.parse(s);
-						NBT.set("", NBT1);
-						if (NBT.isEmpty() || NBT == null) {
-							return null;
+						if (s.startsWith("{")) {
+							net.minecraft.server.v1_7_R4.NBTTagCompound NBT = new net.minecraft.server.v1_7_R4.NBTTagCompound();
+							net.minecraft.server.v1_7_R4.NBTTagCompound NBT1 = (net.minecraft.server.v1_7_R4.NBTTagCompound) net.minecraft.server.v1_7_R4.MojangsonParser.parse(s);
+							NBT.set("", NBT1);
+							if (NBT.isEmpty() || NBT == null) {
+								return null;
+							}
+							return NBT;
 						}
-						return NBT;
+						return null;
 					}
 
 					@Override
@@ -220,7 +236,7 @@ public class SkStuff extends JavaPlugin {
 
 					@Override
 					public String toVariableNameString(net.minecraft.server.v1_7_R4.NBTTagCompound compound) {
-						return compound.toString();
+						return "nbt:" + compound.toString();
 					}
 				}));
 			}
@@ -232,24 +248,28 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerExpression(ExprItemNBTv1_8_R1.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
 				Skript.registerExpression(ExprTagOfv1_8_R1.class, Object.class, ExpressionType.SIMPLE, "[nbt[ ]]tag %string% of [nbt [compound]] %compound%");
 				//WARNING! HIGHLY EXPERIMENTAL, IT CAN CORRUPT WORLDS AT CURRENT VERSION, USE AT YOUR OWN RISK!
-				Skript.registerExpression(ExprFileNBTv1_8_R1.class, NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of [file] %string%");
-				Classes.registerClass(new ClassInfo<NBTTagCompound>(NBTTagCompound.class, "compound").name("NBT Tag Compound").parser(new Parser<NBTTagCompound>() {
+				Skript.registerExpression(ExprFileNBTv1_8_R1.class, NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] from [file] %string%");
+				Classes.registerClass(new ClassInfo<NBTTagCompound>(NBTTagCompound.class, "compound").name("NBT Tag Compound").user("((nbt)?( ?tag)?) ?compounds?").parser(new Parser<NBTTagCompound>() {
 
 					@Override
 					public String getVariableNamePattern() {
-						return ".+";
+						return "nbt:{.+:.+}";
 					}
 
 					@Override
 					@Nullable
 					public NBTTagCompound parse(String s, ParseContext context) {
-						NBTTagCompound NBT = new NBTTagCompound();
-						NBTTagCompound NBT1 = MojangsonParser.parse(s);
-						NBT.a(NBT1);
-						if (NBT.isEmpty() || NBT == null) {
-							return null;
+						if (s.startsWith("{")) {
+							NBTTagCompound NBT = new NBTTagCompound();
+							NBTTagCompound NBT1 = null;
+							NBT1 = MojangsonParser.parse(s);
+							NBT.a(NBT1);
+							if (NBT.isEmpty() || NBT == null) {
+								return null;
+							}
+							return NBT;
 						}
-						return NBT;
+						return null;
 					}
 
 					@Override
@@ -259,7 +279,7 @@ public class SkStuff extends JavaPlugin {
 
 					@Override
 					public String toVariableNameString(NBTTagCompound compound) {
-						return compound.toString();
+						return "nbt:" + compound.toString();
 					}
 				}));
 			}
@@ -271,28 +291,31 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerExpression(ExprItemNBTv1_8_R2.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
 				Skript.registerExpression(ExprTagOfv1_8_R2.class, Object.class, ExpressionType.SIMPLE, "[nbt[ ]]tag %string% of [nbt [compound]] %compound%");
 				//WARNING! HIGHLY EXPERIMENTAL, IT CAN CORRUPT WORLDS AT CURRENT VERSION, USE AT YOUR OWN RISK!
-				Skript.registerExpression(ExprFileNBTv1_8_R2.class, net.minecraft.server.v1_8_R2.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of [file] %string%");
-				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_8_R2.NBTTagCompound>(net.minecraft.server.v1_8_R2.NBTTagCompound.class, "compound").name("NBT Tag Compound").parser(new Parser<net.minecraft.server.v1_8_R2.NBTTagCompound>() {
+				Skript.registerExpression(ExprFileNBTv1_8_R2.class, net.minecraft.server.v1_8_R2.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] from [file] %string%");
+				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_8_R2.NBTTagCompound>(net.minecraft.server.v1_8_R2.NBTTagCompound.class, "compound").user("((nbt)?( ?tag)?) ?compounds?").name("NBT Tag Compound").parser(new Parser<net.minecraft.server.v1_8_R2.NBTTagCompound>() {
 
 					@Override
 					public String getVariableNamePattern() {
-						return ".+";
+						return "nbt:{.+:.+}";
 					}
 
 					@Override
 					@Nullable
 					public net.minecraft.server.v1_8_R2.NBTTagCompound parse(String s, ParseContext context) {
-						net.minecraft.server.v1_8_R2.NBTTagCompound NBT = new net.minecraft.server.v1_8_R2.NBTTagCompound();
-						try {
-							net.minecraft.server.v1_8_R2.NBTTagCompound NBT1 = net.minecraft.server.v1_8_R2.MojangsonParser.parse(s);
-							NBT.a(NBT1);
-						} catch (MojangsonParseException ex) {
-							Skript.warning("Error when parsing NBT - " + ex.getMessage());
+						if (s.startsWith("{")) {
+							net.minecraft.server.v1_8_R2.NBTTagCompound NBT = new net.minecraft.server.v1_8_R2.NBTTagCompound();
+							try {
+								net.minecraft.server.v1_8_R2.NBTTagCompound NBT1 = net.minecraft.server.v1_8_R2.MojangsonParser.parse(s);
+								NBT.a(NBT1);
+							} catch (MojangsonParseException ex) {
+								Skript.warning("Error when parsing NBT - " + ex.getMessage());
+							}
+							if (NBT.isEmpty() || NBT == null) {
+								return null;
+							}
+							return NBT;
 						}
-						if (NBT.isEmpty() || NBT == null) {
-							return null;
-						}
-						return NBT;
+						return null;
 					}
 
 					@Override
@@ -302,7 +325,7 @@ public class SkStuff extends JavaPlugin {
 
 					@Override
 					public String toVariableNameString(net.minecraft.server.v1_8_R2.NBTTagCompound compound) {
-						return compound.toString();
+						return "nbt:" + compound.toString();
 					}
 				}));
 			}
@@ -314,28 +337,31 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerExpression(ExprItemNBTv1_8_R3.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
 				Skript.registerExpression(ExprTagOfv1_8_R3.class, Object.class, ExpressionType.SIMPLE, "[nbt[ ]]tag %string% of [nbt [compound]] %compound%");
 				//WARNING! HIGHLY EXPERIMENTAL, IT CAN CORRUPT WORLDS AT CURRENT VERSION, USE AT YOUR OWN RISK!
-				Skript.registerExpression(ExprFileNBTv1_8_R3.class, net.minecraft.server.v1_8_R3.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of [file] %string%");
-				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_8_R3.NBTTagCompound>(net.minecraft.server.v1_8_R3.NBTTagCompound.class, "compound").name("NBT Compound").parser(new Parser<net.minecraft.server.v1_8_R3.NBTTagCompound>() {
+				Skript.registerExpression(ExprFileNBTv1_8_R3.class, net.minecraft.server.v1_8_R3.NBTTagCompound.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] from [file] %string%");
+				Classes.registerClass(new ClassInfo<net.minecraft.server.v1_8_R3.NBTTagCompound>(net.minecraft.server.v1_8_R3.NBTTagCompound.class, "compound").user("((nbt)?( ?tag)?) ?compounds?").name("NBT Compound").parser(new Parser<net.minecraft.server.v1_8_R3.NBTTagCompound>() {
 
 					@Override
 					public String getVariableNamePattern() {
-						return ".+";
+						return "nbt:{.+:.+}";
 					}
 
 					@Override
 					@Nullable
 					public net.minecraft.server.v1_8_R3.NBTTagCompound parse(String s, ParseContext context) {
-						net.minecraft.server.v1_8_R3.NBTTagCompound NBT = new net.minecraft.server.v1_8_R3.NBTTagCompound();
-						try {
-							net.minecraft.server.v1_8_R3.NBTTagCompound NBT1 = net.minecraft.server.v1_8_R3.MojangsonParser.parse(s);
-							NBT.a(NBT1);
-						} catch (net.minecraft.server.v1_8_R3.MojangsonParseException ex) {
-							return null;
+						if (s.startsWith("{")) {
+							net.minecraft.server.v1_8_R3.NBTTagCompound NBT = new net.minecraft.server.v1_8_R3.NBTTagCompound();
+							try {
+								net.minecraft.server.v1_8_R3.NBTTagCompound NBT1 = net.minecraft.server.v1_8_R3.MojangsonParser.parse(s);
+								NBT.a(NBT1);
+							} catch (net.minecraft.server.v1_8_R3.MojangsonParseException ex) {
+								return null;
+							}
+							if (NBT.isEmpty() || NBT == null) {
+								return null;
+							}
+							return NBT;
 						}
-						if (NBT.isEmpty() || NBT == null) {
-							return null;
-						}
-						return NBT;
+						return null;
 					}
 
 					@Override
@@ -345,7 +371,7 @@ public class SkStuff extends JavaPlugin {
 
 					@Override
 					public String toVariableNameString(net.minecraft.server.v1_8_R3.NBTTagCompound compound) {
-						return compound.toString();
+						return "nbt:" + compound.toString();
 					}
 				}));
 			}
@@ -357,11 +383,14 @@ public class SkStuff extends JavaPlugin {
 				typeAmount += 1;
 				Skript.registerCondition(CondSelectionContains.class, "[(world[ ]edit|we)] selection of %player% (contains|has) %location%", "%player%'s [(world[ ]edit|we)] selection (contains|has) %location%", "[(world[ ]edit|we)] selection of %player% does(n't| not) (contain|have) %location%", "%player%'s [(world[ ]edit|we)] selection does(n't| not) (contain|have) %location%");
 				// EXPERIMENTAL EFFECTS/EXPRESSIONS
-				Skript.registerEffect(EffDrawLineWE.class, "(create|draw|make) [a] (no(n|t)(-| )hollow|filled) line from %location% to %location% (using|with) [edit[ ]session] %editsession% (using|with) [block] %itemstack% [(and|with)] thick[ness] %double%", "(create|draw|make) [a] hollow line from %location% to %location% (using|with) [edit[ ]session] %editsession% (using|with) [block] %itemstack% [(and|with)] thick[ness] %double%");
-				Skript.registerEffect(EffUndoRedoSession.class, "undo [last] (change|edit)[s] (of|from) [edit[ ]session] %editsession%", "redo [last] (change|edit)[s] (of|from) [edit[ ]session] %editsession%");
+				Skript.registerEffect(EffDrawLineWE.class, "(create|draw|make) [a] (0¦[(no(n|t)(-| )hollow|filled|)]|1¦hollow) line from %location% to %location% (using|with) [edit[ ]session] %editsession% (using|with) [block[s]] %itemstack% [(and|with)] thick[ness] %double%");
+				Skript.registerEffect(EffUndoRedoSession.class, "(0¦undo|1¦redo) [last] (change|edit)[s] (of|from) [edit[ ]session] %editsession%");
+				Skript.registerEffect(EffRememberChanges.class, "make %player% (remember|be able to undo) changes (of|from) [edit [ ]session] %editsession%");
+				Skript.registerEffect(EffMakeSphere.class, "(create|make) [a] (0¦[(no(n|t)(-| )hollow|filled|)]|1¦hollow) (ellipsoid|sphere) [centered] at %location% [with] radius [of] %number%, %number%(,| and) %number% (using|with) [edit[ ]session] %editsession% (using|with) [block[s]] %itemstack%");
+				Skript.registerEffect(EffMakePyramid.class, "(create|make) [a] (0¦[(no(n|t)(-| )hollow|filled|)]|1¦hollow) pyramid at %location% [with] radius [of] %integer% (using|with) [edit[ ]session] %editsession% (using|with) [block[s]] %itemstack%");
 				Skript.registerExpression(ExprEditSessionLimit.class, Integer.class, ExpressionType.PROPERTY, "[block] limit [change] of [edit[ ]session] %editsession%");
 				Skript.registerExpression(ExprChangedBlocksSession.class, Integer.class, ExpressionType.PROPERTY, "number of [all] changed blocks (in|of) [edit[ ]session] %editsession%");
-				Skript.registerExpression(ExprNewEditSession.class, EditSession.class, ExpressionType.PROPERTY, "[create] [a] new edit[ ]session in [world] %world% [with] [max[imum]] [block] limit [change] [of] %integer%");
+				Skript.registerExpression(ExprNewEditSession.class, EditSession.class, ExpressionType.PROPERTY, "new edit[ ]session in [world] %world% [with] [max[imum]] [block] limit [change] [of] %integer%");
 				// END OF EXPERIMENTAL EFFS/EXPRS
 				Skript.registerExpression(ExprSelectionOfPlayer.class, Location.class, ExpressionType.PROPERTY, "[(world[ ]edit|we)] selection of %player%", "%player%'s [(world[ ]edit|we)] selection");
 				Skript.registerExpression(ExprSelectionPos1.class, Location.class, ExpressionType.PROPERTY, "[(world[ ]edit|we)] po(s|int)[ ]1 of %player%", "%player%'s [(world[ ]edit|we)] po(s|int)[ ]1");
@@ -376,35 +405,7 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerExpression(ExprHeightOfSchematic.class, Integer.class, ExpressionType.SIMPLE, "(y( |-)size|height) of schem[atic] [from] %string%");
 				Skript.registerExpression(ExprLengthOfSchematic.class, Integer.class, ExpressionType.SIMPLE, "(z( |-)size|length) of schem[atic] [from] %string%");
 				Skript.registerExpression(ExprAreaOfSchematic.class, Integer.class, ExpressionType.SIMPLE, "area of schem[atic] [from] %string%");
-				Classes.registerClass(new ClassInfo<EditSession>(EditSession.class, "editsession").name("Edit Session").parser(new Parser<EditSession>() {
-
-					@Override
-					public String getVariableNamePattern() {
-						return ".+";
-					}
-
-					@Override
-					@Nullable
-					public EditSession parse(String s, ParseContext context) {
-						return null;
-					}
-
-					@Override
-					public boolean canParse(ParseContext context) {
-						return false;
-					}
-
-					@Override
-					public String toString(EditSession editSession, int arg1) {
-						return null;
-					}
-
-					@Override
-					public String toVariableNameString(EditSession editSession) {
-						return null;
-					}
-
-				}));
+				Classes.registerClass(new ClassInfo<EditSession>(EditSession.class, "editsession").name("Edit Session").user("edit ?sessions?"));
 			}
 			getLogger().info("Everything ready! Loaded a total of " + condAmount + (condAmount == 1 ? " condition, " : " conditions, ") + effAmount + (effAmount == 1 ? " effect, " : " effects, ") + exprAmount + (exprAmount == 1 ? " expression" : " expressions and ") + typeAmount + (typeAmount == 1 ? " type!" : " types!"));
 		} else {
