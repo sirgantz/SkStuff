@@ -9,17 +9,17 @@ import org.bukkit.inventory.ItemStack;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.WorldEditException;
+import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.bukkit.BukkitUtil;
 import com.sk89q.worldedit.function.pattern.BlockPattern;
+import com.sk89q.worldedit.function.pattern.Patterns;
 import com.sk89q.worldedit.function.pattern.RandomPattern;
-import com.sk89q.worldedit.patterns.Pattern;
 
 import ch.njol.skript.lang.Effect;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Kleenean;
 
-@SuppressWarnings("deprecation")
 public class EffMakeSphere extends Effect {
 	private Expression<Location> location;
 	private Expression<Double> radius1;
@@ -46,6 +46,7 @@ public class EffMakeSphere extends Effect {
 		return "create a sphere centered at " + location.toString(e, false) + " with a radius of " + radius1.toString(e, false) + " " + radius2.toString(e, false) + " " + radius3.toString(e, false) + " using an edit session with " + blockList.toString(e, false);
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	protected void execute(Event e) {
 		Location loc = location.getSingle(e);
@@ -55,20 +56,20 @@ public class EffMakeSphere extends Effect {
 		EditSession session = editSession.getSingle(e);
 		ItemStack[] blocks = blockList.getAll(e);
 		RandomPattern random = new RandomPattern();
+		if (session == null) return;
 		for (ItemStack b : blocks) {
 			if (b.getType().isBlock()) {
-				try {
-					random.add(new BlockPattern(BukkitUtil.toBlock(BukkitUtil.getLocalWorld(loc.getWorld()), b)), 50);
-				} catch (WorldEditException ex) {
-					ex.printStackTrace();
-				}
+				random.add(new BlockPattern(new BaseBlock(b.getTypeId(), b.getDurability())), 50);
 			}
 		}
 		try {
-			session.makeSphere(BukkitUtil.toVector(loc), (Pattern) random, rad1, rad2, rad3, filled);
+			session.makeSphere(BukkitUtil.toVector(loc), Patterns.wrap(random), rad1, rad2, rad3, filled);
 			session.flushQueue();
-		} catch (MaxChangedBlocksException ex) {
-			return;
+		} catch (WorldEditException ex) {
+			if (ex instanceof MaxChangedBlocksException)
+				return;
+			else
+				ex.printStackTrace();
 		}
 	}
 }

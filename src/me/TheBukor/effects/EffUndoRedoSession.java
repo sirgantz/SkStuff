@@ -25,7 +25,7 @@ public class EffUndoRedoSession extends Effect {
 
 	@Override
 	public String toString(@Nullable Event e, boolean arg1) {
-		return "undo last change of edit session";
+		return (redo == true ? "redo " : "undo ") + "changes from edit session";
 	}
 
 	@Override

@@ -8,18 +8,17 @@ import org.bukkit.inventory.ItemStack;
 
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.MaxChangedBlocksException;
-import com.sk89q.worldedit.WorldEditException;
+import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.bukkit.BukkitUtil;
 import com.sk89q.worldedit.function.pattern.BlockPattern;
+import com.sk89q.worldedit.function.pattern.Patterns;
 import com.sk89q.worldedit.function.pattern.RandomPattern;
-import com.sk89q.worldedit.patterns.Pattern;
 
 import ch.njol.skript.lang.Effect;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Kleenean;
 
-@SuppressWarnings("deprecation")
 public class EffDrawLineWE extends Effect {
 	private Expression<Location> location1;
 	private Expression<Location> location2;
@@ -45,6 +44,7 @@ public class EffDrawLineWE extends Effect {
 		return "draw a line from " + location1.toString(e, false) + " to " + location2.toString(e, false) + " using an edit session with " + blockList.toString(e, false) + " and thickness " + thickness.toString(e, false);
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	protected void execute(Event e) {
 		Location pos1 = location1.getSingle(e);
@@ -53,17 +53,14 @@ public class EffDrawLineWE extends Effect {
 		ItemStack[] blocks = blockList.getAll(e);
 		Double thick = thickness.getSingle(e);
 		RandomPattern random = new RandomPattern();
+		if (session == null) return;
 		for (ItemStack b : blocks) {
 			if (b.getType().isBlock()) {
-				try {
-					random.add(new BlockPattern(BukkitUtil.toBlock(BukkitUtil.getLocalWorld(pos1.getWorld()), b)), 50);
-				} catch (WorldEditException ex) {
-					ex.printStackTrace();
-				}
+				random.add(new BlockPattern(new BaseBlock(b.getTypeId(), b.getDurability())), 50);
 			}
 		}
 		try {
-			session.drawLine((Pattern) random, BukkitUtil.toVector(pos1), BukkitUtil.toVector(pos2), thick, filled);
+			session.drawLine(Patterns.wrap(random), BukkitUtil.toVector(pos1), BukkitUtil.toVector(pos2), thick, filled);
 			session.flushQueue();
 		} catch (MaxChangedBlocksException ex) {
 			return;
