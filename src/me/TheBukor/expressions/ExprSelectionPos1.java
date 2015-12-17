@@ -13,12 +13,15 @@ import com.sk89q.worldedit.bukkit.BukkitUtil;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldedit.regions.selector.CuboidRegionSelector;
 import com.sk89q.worldedit.world.World;
 
+import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
+import ch.njol.util.coll.CollectionUtils;
 
 public class ExprSelectionPos1 extends SimpleExpression<Location> {
 	private Expression<Player> player;
@@ -56,11 +59,39 @@ public class ExprSelectionPos1 extends SimpleExpression<Location> {
 		} catch (IncompleteRegionException ex) {
 			return null;
 		}
-		if (!(region instanceof CuboidRegion)) {
+		if (!(region instanceof CuboidRegion))
 			return null; //Who uses polygonal and other selection types anyways?
-		}
 		CuboidRegion cuboid = (CuboidRegion) region;
 		Vector pos = cuboid.getPos1();
-		return new Location[] { new Location(we.getSelection(p).getWorld(), pos.getX(), pos.getY(), pos.getZ()) };
+		return new Location[] { BukkitUtil.toLocation(we.getSelection(p).getWorld(), pos) };
+	}
+
+	@Override
+	public void change(Event e, @Nullable Object[] delta, ChangeMode mode) {
+		Player p = player.getSingle(e);
+		Location newLoc = (Location) delta[0];
+		if (mode == ChangeMode.SET) {
+			Region region = null;
+			try {
+				region = we.getSession(p).getSelection((World) BukkitUtil.getLocalWorld(we.getSelection(p).getWorld()));
+			} catch (IncompleteRegionException | NullPointerException ex) {
+				CuboidRegionSelector cuboidregion = new CuboidRegionSelector(BukkitUtil.getLocalWorld((org.bukkit.World) newLoc.getWorld()), BukkitUtil.toVector(newLoc), BukkitUtil.toVector(newLoc));
+				we.getSession(p).setRegionSelector((World) BukkitUtil.getLocalWorld(p.getWorld()), cuboidregion);
+			}
+			if (!(region instanceof CuboidRegion))
+				return; //Who uses polygonal and other selection types anyways?
+			CuboidRegion cuboid = (CuboidRegion) region;
+			cuboid.setPos1(BukkitUtil.toVector(newLoc));
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	@Nullable
+	public Class<?>[] acceptChange(ChangeMode mode) {
+		if (mode == ChangeMode.SET) {
+			return CollectionUtils.array(Location.class);
+		}
+		return null;
 	}
 }

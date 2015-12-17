@@ -15,10 +15,12 @@ import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.world.World;
 
+import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
+import ch.njol.util.coll.CollectionUtils;
 
 public class ExprSelectionOfPlayer extends SimpleExpression<Location> {
 	private Expression<Player> player;
@@ -66,21 +68,13 @@ public class ExprSelectionOfPlayer extends SimpleExpression<Location> {
 		Location pos2 = new Location(we.getSelection(p).getWorld(), pos2Vec.getX(), pos2Vec.getY(), pos2Vec.getZ());
 		return new Location[] { pos1, pos2 };
 	}
-/*
 	@Override
 	public void change(Event e, @Nullable Object[] delta, ChangeMode mode) {
 		Player p = player.getSingle(e);
-		Object[] objs = getSource().getAll(e);
-		for (int i = 0; i < objs.length; i++) {
-			if (i > 0) {
-				Bukkit.broadcastMessage("WOT M8!! GREATER THAN 1!!");
-				Bukkit.broadcastMessage(objs[i].toString());
-			}
-		}
-		if (mode == ChangeMode.SET) {
-			we.setSelection(p, new CuboidSelection(((Location) objs[0]).getWorld(), (Location) objs[0], (Location) objs[1]));
-		} else if (mode == ChangeMode.DELETE || mode == ChangeMode.RESET) {
-			we.setSelection(p, null);
+		if (mode == ChangeMode.DELETE || mode == ChangeMode.RESET) {
+			if (we.getSelection(p) == null)
+				return;
+			we.getSession(p).getRegionSelector((World) BukkitUtil.getLocalWorld(we.getSelection(p).getWorld())).clear();
 		}
 	}
 
@@ -88,10 +82,9 @@ public class ExprSelectionOfPlayer extends SimpleExpression<Location> {
 	@Override
 	@Nullable
 	public Class<?>[] acceptChange(ChangeMode mode) {
-		if (mode == ChangeMode.SET || mode == ChangeMode.DELETE || mode == ChangeMode.RESET) {
+		if (mode == ChangeMode.DELETE || mode == ChangeMode.RESET) {
 			return CollectionUtils.array(Location.class);
 		}
 		return null;
 	}
-*/
 }
