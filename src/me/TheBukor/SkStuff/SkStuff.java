@@ -443,21 +443,7 @@ public class SkStuff extends JavaPlugin {
 						public Block get(EvtWorldEditChange e) {
 							return EvtWorldEditChange.getBlock();
 						}
-					}, -1);
-					EventValues.registerEventValue(EvtWorldEditChange.class, Block.class, new Getter<Block, EvtWorldEditChange>() {
-						@Override
-						@Nullable
-						public Block get(EvtWorldEditChange e) {
-							return EvtWorldEditChange.getBlock();
-						}
 					}, 0);
-					EventValues.registerEventValue(EvtWorldEditChange.class, Block.class, new Getter<Block, EvtWorldEditChange>() {
-						@Override
-						@Nullable
-						public Block get(EvtWorldEditChange e) {
-							return EvtWorldEditChange.getFutureBlock();
-						}
-					}, 1);
 					evtWE = true;
 				} catch (ClassNotFoundException ex) {
 					Skript.error("Unable to register \"On WorldEdit block change\" event! You will need to upgrade to WorldEdit 6.0");

@@ -8,12 +8,10 @@ import org.bukkit.event.HandlerList;
 public class EvtWorldEditChange extends Event {
 	static Player player;
 	static Block block;
-	static Block futureBlock;
 
-	public EvtWorldEditChange(Player player, Block block, Block futureBlock) {
+	public EvtWorldEditChange(Player player, Block block) {
 		EvtWorldEditChange.player = player;
 		EvtWorldEditChange.block = block;
-		EvtWorldEditChange.futureBlock = futureBlock;
 	}
 
 	public static Player getPlayer() {
@@ -22,10 +20,6 @@ public class EvtWorldEditChange extends Event {
 
 	public static Block getBlock() {
 		return block;
-	}
-	
-	public static Block getFutureBlock() {
-		return futureBlock;
 	}
 
 	private static final HandlerList handlers = new HandlerList();

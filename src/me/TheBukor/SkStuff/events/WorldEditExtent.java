@@ -13,8 +13,6 @@ import com.sk89q.worldedit.extension.platform.Actor;
 import com.sk89q.worldedit.extent.Extent;
 import com.sk89q.worldedit.extent.logging.AbstractLoggingExtent;
 
-import me.TheBukor.SkStuff.SkStuff;
-
 public class WorldEditExtent extends AbstractLoggingExtent {
 
     private final Actor actor;
@@ -30,12 +28,6 @@ public class WorldEditExtent extends AbstractLoggingExtent {
     protected void onBlockChange(final Vector vec, BaseBlock baseBlock) {
         final Block b = BukkitUtil.toLocation(world, vec).getBlock();
        	final Player p = Bukkit.getPlayerExact(actor.getName());
-       	Bukkit.getScheduler().scheduleSyncDelayedTask(new SkStuff(), new Runnable() { //Wait 1 tick to get the future block
-			@Override
-			public void run() {
-				Block futureB = BukkitUtil.toLocation(world, vec).getBlock();
-				Bukkit.getPluginManager().callEvent(new EvtWorldEditChange(p, b, futureB));
-			}
-		}, 1L);
+		Bukkit.getPluginManager().callEvent(new EvtWorldEditChange(p, b));
     }
 }
