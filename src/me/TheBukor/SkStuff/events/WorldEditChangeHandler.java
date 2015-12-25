@@ -17,7 +17,7 @@ public class WorldEditChangeHandler {
     public void wrapForLogging(EditSessionEvent event) {
         Actor actor = event.getActor();
         World world = event.getWorld();
-        if (world instanceof BukkitWorld) {
+        if (actor != null && world instanceof BukkitWorld) {
             event.setExtent(new WorldEditExtent(actor, world, event.getExtent()));
         }
     }
