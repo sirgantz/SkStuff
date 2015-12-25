@@ -30,11 +30,11 @@ public class WorldEditExtent extends AbstractLoggingExtent {
     protected void onBlockChange(final Vector vec, BaseBlock baseBlock) {
         final Block b = BukkitUtil.toLocation(world, vec).getBlock();
        	final Player p = Bukkit.getPlayerExact(actor.getName());
-       	Bukkit.getScheduler().scheduleSyncDelayedTask(new SkStuff(), new Runnable() {
+       	Bukkit.getScheduler().scheduleSyncDelayedTask(new SkStuff(), new Runnable() { //Wait 1 tick to get the future block
 			@Override
 			public void run() {
 				Block futureB = BukkitUtil.toLocation(world, vec).getBlock();
-		       	Bukkit.getPluginManager().callEvent(new EvtWorldEditChange(p, b, futureB));
+				Bukkit.getPluginManager().callEvent(new EvtWorldEditChange(p, b, futureB));
 			}
 		}, 1L);
     }
