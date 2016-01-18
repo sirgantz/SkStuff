@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
 
@@ -20,8 +19,6 @@ public class ExprFireProof extends SimpleExpression<Boolean> {
 	private Expression<Entity> entity;
 
 	private Class<?> craftEntClass = ReflectionUtils.getOBCClass("entity.CraftEntity");
-	private Class<?> entityClass = ReflectionUtils.getNMSClass("Entity");
-
 	@Override
 	public Class<? extends Boolean> getReturnType() {
 		return Boolean.class;
@@ -75,21 +72,7 @@ public class ExprFireProof extends SimpleExpression<Boolean> {
 		if (mode == ChangeMode.SET) {
 			Boolean newValue = (Boolean) delta[0];
 			try {
-				//Field field = nmsEnt.getClass().getDeclaredField("fireProof");
-				Bukkit.broadcastMessage("Looping all declared fields...");
-				Field field = null;
-				int i = 1;
-				for (Field f : entityClass.getDeclaredFields()) {
-					Bukkit.broadcastMessage("Field #" + i + " = \u00A7b" + f.getName());
-					if (f.getName().toLowerCase().contains("fire")) {
-						field = f;
-					}
-					i++;
-				}
-				if (field == null) {
-					Bukkit.broadcastMessage("No field containing \"fire\" was found...");
-					return;
-				}
+				Field field = nmsEnt.getClass().getDeclaredField("fireProof");
 				field.setAccessible(true);
 				field.setBoolean(nmsEnt, newValue);
 				field.setAccessible(false);
