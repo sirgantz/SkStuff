@@ -14,8 +14,10 @@ import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 
-public class ExprVolumeOfSelection extends SimpleExpression<Integer> {
+public class ExprSelectionArea extends SimpleExpression<Integer> {
 	private Expression<Player> player;
+	private Integer parseMark;
+	private String toStringMark;
 
 	@Override
 	public Class<? extends Integer> getReturnType() {
@@ -29,14 +31,26 @@ public class ExprVolumeOfSelection extends SimpleExpression<Integer> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean arg2, ParseResult arg3) {
+	public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean arg2, ParseResult result) {
 		player = (Expression<Player>) expr[0];
+		parseMark = result.mark;
+		if (parseMark == 0) {
+			toStringMark = "volume";
+		} else if (parseMark == 1) {
+			toStringMark = "width (x-size)";
+		} else if (parseMark == 2) {
+			toStringMark = "height (y-size)";
+		} else if (parseMark == 3) {
+			toStringMark = "length (z-size)";
+		} else if (parseMark == 4) {
+			toStringMark = "area";
+		}
 		return true;
 	}
 
 	@Override
 	public String toString(@Nullable Event e, boolean arg1) {
-		return "the width of the WorldEdit selection of " + player.toString(e, false);
+		return "the " + toStringMark + " of the WorldEdit selection of " + player.toString(e, false);
 	}
 
 	@Override
@@ -46,6 +60,18 @@ public class ExprVolumeOfSelection extends SimpleExpression<Integer> {
 		Selection sel = we.getSelection(player.getSingle(e));
 		if (sel == null)
 			return null;
-		return new Integer[] { sel.getArea() };
+		Integer result = null;
+		if (parseMark == 0) {
+			result = sel.getArea();
+		} else if (parseMark == 1) {
+			result = sel.getWidth();
+		} else if (parseMark == 2) {
+			result = sel.getHeight();
+		} else if (parseMark == 3) {
+			result = sel.getLength();
+		} else if (parseMark == 4) {
+			result = (sel.getWidth() * sel.getLength());
+		}
+		return new Integer[] { result };
 	}
 }

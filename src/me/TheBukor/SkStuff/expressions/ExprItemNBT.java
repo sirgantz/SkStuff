@@ -1,0 +1,89 @@
+package me.TheBukor.SkStuff.expressions;
+
+import javax.annotation.Nullable;
+
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
+import org.bukkit.event.Event;
+import org.bukkit.inventory.ItemStack;
+
+import ch.njol.skript.Skript;
+import ch.njol.skript.lang.Expression;
+import ch.njol.skript.lang.SkriptParser.ParseResult;
+import ch.njol.skript.lang.util.SimpleExpression;
+import ch.njol.util.Kleenean;
+import me.TheBukor.SkStuff.util.ReflectionUtils;
+
+public class ExprItemNBT extends SimpleExpression<ItemStack> {
+	private Boolean useParseException = true;
+	private Expression<ItemStack> itemStack;
+	private Expression<String> string;
+
+	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound");
+	private Class<?> nbtParseClass = ReflectionUtils.getNMSClass("MojangsonParser");
+	private Class<?> nbtParseExClass = ReflectionUtils.getNMSClass("MojangsonParseException");
+	private Class<?> nmsItemClass = ReflectionUtils.getNMSClass("ItemStack");
+
+	private Class<?> craftItemClass = ReflectionUtils.getOBCClass("inventory.CraftItemStack");
+
+	@Override
+	public Class<? extends ItemStack> getReturnType() {
+		return ItemStack.class;
+	}
+
+	@Override
+	public boolean isSingle() {
+		return true;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean arg2, ParseResult arg3) {
+		itemStack = (Expression<ItemStack>) expr[0];
+		string = (Expression<String>) expr[1];
+		String bukkitVersion = ReflectionUtils.getVersion();
+		if (bukkitVersion.contains("v1_7_R") || bukkitVersion.equals("v1_8_R1")) {
+			useParseException = false;
+		}
+		return true;
+	}
+
+	@Override
+	public String toString(@Nullable Event e, boolean arg1) {
+		return itemStack.toString(e, false) + " with custom NBT " + string.toString(e, false);
+	}
+
+	@Override
+	@Nullable
+	public ItemStack[] get(Event e) {
+		ItemStack item = itemStack.getSingle(e);
+		String newTags = string.getSingle(e);
+		if (item.getType() == Material.AIR || item == null) {
+			return null;
+		}
+		Object nmsItem = null;
+		try {
+			nmsItem = craftItemClass.getMethod("asNMSCopy", ItemStack.class).invoke(item, item);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		try {
+			Object NBT = null;
+			NBT = nbtParseClass.getMethod("parse", String.class).invoke(NBT, newTags);
+			if (NBT == null || NBT.toString().equals("{}")) { //"{}" is an empty compound.
+				return new ItemStack[] { item }; //There's no NBT involved, so just give a normal item.
+			}
+			nmsItem.getClass().getMethod("setTag", nbtClass).invoke(nmsItem, NBT);
+		} catch (Exception ex) {
+			if (useParseException && ex.getClass().equals(nbtParseExClass))
+			Skript.warning(ChatColor.RED + "Error when parsing NBT - " + ex.getMessage());
+		}
+		Object newItem = null;
+		try {
+			newItem = craftItemClass.getMethod("asCraftMirror", nmsItemClass).invoke(newItem, nmsItem);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return new ItemStack[] { (ItemStack) newItem };
+	}
+}

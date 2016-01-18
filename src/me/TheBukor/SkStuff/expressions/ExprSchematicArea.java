@@ -5,9 +5,10 @@ import java.io.IOException;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 
-import com.sk89q.worldedit.extent.clipboard.Clipboard;
+import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.schematic.MCEditSchematicFormat;
 import com.sk89q.worldedit.world.DataException;
 
@@ -16,7 +17,7 @@ import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 
-public class ExprVolumeOfSchematic extends SimpleExpression<Integer> {
+public class ExprSchematicArea extends SimpleExpression<Integer> {
 	private Expression<String> schematic;
 
 	@Override
@@ -41,17 +42,19 @@ public class ExprVolumeOfSchematic extends SimpleExpression<Integer> {
 		return "the volume of the schematic from " + schematic.toString(e, false);
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	@Nullable
 	protected Integer[] get(Event e) {
 		String schem = schematic.getSingle(e);
 		File schemFile = new File((schem.endsWith(".schematic") ? schem : (schem + ".schematic")));
-		Integer v = null;
+		Vector v = null;
 		try {
-			v = ((Clipboard) MCEditSchematicFormat.getFormat(schemFile).load(schemFile)).getRegion().getArea();
+			v = MCEditSchematicFormat.getFormat(schemFile).load(schemFile).getSize();
 		} catch (DataException | IOException ex) {
 			return null;
 		}
-		return new Integer[] { v };
+		Bukkit.broadcastMessage("vector: " + v.getX() + v.getY() + v.getZ());
+		return new Integer[] { 1 };
 	}
 }

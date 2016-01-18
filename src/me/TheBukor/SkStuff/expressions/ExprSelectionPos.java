@@ -23,8 +23,9 @@ import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import ch.njol.util.coll.CollectionUtils;
 
-public class ExprSelectionPos2 extends SimpleExpression<Location> {
+public class ExprSelectionPos extends SimpleExpression<Location> {
 	private Expression<Player> player;
+	private boolean usePos2 = false;
 	private WorldEditPlugin we = (WorldEditPlugin) Bukkit.getServer().getPluginManager().getPlugin("WorldEdit");
 
 	@Override
@@ -39,14 +40,17 @@ public class ExprSelectionPos2 extends SimpleExpression<Location> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean arg2, ParseResult arg3) {
+	public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean arg2, ParseResult result) {
 		player = (Expression<Player>) expr[0];
+		if (result.mark == 1) {
+			usePos2 = true;
+		}
 		return true;
 	}
 
 	@Override
 	public String toString(@Nullable Event e, boolean arg1) {
-		return "the WorldEdit point 2 selection of " + player.toString(e, false);
+		return "the WorldEdit point " + (usePos2 ? "2" : "1") + " selection of " + player.toString(e, false);
 	}
 
 	@Override
@@ -62,10 +66,15 @@ public class ExprSelectionPos2 extends SimpleExpression<Location> {
 		if (!(region instanceof CuboidRegion))
 			return null; //Who uses polygonal and other selection types anyways?
 		CuboidRegion cuboid = (CuboidRegion) region;
-		Vector pos = cuboid.getPos2();
+		Vector pos = null;
+		if (usePos2 == true) {
+			pos = cuboid.getPos2();
+		} else {
+			pos = cuboid.getPos1();
+		}
 		return new Location[] { BukkitUtil.toLocation(we.getSelection(p).getWorld(), pos) };
 	}
-	
+
 	@Override
 	public void change(Event e, @Nullable Object[] delta, ChangeMode mode) {
 		Player p = player.getSingle(e);
@@ -81,10 +90,14 @@ public class ExprSelectionPos2 extends SimpleExpression<Location> {
 			if (!(region instanceof CuboidRegion))
 				return; //Who uses polygonal and other selection types anyways?
 			CuboidRegion cuboid = (CuboidRegion) region;
-			cuboid.setPos2(BukkitUtil.toVector(newLoc));
+			if (usePos2 == true) {
+				cuboid.setPos2(BukkitUtil.toVector(newLoc));
+			} else {
+				cuboid.setPos1(BukkitUtil.toVector(newLoc));
+			}
 		}
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	@Nullable
