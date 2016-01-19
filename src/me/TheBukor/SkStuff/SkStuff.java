@@ -14,6 +14,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.sk89q.worldedit.EditSession;
 
 import ch.njol.skript.Skript;
+import ch.njol.skript.classes.Changer;
 import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ExpressionType;
@@ -22,6 +23,7 @@ import ch.njol.skript.lang.util.SimpleEvent;
 import ch.njol.skript.registrations.Classes;
 import ch.njol.skript.registrations.EventValues;
 import ch.njol.skript.util.Getter;
+import ch.njol.util.coll.CollectionUtils;
 import me.TheBukor.SkStuff.conditions.CondSelectionContains;
 import me.TheBukor.SkStuff.effects.EffDrainLiquid;
 import me.TheBukor.SkStuff.effects.EffDrawLineWE;
@@ -34,6 +36,7 @@ import me.TheBukor.SkStuff.effects.EffRememberChanges;
 import me.TheBukor.SkStuff.effects.EffReplaceBlocksWE;
 import me.TheBukor.SkStuff.effects.EffSetBlocksWE;
 import me.TheBukor.SkStuff.effects.EffSimulateSnow;
+import me.TheBukor.SkStuff.effects.EffToggleVanish;
 import me.TheBukor.SkStuff.effects.EffUndoRedoSession;
 import me.TheBukor.SkStuff.events.EvtWorldEditChange;
 import me.TheBukor.SkStuff.events.WorldEditChangeHandler;
@@ -50,6 +53,7 @@ import me.TheBukor.SkStuff.expressions.ExprSelectionArea;
 import me.TheBukor.SkStuff.expressions.ExprSelectionOfPlayer;
 import me.TheBukor.SkStuff.expressions.ExprSelectionPos;
 import me.TheBukor.SkStuff.expressions.ExprTagOf;
+import me.TheBukor.SkStuff.expressions.ExprVanishState;
 import me.TheBukor.SkStuff.util.ReflectionUtils;
 
 public class SkStuff extends JavaPlugin {
@@ -63,7 +67,7 @@ public class SkStuff extends JavaPlugin {
 	private Class<?> nbtParserClass = ReflectionUtils.getNMSClass("MojangsonParser");
 	private Class<?> nbtParseExClass = ReflectionUtils.getNMSClass("MojangsonParseException");
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked" })
 	public void onEnable() {
 		if (Bukkit.getPluginManager().getPlugin("Skript") != null && Skript.isAcceptRegistrations()) {
 			Skript.registerAddon(this);
@@ -78,7 +82,56 @@ public class SkStuff extends JavaPlugin {
 			Skript.registerExpression(ExprNoClip.class, Boolean.class, ExpressionType.PROPERTY, "no[( |-)]clip (state|mode) of %entity%", "%entity%'s no[( |-)]clip (state|mode)");
 			Skript.registerExpression(ExprFireProof.class, Boolean.class, ExpressionType.PROPERTY, "fire[ ]proof (state|mode) of %entity%", "%entity%'s fire[ ]proof (state|mode)");
 			
-			Classes.registerClass(new ClassInfo<Object>((Class<Object>) nbtClass, "compound").user("((nbt)?( ?tag)?) ?compounds?").name("NBT Compound").parser(new Parser<Object>() {
+			Classes.registerClass(new ClassInfo<Object>((Class<Object>) nbtClass, "compound").user("((nbt)?( ?tag)?) ?compounds?").name("NBT Compound").changer(new Changer<Object>() {
+
+				private Class<?> nbtBaseClass = ReflectionUtils.getNMSClass("NBTBase");
+
+				@Override
+				@Nullable
+				public Class<?>[] acceptChange(ChangeMode mode) {
+					if (mode == ChangeMode.ADD || mode == ChangeMode.REMOVE) {
+						return CollectionUtils.array(String[].class);
+					}
+					return null;
+				}
+
+				@Override
+				public void change(Object[] NBT, @Nullable Object[] delta, ChangeMode mode) {
+					Boolean using1_7 = false;
+					String bukkitVersion = ReflectionUtils.getVersion();
+					if (bukkitVersion.startsWith("v1_7_R")) {
+						using1_7 = true;
+					}
+					String newTags = (String) delta[0];
+					if (mode == ChangeMode.ADD) {
+						Object NBT1 = null;
+						try {
+							NBT1 = nbtParserClass.getMethod("parse", String.class).invoke(NBT1, newTags);
+							if (!using1_7) {
+								NBT.getClass().getMethod("a", nbtClass).invoke(NBT, NBT1);
+							} else {
+								NBT.getClass().getMethod("set", String.class, nbtBaseClass).invoke(NBT, "", NBT1);
+							}
+						} catch (Exception ex) {
+							if (ex instanceof InvocationTargetException) {
+								if (ex.getCause().getClass().equals(nbtParseExClass) ) {
+									Skript.error("Error when parsing NBT - " + ex.getCause().getMessage());
+								}
+								ex.printStackTrace();
+							}
+							ex.printStackTrace();
+						}
+					} else if (mode == ChangeMode.REMOVE) {
+						for (Object s : delta) {
+							try {
+								NBT.getClass().getMethod("remove", String.class).invoke(NBT, (String) s);
+							} catch (Exception ex) {
+								ex.printStackTrace();
+							}
+						}
+					}
+				}
+			}).parser(new Parser<Object>() {
 
 				@Override
 				public String getVariableNamePattern() {
@@ -175,6 +228,13 @@ public class SkStuff extends JavaPlugin {
 				} catch (ClassNotFoundException ex) {
 					Skript.error("Unable to register \"On WorldEdit block change\" event! You will need to upgrade to WorldEdit 6.0");
 				}
+			}
+			if (Bukkit.getPluginManager().getPlugin("VanishNoPacket") != null) {
+				getLogger().info("VanishNoPacket was found! Registering vanishing features...");
+				effAmount += 1;
+				exprAmount += 1;
+				Skript.registerEffect(EffToggleVanish.class, "toggle vanish (state|mode) of %player% (0¦|1¦(silently|quietly))", "toggle %player%'s vanish (state|mode) (0¦|1¦(silently|quietly))");
+				Skript.registerExpression(ExprVanishState.class, Boolean.class, ExpressionType.PROPERTY, "vanish (state|mode) of %player%", "%player%'s vanish (state|mode)");
 			}
 			getLogger().info("Everything ready! Loaded a total of " + condAmount + (condAmount == 1 ? " condition, " : " conditions, ") + effAmount + (effAmount == 1 ? " effect, " : " effects, ") + (evtWE ? "1 event, " : "") + exprAmount + (exprAmount == 1 ? " expression" : " expressions and ") + typeAmount + (typeAmount == 1 ? " type!" : " types!"));
 		} else {
