@@ -15,13 +15,11 @@ import ch.njol.util.Kleenean;
 import me.TheBukor.SkStuff.util.ReflectionUtils;
 
 public class ExprItemNBT extends SimpleExpression<ItemStack> {
-	private Boolean useParseException = true;
 	private Expression<ItemStack> itemStack;
 	private Expression<String> string;
 
 	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound");
 	private Class<?> nbtParseClass = ReflectionUtils.getNMSClass("MojangsonParser");
-	private Class<?> nbtParseExClass = ReflectionUtils.getNMSClass("MojangsonParseException");
 	private Class<?> nmsItemClass = ReflectionUtils.getNMSClass("ItemStack");
 
 	private Class<?> craftItemClass = ReflectionUtils.getOBCClass("inventory.CraftItemStack");
@@ -41,10 +39,6 @@ public class ExprItemNBT extends SimpleExpression<ItemStack> {
 	public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean arg2, ParseResult arg3) {
 		itemStack = (Expression<ItemStack>) expr[0];
 		string = (Expression<String>) expr[1];
-		String bukkitVersion = ReflectionUtils.getVersion();
-		if (bukkitVersion.contains("v1_7_R") || bukkitVersion.equals("v1_8_R1")) {
-			useParseException = false;
-		}
 		return true;
 	}
 
@@ -75,8 +69,9 @@ public class ExprItemNBT extends SimpleExpression<ItemStack> {
 			}
 			nmsItem.getClass().getMethod("setTag", nbtClass).invoke(nmsItem, NBT);
 		} catch (Exception ex) {
-			if (useParseException && ex.getClass().equals(nbtParseExClass))
-			Skript.warning(ChatColor.RED + "Error when parsing NBT - " + ex.getMessage());
+			if (ex.getCause().getClass().getName().equals("MojangsonParseException") ) {
+				Skript.warning(ChatColor.RED + "Error when parsing NBT - " + ex.getMessage());
+			}
 		}
 		Object newItem = null;
 		try {

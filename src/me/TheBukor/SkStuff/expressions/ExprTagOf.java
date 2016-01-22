@@ -83,7 +83,7 @@ public class ExprTagOf extends SimpleExpression<Object> {
 				Object list = null;
 				for (i = 1; i <= 11; i++) { //To get a list I need to know the type of the tags it contains inside,
 					//since I can't predict what type the list will have, I just loop all of the IDs until I find a non-empty list.
-					list = NBT.getClass().getMethod("getList", String.class, int.class).invoke(NBT, stringTag, i);
+					list = NBT.getClass().getMethod("getList", String.class, int.class).invoke(NBT, stringTag, i); //Try to get the list with the ID "loop-number".
 					if (!list.toString().equals("[]")) { //If list is not empty.
 						break; //Stop loop.
 					}
@@ -91,19 +91,19 @@ public class ExprTagOf extends SimpleExpression<Object> {
 				String methodName = null;
 				switch (((int) list.getClass().getMethod("f").invoke(list))) { //list.f() gets the type of the tags in the list.
 					case 5: //Float
-						methodName = "e";
+						methodName = "e"; //list.e(int) = get float from the specified index.
 						break;
 					case 6: //Double
-						methodName = "d";
+						methodName = "d"; //list.d(int) = get double from the specified index.
 						break;
 					case 8: //String
-						methodName = "getString";
+						methodName = "getString"; //Self-explanatory, I guess.
 						break;
 					case 10: //Compound
-						methodName = "get";
+						methodName = "get"; //list.get(int) = get compound at the specified index.
 						break;
 					case 11: //Integer array
-						methodName = "c";
+						methodName = "c"; //Not sure if ever used, but meh.
 						break;
 					default:
 						break;
@@ -117,7 +117,7 @@ public class ExprTagOf extends SimpleExpression<Object> {
 				return tags;
 			case 10:
 				return new Object[] { NBT.getClass().getMethod("getCompound", String.class).invoke(NBT, stringTag) };
-			case 11: //Integer array, this one is only used on the chunk files.
+			case 11: //Integer array, this one is only used on the chunk files (and maybe schematic files?).
 				return new Object[] { NBT.getClass().getMethod("getIntArray", String.class).invoke(NBT, stringTag).toString() };
 			default: //This shouldn't happen, but it's better to have this just in case it spills errors everywhere.
 				break;

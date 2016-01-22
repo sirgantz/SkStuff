@@ -53,28 +53,35 @@ import me.TheBukor.SkStuff.expressions.ExprSelectionArea;
 import me.TheBukor.SkStuff.expressions.ExprSelectionOfPlayer;
 import me.TheBukor.SkStuff.expressions.ExprSelectionPos;
 import me.TheBukor.SkStuff.expressions.ExprTagOf;
+import me.TheBukor.SkStuff.expressions.ExprToLowerCase;
+import me.TheBukor.SkStuff.expressions.ExprToUpperCase;
 import me.TheBukor.SkStuff.expressions.ExprVanishState;
+import me.TheBukor.SkStuff.expressions.ExprWordsToUpperCase;
 import me.TheBukor.SkStuff.util.ReflectionUtils;
 
 public class SkStuff extends JavaPlugin {
 	private int condAmount = 0;
-	private int exprAmount = 0;
-	private int typeAmount = 0;
 	private int effAmount = 0;
 	private boolean evtWE = false;
+	private int exprAmount = 0;
+	private int typeAmount = 0;
 
 	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound");
 	private Class<?> nbtParserClass = ReflectionUtils.getNMSClass("MojangsonParser");
-	private Class<?> nbtParseExClass = ReflectionUtils.getNMSClass("MojangsonParseException");
 
-	@SuppressWarnings({ "unchecked" })
+	@SuppressWarnings("unchecked")
 	public void onEnable() {
 		if (Bukkit.getPluginManager().getPlugin("Skript") != null && Skript.isAcceptRegistrations()) {
 			Skript.registerAddon(this);
 			getLogger().info("SkStuff " + this.getDescription().getVersion() + " has been successfully enabled!");
+
+			getLogger().info("Registering general non version specific stuff...");
+			Skript.registerExpression(ExprToUpperCase.class, String.class, ExpressionType.SIMPLE, "%string% [converted] to [all] (cap[ital]s|upper[ ]case)", "convert %string% to [all] (cap[ital]s|upper[ ]case)", "capitalize [all] [char[acter]s (of|in)] %string%");
+			Skript.registerExpression(ExprToLowerCase.class, String.class, ExpressionType.SIMPLE, "%string% [converted] to [all] lower[ ]case", "convert %string% to [all] lower[ ]case", "un[( |-)]capitalize [all] [char[acter]s (of|in)] %string%");
+			Skript.registerExpression(ExprWordsToUpperCase.class, String.class, ExpressionType.SIMPLE, "(first|1st) (letter|char[acter]) (of|in) (each word|[all] words) (of|in) %string% [converted] to (cap[ital]s|upper[ ]case) (0¦|1¦ignoring [other] upper[ ]case [(char[acter]s|letters)])", "convert (first|1st) (letter|char[acter]) (of|in) (each word|[all] words) (of|in) %string% to (cap[ital]s|upper[ ]case) (0¦|1¦ignoring [other] upper[ ]case [(char[acter]s|letters)])", "capitalize (first|1st) (letter|char[acter]) (of|in) (each word|[all] words) (of|in) %string% (0¦|1¦ignoring [other] upper[ ]case [(char[acter]s|letters)])");
+			exprAmount += 3;
+
 			getLogger().info("Trying to register version specific stuff...");
-			typeAmount += 1;
-			exprAmount += 6;
 			Skript.registerExpression(ExprNBTOf.class, Object.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of %entity/block/itemstack%", "%entity/block/itemstack%'s nbt[[ ]tag[s]]");
 			Skript.registerExpression(ExprItemNBT.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
 			Skript.registerExpression(ExprTagOf.class, Object.class, ExpressionType.PROPERTY, "[nbt[ ]]tag %string% of [[nbt] compound] %compound%");
@@ -114,8 +121,9 @@ public class SkStuff extends JavaPlugin {
 							}
 						} catch (Exception ex) {
 							if (ex instanceof InvocationTargetException) {
-								if (ex.getCause().getClass().equals(nbtParseExClass) ) {
+								if (ex.getCause().getClass().getName().equals("MojangsonParseException") ) {
 									Skript.error("Error when parsing NBT - " + ex.getCause().getMessage());
+									return;
 								}
 								ex.printStackTrace();
 							}
@@ -154,7 +162,7 @@ public class SkStuff extends JavaPlugin {
 							nbtClass.getMethod("a", nbtClass).invoke(NBT, NBT1);
 						} catch (Exception ex) {
 							if (ex instanceof InvocationTargetException) {
-								if (ex.getCause().getClass().equals(nbtParseExClass) ) {
+								if (ex.getCause().getClass().getName().equals("MojangsonParseException") ) {
 									return null;
 								}
 								ex.printStackTrace();
@@ -179,12 +187,10 @@ public class SkStuff extends JavaPlugin {
 					return "nbt:" + compound.toString();
 				}
 			}));
+			typeAmount += 1;
+			exprAmount += 6;
 			if (Bukkit.getPluginManager().getPlugin("WorldEdit") != null) {
 				getLogger().info("WorldEdit found! Registering WorldEdit stuff...");
-				condAmount += 1;
-				effAmount += 12;
-				exprAmount += 7;
-				typeAmount += 1;
 				Skript.registerCondition(CondSelectionContains.class, "[(world[ ]edit|we)] selection of %player% (contains|has) %location%", "%player%'s [(world[ ]edit|we)] selection (contains|has) %location%", "[(world[ ]edit|we)] selection of %player% does(n't| not) (contain|have) %location%", "%player%'s [(world[ ]edit|we)] selection does(n't| not) (contain|have) %location%");
 				Skript.registerEffect(EffDrawLineWE.class, "(create|draw|make) [a[n]] (0¦(no(n|t)(-| )hollow|filled|)|1¦hollow) line from %location% to %location% (using|with) [edit[ ]session] %editsession% (using|with) [block[s]] %itemstacks% [with] thick[ness] %double%");
 				Skript.registerEffect(EffUndoRedoSession.class, "(0¦undo|1¦redo) (change|edit)s (of|from) [edit[ ]session] %editsession%");
@@ -203,8 +209,8 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerExpression(ExprNewEditSession.class, EditSession.class, ExpressionType.PROPERTY, "[new] edit[ ]session in [world] %world% [with] [max[imum]] [block] limit [change] [of] %integer%");
 				Skript.registerExpression(ExprSelectionOfPlayer.class, Location.class, ExpressionType.PROPERTY, "[(world[ ]edit|we)] selection of %player%", "%player%'s [(world[ ]edit|we)] selection");
 				Skript.registerExpression(ExprSelectionPos.class, Location.class, ExpressionType.PROPERTY, "[(world[ ]edit|we)] po(s|int)[ ](0¦1|1¦2) of %player%", "%player%'s [(world[ ]edit|we)] po(s|int)[ ](0¦1|1¦2)");
-				Skript.registerExpression(ExprSelectionArea.class, Integer.class, ExpressionType.SIMPLE, "(0¦volume|1¦(x( |-)size|width)|2¦(y( |-)size|height)3¦(z( |-)size|length)4¦area) of [(world[ ]edit|we)] selection of %player%", "%player%'s [(world[ ]edit|we)] selection (0¦volume|1¦(x( |-)size|width)|2¦(y( |-)size|height)3¦(z( |-)size|length)4¦area)");
-				Skript.registerExpression(ExprSchematicArea.class, Integer.class, ExpressionType.SIMPLE, "(0¦volume|1¦(x( |-)size|width)|2¦(y( |-)size|height)3¦(z( |-)size|length)4¦area) of schem[atic] [from] %string%");
+				Skript.registerExpression(ExprSelectionArea.class, Integer.class, ExpressionType.SIMPLE, "(0¦volume|1¦(x( |-)size|width)|2¦(y( |-)size|height)|3¦(z( |-)size|length)|4¦area) of [(world[ ]edit|we)] selection of %player%", "%player%'s [(world[ ]edit|we)] selection (0¦volume|1¦(x( |-)size|width)|2¦(y( |-)size|height)|3¦(z( |-)size|length)|4¦area)");
+				Skript.registerExpression(ExprSchematicArea.class, Integer.class, ExpressionType.SIMPLE, "(0¦volume|1¦(x( |-)size|width)|2¦(y( |-)size|height)|3¦(z( |-)size|length)|4¦area) of schem[atic] [from] %string%");
 				Classes.registerClass(new ClassInfo<EditSession>(EditSession.class, "editsession").name("Edit Session").user("edit ?sessions?"));
 				try {
 					Class.forName("com.sk89q.worldedit.extent.logging.AbstractLoggingExtent");
@@ -228,13 +234,17 @@ public class SkStuff extends JavaPlugin {
 				} catch (ClassNotFoundException ex) {
 					Skript.error("Unable to register \"On WorldEdit block change\" event! You will need to upgrade to WorldEdit 6.0");
 				}
+				condAmount += 1;
+				effAmount += 12;
+				exprAmount += 7;
+				typeAmount += 1;
 			}
 			if (Bukkit.getPluginManager().getPlugin("VanishNoPacket") != null) {
 				getLogger().info("VanishNoPacket was found! Registering vanishing features...");
-				effAmount += 1;
-				exprAmount += 1;
 				Skript.registerEffect(EffToggleVanish.class, "toggle vanish (state|mode) of %player% (0¦|1¦(silently|quietly))", "toggle %player%'s vanish (state|mode) (0¦|1¦(silently|quietly))");
 				Skript.registerExpression(ExprVanishState.class, Boolean.class, ExpressionType.PROPERTY, "vanish (state|mode) of %player%", "%player%'s vanish (state|mode)");
+				effAmount += 1;
+				exprAmount += 1;
 			}
 			getLogger().info("Everything ready! Loaded a total of " + condAmount + (condAmount == 1 ? " condition, " : " conditions, ") + effAmount + (effAmount == 1 ? " effect, " : " effects, ") + (evtWE ? "1 event, " : "") + exprAmount + (exprAmount == 1 ? " expression" : " expressions and ") + typeAmount + (typeAmount == 1 ? " type!" : " types!"));
 		} else {

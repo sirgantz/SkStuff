@@ -26,7 +26,6 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 
 	private Class<?> nbtBaseClass = ReflectionUtils.getNMSClass("NBTBase");
 	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound");
-	private Class<?> nbtParseExClass = ReflectionUtils.getNMSClass("MojangsonParseException");
 	private Class<?> nbtParserClass = ReflectionUtils.getNMSClass("MojangsonParser");
 	private Class<?> nmsPosClass = ReflectionUtils.getNMSClass("BlockPosition");
 	private Class<?> nmsItemClass = ReflectionUtils.getNMSClass("ItemStack");
@@ -148,7 +147,7 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 					nmsEnt.getClass().getMethod("f", nbtClass).invoke(nmsEnt, NBT);
 				} catch (Exception ex) {
 					if (ex instanceof InvocationTargetException) {
-						if (ex.getCause().getClass().equals(nbtParseExClass) ) {
+						if (ex.getCause().getClass().getName().equals("MojangsonParseException") ) {
 							Skript.error("Error when parsing NBT - " + ex.getCause().getMessage());
 						}
 						ex.printStackTrace();
@@ -206,7 +205,7 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 					nmsWorld.getClass().getMethod("notify", nmsPosClass).invoke(nmsWorld, tileEntity.getClass().getMethod("getPosition").invoke(tileEntity));
 				} catch (Exception ex) {
 					if (ex instanceof InvocationTargetException) {
-						if (ex.getCause().getClass().equals(nbtParseExClass) ) {
+						if (ex.getCause().getClass().getName().equals("MojangsonParseException") ) {
 							Skript.error("Error when parsing NBT - " + ex.getCause().getMessage());
 						}
 						ex.printStackTrace();
@@ -272,7 +271,7 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 					((Slot) slot[0]).setItem((ItemStack) newItem);
 				} catch (Exception ex) {
 					if (ex instanceof InvocationTargetException) {
-						if (ex.getCause().getClass().equals(nbtParseExClass) ) {
+						if (ex.getCause().getClass().getName().equals("MojangsonParseException") ) {
 							Skript.error("Error when parsing NBT - " + ex.getCause().getMessage());
 						}
 						ex.printStackTrace();

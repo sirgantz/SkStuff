@@ -31,7 +31,6 @@ public class ExprFileNBT extends SimpleExpression<Object> {
 	private Class<?> nbtBaseClass = ReflectionUtils.getNMSClass("NBTBase");
 	private Class<?> nbtToolsClass = ReflectionUtils.getNMSClass("NBTCompressedStreamTools");
 	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound");
-	private Class<?> nbtParseExClass = ReflectionUtils.getNMSClass("MojangsonParseException");
 	private Class<?> nbtParserClass = ReflectionUtils.getNMSClass("MojangsonParser");
 
 	@Override
@@ -76,7 +75,7 @@ public class ExprFileNBT extends SimpleExpression<Object> {
 			fis.close();
 		} catch (Exception ex) {
 			if (ex instanceof InvocationTargetException) {
-				if (ex.getCause().getClass().equals(nbtParseExClass)) {
+				if (ex.getCause().getClass().getName().equals("MojangsonParseException") ) {
 					Skript.error("Error when parsing NBT - " + ex.getCause().getMessage());
 				}
 				ex.printStackTrace();
@@ -120,7 +119,7 @@ public class ExprFileNBT extends SimpleExpression<Object> {
 				os.close();
 			} catch (Exception ex) {
 				if (ex instanceof InvocationTargetException) {
-					if (ex.getCause().getClass().equals(nbtParseExClass) ) {
+					if (ex.getCause().getClass().getName().equals("MojangsonParseException") ) {
 						Skript.error("Error when parsing NBT - " + ex.getCause().getMessage());
 					}
 					ex.printStackTrace();
@@ -147,7 +146,7 @@ public class ExprFileNBT extends SimpleExpression<Object> {
 				os.close();
 			} catch (Exception ex) {
 				if (ex instanceof InvocationTargetException) {
-					if (ex.getCause().getClass().equals(nbtParseExClass)) {
+					if (ex.getCause().getClass().getName().equals("MojangsonParseException") ) {
 						Skript.error("Error when parsing NBT - " + ex.getCause().getMessage());
 					}
 					ex.printStackTrace();
