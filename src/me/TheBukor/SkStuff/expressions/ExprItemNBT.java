@@ -71,6 +71,7 @@ public class ExprItemNBT extends SimpleExpression<ItemStack> {
 		} catch (Exception ex) {
 			if (ex.getCause().getClass().getName().equals("MojangsonParseException") ) {
 				Skript.warning(ChatColor.RED + "Error when parsing NBT - " + ex.getMessage());
+				return null;
 			}
 		}
 		Object newItem = null;

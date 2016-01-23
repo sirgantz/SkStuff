@@ -77,6 +77,7 @@ public class ExprFileNBT extends SimpleExpression<Object> {
 			if (ex instanceof InvocationTargetException) {
 				if (ex.getCause().getClass().getName().equals("MojangsonParseException") ) {
 					Skript.error("Error when parsing NBT - " + ex.getCause().getMessage());
+					return null;
 				}
 				ex.printStackTrace();
 			}
@@ -121,6 +122,7 @@ public class ExprFileNBT extends SimpleExpression<Object> {
 				if (ex instanceof InvocationTargetException) {
 					if (ex.getCause().getClass().getName().equals("MojangsonParseException") ) {
 						Skript.error("Error when parsing NBT - " + ex.getCause().getMessage());
+						return;
 					}
 					ex.printStackTrace();
 				}
@@ -148,6 +150,7 @@ public class ExprFileNBT extends SimpleExpression<Object> {
 				if (ex instanceof InvocationTargetException) {
 					if (ex.getCause().getClass().getName().equals("MojangsonParseException") ) {
 						Skript.error("Error when parsing NBT - " + ex.getCause().getMessage());
+						return;
 					}
 					ex.printStackTrace();
 				} else if (ex instanceof EOFException) {

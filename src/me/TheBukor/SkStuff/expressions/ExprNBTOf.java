@@ -149,6 +149,7 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 					if (ex instanceof InvocationTargetException) {
 						if (ex.getCause().getClass().getName().equals("MojangsonParseException") ) {
 							Skript.error("Error when parsing NBT - " + ex.getCause().getMessage());
+							return;
 						}
 						ex.printStackTrace();
 					}
@@ -207,6 +208,7 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 					if (ex instanceof InvocationTargetException) {
 						if (ex.getCause().getClass().getName().equals("MojangsonParseException") ) {
 							Skript.error("Error when parsing NBT - " + ex.getCause().getMessage());
+							return;
 						}
 						ex.printStackTrace();
 					}
@@ -273,6 +275,7 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 					if (ex instanceof InvocationTargetException) {
 						if (ex.getCause().getClass().getName().equals("MojangsonParseException") ) {
 							Skript.error("Error when parsing NBT - " + ex.getCause().getMessage());
+							return;
 						}
 						ex.printStackTrace();
 					}
