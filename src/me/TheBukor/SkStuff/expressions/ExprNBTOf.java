@@ -4,13 +4,14 @@ import java.lang.reflect.InvocationTargetException;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 
-import ch.njol.skript.Skript;
 import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
@@ -18,13 +19,12 @@ import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.skript.util.Slot;
 import ch.njol.util.Kleenean;
 import ch.njol.util.coll.CollectionUtils;
+import me.TheBukor.SkStuff.util.NBTUtil;
 import me.TheBukor.SkStuff.util.ReflectionUtils;
 
 public class ExprNBTOf extends SimpleExpression<Object> {
-	private Boolean using1_7 = false;
 	private Expression<?> target;
 
-	private Class<?> nbtBaseClass = ReflectionUtils.getNMSClass("NBTBase");
 	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound");
 	private Class<?> nbtParserClass = ReflectionUtils.getNMSClass("MojangsonParser");
 	private Class<?> nmsPosClass = ReflectionUtils.getNMSClass("BlockPosition");
@@ -47,10 +47,6 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 	@Override
 	public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean arg2, ParseResult arg3) {
 		target = expr[0];
-		String bukkitVersion = ReflectionUtils.getVersion();
-		if (bukkitVersion.startsWith("v1_7_R")) {
-			using1_7 = true;
-		}
 		return true;
 	}
 
@@ -134,21 +130,17 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 				try {
 					Object NBT1 = null;
 					NBT1 = nbtParserClass.getMethod("parse", String.class).invoke(NBT1, newTags);
-					NBT1.getClass().getMethod("remove", String.class).invoke(NBT1, "UUIDMost");
-					NBT1.getClass().getMethod("remove", String.class).invoke(NBT1, "UUIDLeast");
-					NBT1.getClass().getMethod("remove", String.class).invoke(NBT1, "WorldUUIDMost");
-					NBT1.getClass().getMethod("remove", String.class).invoke(NBT1, "WorldUUIDLeast");
-					NBT1.getClass().getMethod("remove", String.class).invoke(NBT1, "Bukkit.updateLevel");
-					if (!using1_7) {
-						NBT.getClass().getMethod("a", nbtClass).invoke(NBT, NBT1);
-					} else {
-						NBT.getClass().getMethod("set", String.class, nbtBaseClass).invoke(NBT, "", NBT1);
-					}
+					NBT1.getClass().getMethod("remove", String.class).invoke(NBT1, "UUIDMost"); // Prevent crucial data from being modified
+					NBT1.getClass().getMethod("remove", String.class).invoke(NBT1, "UUIDLeast"); // Prevent crucial data from being modified
+					NBT1.getClass().getMethod("remove", String.class).invoke(NBT1, "WorldUUIDMost"); // Prevent crucial data from being modified
+					NBT1.getClass().getMethod("remove", String.class).invoke(NBT1, "WorldUUIDLeast"); // Prevent crucial data from being modified
+					NBT1.getClass().getMethod("remove", String.class).invoke(NBT1, "Bukkit.updateLevel"); // Prevent crucial data from being modified
+					NBTUtil.addCompound(NBT, NBT1);
 					nmsEnt.getClass().getMethod("f", nbtClass).invoke(nmsEnt, NBT);
 				} catch (Exception ex) {
 					if (ex instanceof InvocationTargetException) {
-						if (ex.getCause().getClass().getName().equals("MojangsonParseException") ) {
-							Skript.error("Error when parsing NBT - " + ex.getCause().getMessage());
+						if (ex.getCause().getClass().getName().contains("MojangsonParseException")) {
+							Bukkit.getConsoleSender().sendMessage("[SkStuff] " + ChatColor.RED + "Error when parsing NBT - " + ex.getCause().getMessage());
 							return;
 						}
 						ex.printStackTrace();
@@ -157,7 +149,7 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 				}
 			} else if (mode == ChangeMode.REMOVE) {
 				for (Object s : delta) {
-					if (s != "UUIDMost" || s != "UUIDLeast" || s != "WorldUUIDMost" || s != "WorldUUIDLeast" || s != "Bukkit.updateLevel") {
+					if (s != "UUIDMost" || s != "UUIDLeast" || s != "WorldUUIDMost" || s != "WorldUUIDLeast" || s != "Bukkit.updateLevel") { // Prevent crucial data from being modified
 						try {
 							NBT.getClass().getMethod("remove", String.class).invoke(NBT, (String) s);
 							nmsEnt.getClass().getMethod("f", nbtClass).invoke(nmsEnt, NBT);
@@ -193,11 +185,7 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 				try {
 					Object NBT1 = null;
 					NBT1 = nbtParserClass.getMethod("parse", String.class).invoke(NBT1, newTags);
-					if (!using1_7) {
-						NBT.getClass().getMethod("a", nbtClass).invoke(NBT, NBT1);
-					} else {
-						NBT.getClass().getMethod("set", String.class, nbtBaseClass).invoke(NBT, "", NBT1);
-					}
+					NBTUtil.addCompound(NBT, NBT1);
 					NBT1.getClass().getMethod("setInt", String.class, int.class).invoke(NBT1, "x", block.getX());
 					NBT1.getClass().getMethod("setInt", String.class, int.class).invoke(NBT1, "y", block.getY());
 					NBT1.getClass().getMethod("setInt", String.class, int.class).invoke(NBT1, "z", block.getZ());
@@ -206,8 +194,8 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 					nmsWorld.getClass().getMethod("notify", nmsPosClass).invoke(nmsWorld, tileEntity.getClass().getMethod("getPosition").invoke(tileEntity));
 				} catch (Exception ex) {
 					if (ex instanceof InvocationTargetException) {
-						if (ex.getCause().getClass().getName().equals("MojangsonParseException") ) {
-							Skript.error("Error when parsing NBT - " + ex.getCause().getMessage());
+						if (ex.getCause().getClass().getName().contains("MojangsonParseException")) {
+							Bukkit.getConsoleSender().sendMessage("[SkStuff] " + ChatColor.RED + "Error when parsing NBT - " + ex.getCause().getMessage());
 							return;
 						}
 						ex.printStackTrace();
@@ -258,11 +246,7 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 				try {
 					Object NBT1 = null;
 					NBT1 = nbtParserClass.getMethod("parse", String.class).invoke(NBT1, newTags);
-					if (!using1_7) {
-						NBT.getClass().getMethod("a", nbtClass).invoke(NBT, NBT1);
-					} else {
-						NBT.getClass().getMethod("set", String.class, nbtBaseClass).invoke(NBT, "", NBT1);
-					}
+					NBTUtil.addCompound(NBT, NBT1);
 					nmsItem.getClass().getMethod("setTag", nbtClass).invoke(nmsItem, NBT);
 					Object newItem = null;
 					newItem = craftItemClass.getMethod("asCraftMirror", nmsItemClass).invoke(newItem, nmsItem);
@@ -273,8 +257,8 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 					((Slot) slot[0]).setItem((ItemStack) newItem);
 				} catch (Exception ex) {
 					if (ex instanceof InvocationTargetException) {
-						if (ex.getCause().getClass().getName().equals("MojangsonParseException") ) {
-							Skript.error("Error when parsing NBT - " + ex.getCause().getMessage());
+						if (ex.getCause().getClass().getName().contains("MojangsonParseException") ) {
+							Bukkit.getConsoleSender().sendMessage("[SkStuff] " + ChatColor.RED + "Error when parsing NBT - " + ex.getCause().getMessage());
 							return;
 						}
 						ex.printStackTrace();

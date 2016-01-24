@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -58,6 +59,7 @@ import me.TheBukor.SkStuff.expressions.ExprToLowerCase;
 import me.TheBukor.SkStuff.expressions.ExprToUpperCase;
 import me.TheBukor.SkStuff.expressions.ExprVanishState;
 import me.TheBukor.SkStuff.expressions.ExprWordsToUpperCase;
+import me.TheBukor.SkStuff.util.NBTUtil;
 import me.TheBukor.SkStuff.util.ReflectionUtils;
 
 public class SkStuff extends JavaPlugin {
@@ -93,8 +95,6 @@ public class SkStuff extends JavaPlugin {
 			
 			Classes.registerClass(new ClassInfo<Object>((Class<Object>) nbtClass, "compound").user("((nbt)?( ?tag)?) ?compounds?").name("NBT Compound").changer(new Changer<Object>() {
 
-				private Class<?> nbtBaseClass = ReflectionUtils.getNMSClass("NBTBase");
-
 				@Override
 				@Nullable
 				public Class<?>[] acceptChange(ChangeMode mode) {
@@ -106,25 +106,16 @@ public class SkStuff extends JavaPlugin {
 
 				@Override
 				public void change(Object[] NBT, @Nullable Object[] delta, ChangeMode mode) {
-					Boolean using1_7 = false;
-					String bukkitVersion = ReflectionUtils.getVersion();
-					if (bukkitVersion.startsWith("v1_7_R")) {
-						using1_7 = true;
-					}
 					String newTags = (String) delta[0];
 					if (mode == ChangeMode.ADD) {
 						Object NBT1 = null;
 						try {
 							NBT1 = nbtParserClass.getMethod("parse", String.class).invoke(NBT1, newTags);
-							if (!using1_7) {
-								NBT.getClass().getMethod("a", nbtClass).invoke(NBT, NBT1);
-							} else {
-								NBT.getClass().getMethod("set", String.class, nbtBaseClass).invoke(NBT, "", NBT1);
-							}
+							NBTUtil.addCompound(NBT[0], NBT1);
 						} catch (Exception ex) {
 							if (ex instanceof InvocationTargetException) {
-								if (ex.getCause().getClass().getName().equals("MojangsonParseException") ) {
-									Skript.error("Error when parsing NBT - " + ex.getCause().getMessage());
+								if (ex.getCause().getClass().getName().contains("MojangsonParseException") ) {
+									Bukkit.getConsoleSender().sendMessage("[SkStuff] " + ChatColor.RED + "Error when parsing NBT - " + ex.getCause().getMessage());
 									return;
 								}
 								ex.printStackTrace();
@@ -151,7 +142,7 @@ public class SkStuff extends JavaPlugin {
 				@Override
 				@Nullable
 				public Object parse(String s, ParseContext context) {
-					if (s.startsWith("{")) {
+					if (s.startsWith("{") && s.endsWith("}")) {
 						Object NBT = null;
 						try {
 							NBT = nbtClass.newInstance();
@@ -164,7 +155,7 @@ public class SkStuff extends JavaPlugin {
 							nbtClass.getMethod("a", nbtClass).invoke(NBT, NBT1);
 						} catch (Exception ex) {
 							if (ex instanceof InvocationTargetException) {
-								if (ex.getCause().getClass().getName().equals("MojangsonParseException") ) {
+								if (ex.getCause().getClass().getName().contains("MojangsonParseException") ) {
 									return null;
 								}
 								ex.printStackTrace();
@@ -235,6 +226,7 @@ public class SkStuff extends JavaPlugin {
 					evtWE = true;
 				} catch (ClassNotFoundException ex) {
 					Skript.error("Unable to register \"On WorldEdit block change\" event! You will need to upgrade to WorldEdit 6.0");
+					return;
 				}
 				condAmount += 1;
 				effAmount += 12;
