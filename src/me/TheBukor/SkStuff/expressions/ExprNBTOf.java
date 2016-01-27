@@ -115,6 +115,8 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 	@Override
 	public void change(Event e, Object[] delta, ChangeMode mode) {
 		Object tar = target.getSingle(e);
+		if (!(delta[0] instanceof String))
+			return;
 		if (tar instanceof Entity) {
 			Object NBT = null;
 			Object nmsEnt = null;
@@ -138,12 +140,9 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 					NBTUtil.addCompound(NBT, NBT1);
 					nmsEnt.getClass().getMethod("f", nbtClass).invoke(nmsEnt, NBT);
 				} catch (Exception ex) {
-					if (ex instanceof InvocationTargetException) {
-						if (ex.getCause().getClass().getName().contains("MojangsonParseException")) {
-							Bukkit.getConsoleSender().sendMessage("[SkStuff] " + ChatColor.RED + "Error when parsing NBT - " + ex.getCause().getMessage());
-							return;
-						}
-						ex.printStackTrace();
+					if (ex instanceof InvocationTargetException && ex.getCause().getClass().getName().contains("MojangsonParseException")) {
+						Bukkit.getConsoleSender().sendMessage("[SkStuff] " + ChatColor.RED + "Error when parsing NBT - " + ex.getCause().getMessage());
+						return;
 					}
 					ex.printStackTrace();
 				}
@@ -193,12 +192,9 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 					tileEntity.getClass().getMethod("update").invoke(tileEntity);
 					nmsWorld.getClass().getMethod("notify", nmsPosClass).invoke(nmsWorld, tileEntity.getClass().getMethod("getPosition").invoke(tileEntity));
 				} catch (Exception ex) {
-					if (ex instanceof InvocationTargetException) {
-						if (ex.getCause().getClass().getName().contains("MojangsonParseException")) {
-							Bukkit.getConsoleSender().sendMessage("[SkStuff] " + ChatColor.RED + "Error when parsing NBT - " + ex.getCause().getMessage());
-							return;
-						}
-						ex.printStackTrace();
+					if (ex instanceof InvocationTargetException && ex.getCause().getClass().getName().contains("MojangsonParseException")) {
+						Bukkit.getConsoleSender().sendMessage("[SkStuff] " + ChatColor.RED + "Error when parsing NBT - " + ex.getCause().getMessage());
+						return;
 					}
 					ex.printStackTrace();
 				}
@@ -256,12 +252,9 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 					}
 					((Slot) slot[0]).setItem((ItemStack) newItem);
 				} catch (Exception ex) {
-					if (ex instanceof InvocationTargetException) {
-						if (ex.getCause().getClass().getName().contains("MojangsonParseException") ) {
-							Bukkit.getConsoleSender().sendMessage("[SkStuff] " + ChatColor.RED + "Error when parsing NBT - " + ex.getCause().getMessage());
-							return;
-						}
-						ex.printStackTrace();
+					if (ex instanceof InvocationTargetException && ex.getCause().getClass().getName().contains("MojangsonParseException")) {
+						Bukkit.getConsoleSender().sendMessage("[SkStuff] " + ChatColor.RED + "Error when parsing NBT - " + ex.getCause().getMessage());
+						return;
 					}
 					ex.printStackTrace();
 				}

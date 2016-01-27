@@ -38,7 +38,8 @@ public class EffMakeSphere extends Effect {
 		radius3 = (Expression<Double>) expr[3];
 		editSession = (Expression<EditSession>) expr[4];
 		blockList = (Expression<ItemStack>) expr[5];
-		if (result.mark == 1) filled = false;
+		if (result.mark == 1)
+			filled = false;
 		return true;
 	}
 	@Override

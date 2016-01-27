@@ -35,7 +35,8 @@ public class EffDrawLineWE extends Effect {
 		editSession = (Expression<EditSession>) expr[2];
 		blockList = (Expression<ItemStack>) expr[3];
 		thickness = (Expression<Double>) expr[4];
-		if (result.mark == 1) filled = false;
+		if (result.mark == 1)
+			filled = false;
 		return true;
 	}
 

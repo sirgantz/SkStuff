@@ -9,15 +9,17 @@ public class NBTUtil {
 	private static Class<?> nbtBaseClass = ReflectionUtils.getNMSClass("NBTBase");
 	private static Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound");
 
-	/** 
-	 * This is actually a copy of the "a(NBTTagCompound)" method in the NBTTagCompound class using reflection
+	/**
+	 * This is actually a copy of the "a(NBTTagCompound)" method in the NBTTagCompound class.
 	 * I needed to add this because the 1.7 and before versions of the NBTTagCompound class didn't have this method,
 	 * so there wasn't actually a reliable way to multiple tags at once into a compound.
 	 * For the original code for the method, check https://github.com/linouxis9/mc-dev-1.8.7/blob/master/net/minecraft/server/NBTTagCompound.java#L348
+	 * 
+	 * Please note that I adapted it to work using reflection.
 	 */
 	@SuppressWarnings("unchecked")
-	public static void addCompound(Object source, Object toAdd) {
-		if (source.getClass().getName().contains("NBTTagCompound") && toAdd.getClass().getName().contains("NBTTagCompound")) {
+	public static void addCompound(Object NBT, Object toAdd) {
+		if (NBT.getClass().getName().contains("NBTTagCompound") && toAdd.getClass().getName().contains("NBTTagCompound")) {
 			try {
 				Field map = nbtClass.getDeclaredField("map");
 				map.setAccessible(true);
@@ -28,15 +30,15 @@ public class NBTUtil {
 					String string = (String) iterator.next();
 					Object base = nbtBaseClass.cast((((HashMap<String, Object>) map.get(toAdd)).get(string)));
 					if((byte) nbtBaseClass.getMethod("getTypeId").invoke(base) == 10) {
-						if((boolean) nbtClass.getMethod("hasKeyOfType", String.class, int.class).invoke(source, string, 10)) {
-							Object NBT = null;
-							NBT = nbtClass.getMethod("getCompound", String.class).invoke(NBT, string);
-							NBTUtil.addCompound(NBT, base.getClass().cast(nbtClass));
+						if((boolean) nbtClass.getMethod("hasKeyOfType", String.class, int.class).invoke(NBT, string, 10)) {
+							Object localNBT = null;
+							localNBT = nbtClass.getMethod("getCompound", String.class).invoke(localNBT, string);
+							NBTUtil.addCompound(localNBT.toString(), base.getClass().cast(nbtClass));
 						} else {
-							nbtClass.getMethod("set", String.class, nbtBaseClass).invoke(source, string, base.getClass().getMethod("clone").invoke(base));
+							nbtClass.getMethod("set", String.class, nbtBaseClass).invoke(NBT, string, base.getClass().getMethod("clone").invoke(base));
 						}
 					} else {
-						nbtClass.getMethod("set", String.class, nbtBaseClass).invoke(source, string, base.getClass().getMethod("clone").invoke(base));
+						nbtClass.getMethod("set", String.class, nbtBaseClass).invoke(NBT, string, base.getClass().getMethod("clone").invoke(base));
 					}
 				}
 				map.setAccessible(false);

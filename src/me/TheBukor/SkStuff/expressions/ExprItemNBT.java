@@ -1,5 +1,7 @@
 package me.TheBukor.SkStuff.expressions;
 
+import java.lang.reflect.InvocationTargetException;
+
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
@@ -69,10 +71,11 @@ public class ExprItemNBT extends SimpleExpression<ItemStack> {
 			}
 			nmsItem.getClass().getMethod("setTag", nbtClass).invoke(nmsItem, NBT);
 		} catch (Exception ex) {
-			if (ex.getCause().getClass().getName().contains("MojangsonParseException") ) {
+			if (ex instanceof InvocationTargetException && ex.getCause().getClass().getName().contains("MojangsonParseException")) {
 				Bukkit.getConsoleSender().sendMessage("[SkStuff] " + ChatColor.RED + "Error when parsing NBT - " + ex.getCause().getMessage());
 				return null;
 			}
+			ex.printStackTrace();
 		}
 		Object newItem = null;
 		try {

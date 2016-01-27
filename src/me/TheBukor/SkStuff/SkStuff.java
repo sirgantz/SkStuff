@@ -92,7 +92,7 @@ public class SkStuff extends JavaPlugin {
 			Skript.registerExpression(ExprFileNBT.class, Object.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] from [file] %string%");
 			Skript.registerExpression(ExprNoClip.class, Boolean.class, ExpressionType.PROPERTY, "no[( |-)]clip (state|mode) of %entity%", "%entity%'s no[( |-)]clip (state|mode)");
 			Skript.registerExpression(ExprFireProof.class, Boolean.class, ExpressionType.PROPERTY, "fire[ ]proof (state|mode) of %entity%", "%entity%'s fire[ ]proof (state|mode)");
-			
+
 			Classes.registerClass(new ClassInfo<Object>((Class<Object>) nbtClass, "compound").user("((nbt)?( ?tag)?) ?compounds?").name("NBT Compound").changer(new Changer<Object>() {
 
 				@Override
@@ -106,28 +106,29 @@ public class SkStuff extends JavaPlugin {
 
 				@Override
 				public void change(Object[] NBT, @Nullable Object[] delta, ChangeMode mode) {
-					String newTags = (String) delta[0];
-					if (mode == ChangeMode.ADD) {
-						Object NBT1 = null;
-						try {
-							NBT1 = nbtParserClass.getMethod("parse", String.class).invoke(NBT1, newTags);
-							NBTUtil.addCompound(NBT[0], NBT1);
-						} catch (Exception ex) {
-							if (ex instanceof InvocationTargetException) {
-								if (ex.getCause().getClass().getName().contains("MojangsonParseException") ) {
+					if (NBT[0].getClass().getName().contains("NBTTagCompound")) {
+						if (!(delta[0] instanceof String))
+							return;
+						String newTags = (String) delta[0];
+						if (mode == ChangeMode.ADD) {
+							Object NBT1 = null;
+							try {
+								NBT1 = nbtParserClass.getMethod("parse", String.class).invoke(NBT1, newTags);
+							} catch (Exception ex) {
+								if (ex instanceof InvocationTargetException && ex.getCause().getClass().getName().contains("MojangsonParseException")) {
 									Bukkit.getConsoleSender().sendMessage("[SkStuff] " + ChatColor.RED + "Error when parsing NBT - " + ex.getCause().getMessage());
 									return;
 								}
 								ex.printStackTrace();
 							}
-							ex.printStackTrace();
-						}
-					} else if (mode == ChangeMode.REMOVE) {
-						for (Object s : delta) {
-							try {
-								NBT.getClass().getMethod("remove", String.class).invoke(NBT, (String) s);
-							} catch (Exception ex) {
-								ex.printStackTrace();
+							NBTUtil.addCompound(NBT[0], NBT1);
+						} else if (mode == ChangeMode.REMOVE) {
+							for (Object s : delta) {
+								try {
+									nbtClass.getMethod("remove", String.class).invoke(NBT[0], (String) s);
+								} catch (Exception ex) {
+									ex.printStackTrace();
+								}
 							}
 						}
 					}
@@ -141,24 +142,14 @@ public class SkStuff extends JavaPlugin {
 
 				@Override
 				@Nullable
-				public Object parse(String s, ParseContext context) {
-					if (s.startsWith("{") && s.endsWith("}")) {
+				public Object parse(String rawNBT, ParseContext context) {
+					if (rawNBT.startsWith("{") && rawNBT.contains(":") && rawNBT.endsWith("}")) {
 						Object NBT = null;
 						try {
-							NBT = nbtClass.newInstance();
-						} catch (InstantiationException | IllegalAccessException ex) {
-							ex.printStackTrace();
-						}
-						try {
-							Object NBT1 = null;
-							NBT1 = nbtParserClass.getMethod("parse", String.class).invoke(NBT1, s);
-							nbtClass.getMethod("a", nbtClass).invoke(NBT, NBT1);
+							NBT = nbtParserClass.getMethod("parse", String.class).invoke(NBT, rawNBT);
 						} catch (Exception ex) {
-							if (ex instanceof InvocationTargetException) {
-								if (ex.getCause().getClass().getName().contains("MojangsonParseException") ) {
-									return null;
-								}
-								ex.printStackTrace();
+							if (ex instanceof InvocationTargetException && ex.getCause().getClass().getName().contains("MojangsonParseException")) {
+								return null;
 							}
 							ex.printStackTrace();
 						}

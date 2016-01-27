@@ -29,8 +29,8 @@ public class ExprFileNBT extends SimpleExpression<Object> {
 	private Expression<String> input;
 
 	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound");
-	private Class<?> nbtCompressedClass = ReflectionUtils.getNMSClass("NBTCompressedStreamTools");
 	private Class<?> nbtParserClass = ReflectionUtils.getNMSClass("MojangsonParser");
+	private Class<?> nbtCompressedClass = ReflectionUtils.getNMSClass("NBTCompressedStreamTools");
 
 	@Override
 	public Class<? extends Object> getReturnType() {
@@ -69,13 +69,6 @@ public class ExprFileNBT extends SimpleExpression<Object> {
 			NBT = nbtCompressedClass.getMethod("a", FileInputStream.class).invoke(NBT, fis);
 			fis.close();
 		} catch (Exception ex) {
-			if (ex instanceof InvocationTargetException) {
-				if (ex.getCause().getClass().getName().contains("MojangsonParseException") ) {
-					Bukkit.getConsoleSender().sendMessage("[SkStuff] " + ChatColor.RED + "Error when parsing NBT - " + ex.getCause().getMessage());
-					return null;
-				}
-				ex.printStackTrace();
-			}
 			ex.printStackTrace();
 		} finally {
 			try {
@@ -104,18 +97,15 @@ public class ExprFileNBT extends SimpleExpression<Object> {
 				Object NBT = null;
 				NBT = nbtCompressedClass.getMethod("a", FileInputStream.class).invoke(NBT, fis);
 				Object NBT1 = null;
-				NBT1 = nbtParserClass.getMethod("parse", nbtClass).invoke(NBT1, tags);
+				NBT1 = nbtParserClass.getMethod("parse", String.class).invoke(NBT1, tags);
 				NBTUtil.addCompound(NBT, NBT1);
 				nbtCompressedClass.getMethod("a", nbtClass, FileOutputStream.class).invoke(nbtCompressedClass.newInstance(), NBT, os);
 				fis.close();
 				os.close();
 			} catch (Exception ex) {
-				if (ex instanceof InvocationTargetException) {
-					if (ex.getCause().getClass().getName().contains("MojangsonParseException") ) {
-						Bukkit.getConsoleSender().sendMessage("[SkStuff] " + ChatColor.RED + "Error when parsing NBT - " + ex.getCause().getMessage());
-						return;
-					}
-					ex.printStackTrace();
+				if (ex instanceof InvocationTargetException && ex.getCause().getClass().getName().contains("MojangsonParseException")) {
+					Bukkit.getConsoleSender().sendMessage("[SkStuff] " + ChatColor.RED + "Error when parsing NBT - " + ex.getCause().getMessage());
+					return;
 				}
 				ex.printStackTrace();
 			} finally {
@@ -137,16 +127,11 @@ public class ExprFileNBT extends SimpleExpression<Object> {
 				fis.close();
 				os.close();
 			} catch (Exception ex) {
-				if (ex instanceof InvocationTargetException) {
-					if (ex.getCause().getClass().getName().contains("MojangsonParseException") ) {
-						Bukkit.getConsoleSender().sendMessage("[SkStuff] " + ChatColor.RED + "Error when parsing NBT - " + ex.getCause().getMessage());
-						return;
-					}
+				if (ex instanceof EOFException) {
+					// No actual error, just end of the file. Ignore it.
+				} else {
 					ex.printStackTrace();
-				} else if (ex instanceof EOFException) {
-					//No actual error, just end of the file. Ignore it.
 				}
-				ex.printStackTrace();
 			}
 		}
 	}

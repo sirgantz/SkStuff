@@ -34,7 +34,8 @@ public class EffMakePyramid extends Effect {
 		radius = (Expression<Integer>) expr[1];
 		editSession = (Expression<EditSession>) expr[2];
 		blockList = (Expression<ItemStack>) expr[3];
-		if (result.mark == 1) filled = false;
+		if (result.mark == 1)
+			filled = false;
 		return true;
 	}
 	@Override
