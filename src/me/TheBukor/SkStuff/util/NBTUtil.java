@@ -20,8 +20,9 @@ public class NBTUtil {
 	@SuppressWarnings("unchecked")
 	public static void addCompound(Object NBT, Object toAdd) {
 		if (NBT.getClass().getName().contains("NBTTagCompound") && toAdd.getClass().getName().contains("NBTTagCompound")) {
+			Field map = null;
 			try {
-				Field map = nbtClass.getDeclaredField("map");
+				map = nbtClass.getDeclaredField("map");
 				map.setAccessible(true);
 				Set<String> keySet = (Set<String>) nbtClass.getMethod("c").invoke(toAdd);
 				Iterator<String> iterator = keySet.iterator();
@@ -33,7 +34,7 @@ public class NBTUtil {
 						if((boolean) nbtClass.getMethod("hasKeyOfType", String.class, int.class).invoke(NBT, string, 10)) {
 							Object localNBT = null;
 							localNBT = nbtClass.getMethod("getCompound", String.class).invoke(localNBT, string);
-							NBTUtil.addCompound(localNBT.toString(), base.getClass().cast(nbtClass));
+							NBTUtil.addCompound(localNBT, base.getClass().cast(nbtClass));
 						} else {
 							nbtClass.getMethod("set", String.class, nbtBaseClass).invoke(NBT, string, base.getClass().getMethod("clone").invoke(base));
 						}
@@ -43,6 +44,7 @@ public class NBTUtil {
 				}
 				map.setAccessible(false);
 			} catch (Exception ex) {
+				map.setAccessible(false);
 				ex.printStackTrace();
 			}
 		}
