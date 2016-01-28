@@ -5,12 +5,12 @@ import java.lang.reflect.InvocationTargetException;
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.fusesource.jansi.Ansi;
 
 import com.sk89q.worldedit.EditSession;
 
@@ -65,7 +65,7 @@ import me.TheBukor.SkStuff.util.ReflectionUtils;
 public class SkStuff extends JavaPlugin {
 	private int condAmount = 0;
 	private int effAmount = 0;
-	private boolean evtWE = false;
+	private int evtAmount = 0;
 	private int exprAmount = 0;
 	private int typeAmount = 0;
 
@@ -116,7 +116,7 @@ public class SkStuff extends JavaPlugin {
 								NBT1 = nbtParserClass.getMethod("parse", String.class).invoke(NBT1, newTags);
 							} catch (Exception ex) {
 								if (ex instanceof InvocationTargetException && ex.getCause().getClass().getName().contains("MojangsonParseException")) {
-									Bukkit.getConsoleSender().sendMessage("[SkStuff] " + ChatColor.RED + "Error when parsing NBT - " + ex.getCause().getMessage());
+									getLogger().warning(Ansi.ansi().fgBright(Ansi.Color.RED) + "Error when parsing NBT - " + ex.getCause().getMessage() + Ansi.ansi().fgBright(Ansi.Color.DEFAULT));
 									return;
 								}
 								ex.printStackTrace();
@@ -214,7 +214,7 @@ public class SkStuff extends JavaPlugin {
 							return EvtWorldEditChange.getBlock();
 						}
 					}, 0);
-					evtWE = true;
+					evtAmount += 1;
 				} catch (ClassNotFoundException ex) {
 					Skript.error("Unable to register \"On WorldEdit block change\" event! You will need to upgrade to WorldEdit 6.0");
 					return;
@@ -231,7 +231,7 @@ public class SkStuff extends JavaPlugin {
 				effAmount += 1;
 				exprAmount += 1;
 			}
-			getLogger().info("Everything ready! Loaded a total of " + condAmount + (condAmount == 1 ? " condition, " : " conditions, ") + effAmount + (effAmount == 1 ? " effect, " : " effects, ") + (evtWE ? "1 event, " : "") + exprAmount + (exprAmount == 1 ? " expression" : " expressions and ") + typeAmount + (typeAmount == 1 ? " type!" : " types!"));
+			getLogger().info("Everything ready! Loaded a total of " + condAmount + " conditions, " + effAmount + " effects, " + evtAmount + "events, " + exprAmount + " expressions and " + typeAmount + " types!");
 		} else {
 			getLogger().info("Unable to find Skript or Skript isn't accepting registrations, disabling SkStuff...");
 			Bukkit.getPluginManager().disablePlugin(this);;

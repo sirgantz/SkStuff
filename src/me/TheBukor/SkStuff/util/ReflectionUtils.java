@@ -1,6 +1,7 @@
 package me.TheBukor.SkStuff.util;
 
 import org.bukkit.Bukkit;
+import org.fusesource.jansi.Ansi;
 
 public class ReflectionUtils {
 
@@ -11,7 +12,7 @@ public class ReflectionUtils {
 		try {
 			nmsClass = Class.forName(name);
 		} catch (ClassNotFoundException ex) {
-			Bukkit.getLogger().warning("Unable to get NMS class! You are probably running an unsupported version");
+			Bukkit.getLogger().warning(Ansi.ansi().fgBright(Ansi.Color.RED) + "Unable to get NMS class! You are probably running an unsupported version!" + Ansi.ansi().fgBright(Ansi.Color.DEFAULT));
 			return null;
 		}
 		return nmsClass;
@@ -24,7 +25,7 @@ public class ReflectionUtils {
 		try {
 			obcClass = Class.forName(name);
 		} catch (ClassNotFoundException ex) {
-			Bukkit.getLogger().warning("Unable to get OBC class! You are probably running an unsupported version");
+			Bukkit.getLogger().warning(Ansi.ansi().fgBright(Ansi.Color.RED) + "Unable to get OBC class! You are probably running an unsupported version!" + Ansi.ansi().fgBright(Ansi.Color.DEFAULT));
 			return null;
 		}
 		return obcClass;

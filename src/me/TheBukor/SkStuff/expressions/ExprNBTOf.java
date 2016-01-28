@@ -4,14 +4,14 @@ import java.lang.reflect.InvocationTargetException;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
+import org.fusesource.jansi.Ansi;
 
+import ch.njol.skript.Skript;
 import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
@@ -141,7 +141,7 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 					nmsEnt.getClass().getMethod("f", nbtClass).invoke(nmsEnt, NBT);
 				} catch (Exception ex) {
 					if (ex instanceof InvocationTargetException && ex.getCause().getClass().getName().contains("MojangsonParseException")) {
-						Bukkit.getConsoleSender().sendMessage("[SkStuff] " + ChatColor.RED + "Error when parsing NBT - " + ex.getCause().getMessage());
+						Skript.warning(Ansi.ansi().fgBright(Ansi.Color.RED) + "Error when parsing NBT - " + ex.getCause().getMessage() + Ansi.ansi().fgBright(Ansi.Color.DEFAULT));
 						return;
 					}
 					ex.printStackTrace();
@@ -193,7 +193,7 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 					nmsWorld.getClass().getMethod("notify", nmsPosClass).invoke(nmsWorld, tileEntity.getClass().getMethod("getPosition").invoke(tileEntity));
 				} catch (Exception ex) {
 					if (ex instanceof InvocationTargetException && ex.getCause().getClass().getName().contains("MojangsonParseException")) {
-						Bukkit.getConsoleSender().sendMessage("[SkStuff] " + ChatColor.RED + "Error when parsing NBT - " + ex.getCause().getMessage());
+						Skript.warning(Ansi.ansi().fgBright(Ansi.Color.RED) + "Error when parsing NBT - " + ex.getCause().getMessage() + Ansi.ansi().fgBright(Ansi.Color.DEFAULT));
 						return;
 					}
 					ex.printStackTrace();
@@ -253,7 +253,7 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 					((Slot) slot[0]).setItem((ItemStack) newItem);
 				} catch (Exception ex) {
 					if (ex instanceof InvocationTargetException && ex.getCause().getClass().getName().contains("MojangsonParseException")) {
-						Bukkit.getConsoleSender().sendMessage("[SkStuff] " + ChatColor.RED + "Error when parsing NBT - " + ex.getCause().getMessage());
+						Skript.warning(Ansi.ansi().fgBright(Ansi.Color.RED) + "Error when parsing NBT - " + ex.getCause().getMessage() + Ansi.ansi().fgBright(Ansi.Color.DEFAULT));
 						return;
 					}
 					ex.printStackTrace();
