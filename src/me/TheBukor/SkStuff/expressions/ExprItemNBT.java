@@ -20,9 +20,9 @@ public class ExprItemNBT extends SimpleExpression<ItemStack> {
 	private Expression<ItemStack> itemStack;
 	private Expression<String> string;
 
-	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound");
-	private Class<?> nbtParseClass = ReflectionUtils.getNMSClass("MojangsonParser");
-	private Class<?> nmsItemClass = ReflectionUtils.getNMSClass("ItemStack");
+	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound", false);
+	private Class<?> nbtParseClass = ReflectionUtils.getNMSClass("MojangsonParser", false);
+	private Class<?> nmsItemClass = ReflectionUtils.getNMSClass("ItemStack", false);
 
 	private Class<?> craftItemClass = ReflectionUtils.getOBCClass("inventory.CraftItemStack");
 

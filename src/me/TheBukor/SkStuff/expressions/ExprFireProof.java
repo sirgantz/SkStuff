@@ -1,7 +1,5 @@
 package me.TheBukor.SkStuff.expressions;
 
-import java.lang.reflect.Field;
-
 import javax.annotation.Nullable;
 
 import org.bukkit.entity.Entity;
@@ -71,14 +69,7 @@ public class ExprFireProof extends SimpleExpression<Boolean> {
 		}
 		if (mode == ChangeMode.SET) {
 			Boolean newValue = (Boolean) delta[0];
-			try {
-				Field field = nmsEnt.getClass().getDeclaredField("fireProof");
-				field.setAccessible(true);
-				field.setBoolean(nmsEnt, newValue);
-				field.setAccessible(false);
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
+			ReflectionUtils.setField("fireProof", nmsEnt.getClass(), nmsEnt, newValue);
 		}
 	}
 

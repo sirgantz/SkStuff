@@ -26,9 +26,11 @@ import ch.njol.skript.registrations.EventValues;
 import ch.njol.skript.util.Getter;
 import ch.njol.util.coll.CollectionUtils;
 import me.TheBukor.SkStuff.conditions.CondSelectionContains;
+import me.TheBukor.SkStuff.effects.EffClearPathGoals;
 import me.TheBukor.SkStuff.effects.EffDrainLiquid;
 import me.TheBukor.SkStuff.effects.EffDrawLineWE;
 import me.TheBukor.SkStuff.effects.EffMakeCylinder;
+import me.TheBukor.SkStuff.effects.EffMakeJump;
 import me.TheBukor.SkStuff.effects.EffMakePyramid;
 import me.TheBukor.SkStuff.effects.EffMakeSphere;
 import me.TheBukor.SkStuff.effects.EffMakeWalls;
@@ -36,6 +38,7 @@ import me.TheBukor.SkStuff.effects.EffNaturalize;
 import me.TheBukor.SkStuff.effects.EffRememberChanges;
 import me.TheBukor.SkStuff.effects.EffReplaceBlocksWE;
 import me.TheBukor.SkStuff.effects.EffSetBlocksWE;
+import me.TheBukor.SkStuff.effects.EffSetPathGoals;
 import me.TheBukor.SkStuff.effects.EffSimulateSnow;
 import me.TheBukor.SkStuff.effects.EffToggleVanish;
 import me.TheBukor.SkStuff.effects.EffUndoRedoSession;
@@ -69,8 +72,10 @@ public class SkStuff extends JavaPlugin {
 	private int exprAmount = 0;
 	private int typeAmount = 0;
 
-	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound");
-	private Class<?> nbtParserClass = ReflectionUtils.getNMSClass("MojangsonParser");
+	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound", false);
+	private Class<?> nbtListClass = ReflectionUtils.getNMSClass("NBTTagList", false);
+	private Class<?> nbtArrayClass = ReflectionUtils.getNMSClass("NBTTagCompound", true);
+	private Class<?> nbtParserClass = ReflectionUtils.getNMSClass("MojangsonParser", false);
 
 	@SuppressWarnings("unchecked")
 	public void onEnable() {
@@ -86,6 +91,10 @@ public class SkStuff extends JavaPlugin {
 			exprAmount += 4;
 
 			getLogger().info("Trying to register version specific stuff...");
+			Skript.registerEffect(EffClearPathGoals.class, "(clear|delete) [all] pathfind[er] goals (of|from) %livingentity%");
+//			Skript.registerEffect(EffSetPathGoals.class, "add pathfind[er] goal leap at target to %livingentity% with [leap] height [of] %number%");
+			Skript.registerEffect(EffSetPathGoals.class, "add pathfind[er] goal [priority %-integer%] (0¦(avoid|run away from) %entitydata%,[ ]radius %number%,[ ][at] speed %number%,[ ][at] speed if close %number%|1¦break door[s]|2¦breed,[ ][move to[wards] lover at] speed %number%|3¦eat grass|4¦(flee from the sun|seek shad(e|ow)),[ ][at] speed %number%|5¦float (in[side]|on) water|6¦follow (owner|tamer),[ ][at] speed %number%|7¦follow (adult[s]|parent[s]),[ ][at] speed %number%|8¦(fight back|react to|target) (damager|attacker) [[of] type %entitydata%]|9¦o(c|z)elot jump on blocks,[ ][at] speed %number%|10¦leap at target height %number%|11¦look at players,[ ]radius %number%|12¦melee attack %entitydata%,[ ][at] speed %number%|13¦(move|go) indoors|14¦move thr(u|ough) village,[ ][at] speed %number%|15¦move to[wards] target,[ ][at] speed %number%,[ ]radius %number%|16¦attack nearest entity [of] type %entitydata%|17¦o(c|z)elot attack [chicken]|18¦open door[s]|19¦(panic|flee),[ ][at] speed %number%|20¦look around randomly|21¦(walk around randomly|wander),[ ][at] speed %number%,[ ][with] %integer% ticks between mov(e[ment]|ing)|22¦sit|23¦[creeper] swell)");
+			Skript.registerEffect(EffMakeJump.class, "make %livingentity% jump");
 			Skript.registerExpression(ExprNBTOf.class, Object.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of %entity/block/itemstack%", "%entity/block/itemstack%'s nbt[[ ]tag[s]]");
 			Skript.registerExpression(ExprItemNBT.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
 			Skript.registerExpression(ExprTagOf.class, Object.class, ExpressionType.PROPERTY, "[nbt[ ]]tag %string% of [[nbt] compound] %compound%");
@@ -98,8 +107,8 @@ public class SkStuff extends JavaPlugin {
 				@Override
 				@Nullable
 				public Class<?>[] acceptChange(ChangeMode mode) {
-					if (mode == ChangeMode.ADD || mode == ChangeMode.REMOVE) {
-						return CollectionUtils.array(String[].class);
+					if (mode == ChangeMode.ADD || mode == ChangeMode.REMOVE || mode == ChangeMode.SET) {
+						return CollectionUtils.array(String[].class, nbtArrayClass);
 					}
 					return null;
 				}
@@ -107,22 +116,31 @@ public class SkStuff extends JavaPlugin {
 				@Override
 				public void change(Object[] NBT, @Nullable Object[] delta, ChangeMode mode) {
 					if (NBT[0].getClass().getName().contains("NBTTagCompound")) {
-						if (!(delta[0] instanceof String))
+						if (!(delta[0] instanceof String) || !(delta[0].getClass().isInstance(nbtClass)))
 							return;
 						String newTags = (String) delta[0];
-						if (mode == ChangeMode.ADD) {
-							Object NBT1 = null;
-							try {
-								NBT1 = nbtParserClass.getMethod("parse", String.class).invoke(NBT1, newTags);
-							} catch (Exception ex) {
-								if (ex instanceof InvocationTargetException && ex.getCause().getClass().getName().contains("MojangsonParseException")) {
-									getLogger().warning(Ansi.ansi().fgBright(Ansi.Color.RED) + "Error when parsing NBT - " + ex.getCause().getMessage() + Ansi.ansi().fgBright(Ansi.Color.DEFAULT));
-									return;
+						if (mode == ChangeMode.SET) {
+							if (!(delta[0] instanceof String))
+								NBT[0] = delta[0];
+						} else if (mode == ChangeMode.ADD) {
+							if (delta[0] instanceof String) {
+								Object NBT1 = null;
+								try {
+									NBT1 = nbtParserClass.getMethod("parse", String.class).invoke(NBT1, newTags);
+								} catch (Exception ex) {
+									if (ex instanceof InvocationTargetException && ex.getCause().getClass().getName().contains("MojangsonParseException")) {
+										getLogger().warning(Ansi.ansi().fgBright(Ansi.Color.RED) + "Error when parsing NBT - " + ex.getCause().getMessage() + Ansi.ansi().fgBright(Ansi.Color.DEFAULT));
+										return;
+									}
+									ex.printStackTrace();
 								}
-								ex.printStackTrace();
+								NBTUtil.addCompound(NBT[0], NBT1);
+							} else {
+								NBTUtil.addCompound(NBT[0], delta[0]);
 							}
-							NBTUtil.addCompound(NBT[0], NBT1);
 						} else if (mode == ChangeMode.REMOVE) {
+							if (!(delta[0] instanceof String))
+								return;
 							for (Object s : delta) {
 								try {
 									nbtClass.getMethod("remove", String.class).invoke(NBT[0], (String) s);
@@ -137,13 +155,13 @@ public class SkStuff extends JavaPlugin {
 
 				@Override
 				public String getVariableNamePattern() {
-					return "nbt:{.+:.+}";
+					return ".+";
 				}
 
 				@Override
 				@Nullable
 				public Object parse(String rawNBT, ParseContext context) {
-					if (rawNBT.startsWith("{") && rawNBT.contains(":") && rawNBT.endsWith("}")) {
+					if (rawNBT.startsWith("nbt:{") && rawNBT.endsWith("}")) {
 						Object NBT = null;
 						try {
 							NBT = nbtParserClass.getMethod("parse", String.class).invoke(NBT, rawNBT);
@@ -168,10 +186,93 @@ public class SkStuff extends JavaPlugin {
 
 				@Override
 				public String toVariableNameString(Object compound) {
-					return "nbt:" + compound.toString();
+					return compound.toString();
 				}
 			}));
-			typeAmount += 1;
+
+			Classes.registerClass(new ClassInfo<Object>((Class<Object>) nbtListClass, "nbtlist").user("nbt ?list ?(tag)?").name("NBT List").changer(new Changer<Object>() {
+
+				@Override
+				@Nullable
+				public Class<?>[] acceptChange(ChangeMode mode) {
+					if (mode == ChangeMode.ADD || mode == ChangeMode.SET || mode == ChangeMode.DELETE || mode == ChangeMode.RESET) {
+						return CollectionUtils.array(Float[].class, Double[].class, String[].class, nbtArrayClass, Integer[].class);
+					}
+					return null;
+				}
+
+				@Override
+				public void change(Object[] list, @Nullable Object[] delta, ChangeMode mode) {
+					if (list[0].getClass().getName().contains("NBTTagList")) {
+						int typeId = 0;
+						if (delta instanceof Float[]) {
+							typeId = 5;
+						} else if (delta instanceof Double[]) {
+							typeId = 6;
+						} else if (delta instanceof String[]) {
+							typeId = 8;
+						} else if (delta.getClass() == nbtArrayClass) {
+							typeId = 10;
+						} else if (delta instanceof Integer[]) {
+							typeId = 11;
+						} else {
+							return;
+						}
+						if (mode == ChangeMode.SET) {
+							if (NBTUtil.getContentsId(list) == typeId)
+								list[0] = delta[0];
+						} else if (mode == ChangeMode.ADD) {
+							if (NBTUtil.getContentsId(list) == typeId) {
+								if (typeId == 10) {
+									String newTags = (String) delta[0];
+									Object NBT1 = null;
+									try {
+										NBT1 = nbtParserClass.getMethod("parse", String.class).invoke(NBT1, newTags);
+									} catch (Exception ex) {
+										if (ex instanceof InvocationTargetException && ex.getCause().getClass().getName().contains("MojangsonParseException")) {
+											Skript.warning(Ansi.ansi().fgBright(Ansi.Color.RED) + "Error when parsing NBT - " + ex.getCause().getMessage() + Ansi.ansi().fgBright(Ansi.Color.DEFAULT));
+											return;
+										}
+										ex.printStackTrace();
+									}
+									NBTUtil.addToList(list[0], new Object[] { NBT1 });
+								} else {
+									NBTUtil.addToList(list[0], delta);
+								}
+							}
+						} else if (mode == ChangeMode.DELETE || mode == ChangeMode.RESET) {
+							try {
+								list[0] = nbtListClass.newInstance();
+							} catch (Exception ex) {
+								ex.printStackTrace();
+							}
+						}
+					}
+				}
+			}).parser(new Parser<Object>() {
+
+				@Override
+				public String getVariableNamePattern() {
+					return ".+";
+				}
+
+				@Override
+				@Nullable
+				public Object parse(String rawNBTList, ParseContext context) {
+					return null;
+				}
+
+				@Override
+				public String toString(Object list, int arg1) {
+					return list.toString();
+				}
+
+				@Override
+				public String toVariableNameString(Object list) {
+					return list.toString();
+				}
+			}));
+			typeAmount += 2;
 			exprAmount += 6;
 			if (Bukkit.getPluginManager().getPlugin("WorldEdit") != null) {
 				getLogger().info("WorldEdit found! Registering WorldEdit stuff...");

@@ -16,8 +16,8 @@ public class ExprTagOf extends SimpleExpression<Object> {
 	private Expression<String> string;
 	private Expression<Object> compound;
 
-	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound");
-	private Class<?> nbtBaseClass = ReflectionUtils.getNMSClass("NBTBase");
+	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound", false);
+	private Class<?> nbtBaseClass = ReflectionUtils.getNMSClass("NBTBase", false);
 
 	@Override
 	public Class<? extends Object> getReturnType() {
@@ -47,7 +47,7 @@ public class ExprTagOf extends SimpleExpression<Object> {
 		String stringTag = string.getSingle(e);
 		Object tag = null;
 		try {
-			tag = NBT.getClass().getMethod("get", String.class).invoke(NBT, stringTag);
+			tag = nbtClass.getMethod("get", String.class).invoke(NBT, stringTag);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -62,34 +62,45 @@ public class ExprTagOf extends SimpleExpression<Object> {
 		try {
 			switch (id) {
 			case 1:
-				return new Byte[] { Byte.valueOf(NBT.getClass().getMethod("getByte", String.class).invoke(NBT, stringTag).toString()) };
+				return new Byte[] { Byte.valueOf(nbtClass.getMethod("getByte", String.class).invoke(NBT, stringTag).toString()) };
 			case 2:
-				return new Short[] { Short.valueOf(NBT.getClass().getMethod("getShort", String.class).invoke(NBT, stringTag).toString()) };
+				return new Short[] { Short.valueOf(nbtClass.getMethod("getShort", String.class).invoke(NBT, stringTag).toString()) };
 			case 3:
-				return new Integer[] { Integer.valueOf(NBT.getClass().getMethod("getInt", String.class).invoke(NBT, stringTag).toString()) };
+				return new Integer[] { Integer.valueOf(nbtClass.getMethod("getInt", String.class).invoke(NBT, stringTag).toString()) };
 			case 4:
-				return new Long[] { Long.valueOf(NBT.getClass().getMethod("getLong", String.class).invoke(NBT, stringTag).toString()) };
+				return new Long[] { Long.valueOf(nbtClass.getMethod("getLong", String.class).invoke(NBT, stringTag).toString()) };
 			case 5:
-				return new Float[] { Float.valueOf(NBT.getClass().getMethod("getFloat", String.class).invoke(NBT, stringTag).toString()) };
+				return new Float[] { Float.valueOf(nbtClass.getMethod("getFloat", String.class).invoke(NBT, stringTag).toString()) };
 			case 6:
-				return new Double[] { Double.valueOf(NBT.getClass().getMethod("getDouble", String.class).invoke(NBT, stringTag).toString()) };
+				return new Double[] { Double.valueOf(nbtClass.getMethod("getDouble", String.class).invoke(NBT, stringTag).toString()) };
 			case 7: //Byte array, only used in chunk files. Also doesn't have support for the MojangsonParser.
 				break;
 			case 8:
-				return new String[] { NBT.getClass().getMethod("getString", String.class).invoke(NBT, stringTag).toString() };
-				//Lists will be probably an ASS to implement when I get to them
+				return new String[] { nbtClass.getMethod("getString", String.class).invoke(NBT, stringTag).toString() };
 			case 9:
+				int i;
+				Object[] list = new Object[] { new Object() };
+				for (i = 1; i <= 11; i++) { //To get a list I need to know the type of the tags it contains inside,
+					//since I can't predict what type the list will have, I just loop all of the IDs until I find a non-empty list.
+					list[0] = nbtClass.getMethod("getList", String.class, int.class).invoke(NBT, stringTag, i); //Try to get the list with the ID "loop-number".
+					if (!list[0].toString().equals("[]")) { //If list is not empty.
+						break; //Stop loop.
+					}
+				}
+				return list;
+				/*
+				REMOVED TEMPORARILY, HOPEFULLY THE NEW IMPLEMENTATION SHOULD WORK BETTER
 				int i;
 				Object list = null;
 				for (i = 1; i <= 11; i++) { //To get a list I need to know the type of the tags it contains inside,
 					//since I can't predict what type the list will have, I just loop all of the IDs until I find a non-empty list.
-					list = NBT.getClass().getMethod("getList", String.class, int.class).invoke(NBT, stringTag, i); //Try to get the list with the ID "loop-number".
+					list = nbtClass.getMethod("getList", String.class, int.class).invoke(NBT, stringTag, i); //Try to get the list with the ID "loop-number".
 					if (!list.toString().equals("[]")) { //If list is not empty.
 						break; //Stop loop.
 					}
 				}
 				String methodName = null;
-				switch (((int) list.getClass().getMethod("f").invoke(list))) { //list.f() gets the type of the tags in the list.
+				switch (NBTUtil.getContentsId(list)) {
 					case 5: //Float
 						methodName = "e"; //list.e(int) = get float from the specified index.
 						break;
@@ -115,10 +126,11 @@ public class ExprTagOf extends SimpleExpression<Object> {
 					tags[i] = gottenTag;
 				}
 				return tags;
+				*/
 			case 10:
-				return new Object[] { NBT.getClass().getMethod("getCompound", String.class).invoke(NBT, stringTag) };
+				return new Object[] { nbtClass.getMethod("getCompound", String.class).invoke(NBT, stringTag) };
 			case 11: //Integer array, this one is only used on the chunk files (and maybe schematic files?).
-				return new Object[] { NBT.getClass().getMethod("getIntArray", String.class).invoke(NBT, stringTag).toString() };
+				return new Object[] { nbtClass.getMethod("getIntArray", String.class).invoke(NBT, stringTag).toString() };
 			default: //This shouldn't happen, but it's better to have this just in case it spills errors everywhere.
 				break;
 			}
@@ -142,19 +154,19 @@ public class ExprTagOf extends SimpleExpression<Object> {
 			Object newValue = delta[0];
 			try {
 				if (newValue instanceof Byte) {
-					NBT.getClass().getMethod("setByte", String.class, byte.class).invoke(NBT, stringTag, (byte) newValue);
+					nbtClass.getMethod("setByte", String.class, byte.class).invoke(NBT, stringTag, ((Byte) newValue).byteValue());
 				} else if (newValue instanceof Short) {
-					NBT.getClass().getMethod("setShort", String.class, short.class).invoke(NBT, stringTag, (short) newValue);
+					nbtClass.getMethod("setShort", String.class, short.class).invoke(NBT, stringTag, ((Short) newValue).shortValue());
 				} else if (newValue instanceof Integer) {
-					NBT.getClass().getMethod("setInt", String.class, int.class).invoke(NBT, stringTag, (int) newValue);
+					nbtClass.getMethod("setInt", String.class, int.class).invoke(NBT, stringTag, ((Integer) newValue).intValue());
 				} else if (newValue instanceof Long) {
-					NBT.getClass().getMethod("setLong", String.class, long.class).invoke(NBT, stringTag, (long) newValue);
+					nbtClass.getMethod("setLong", String.class, long.class).invoke(NBT, stringTag, ((Long) newValue).longValue());
 				} else if (newValue instanceof Float) {
-					NBT.getClass().getMethod("setFloat", String.class, float.class).invoke(NBT, stringTag, (float) newValue);
+					nbtClass.getMethod("setFloat", String.class, float.class).invoke(NBT, stringTag, ((Float) newValue).floatValue());
 				} else if (newValue instanceof Double) {
-					NBT.getClass().getMethod("setDouble", String.class, double.class).invoke(NBT, stringTag, (double) newValue);
+					nbtClass.getMethod("setDouble", String.class, double.class).invoke(NBT, stringTag, ((Double) newValue).doubleValue());
 				} else if (newValue instanceof String) {
-					NBT.getClass().getMethod("setString", String.class, String.class).invoke(NBT, stringTag, (String) newValue);
+					nbtClass.getMethod("setString", String.class, String.class).invoke(NBT, stringTag, String.valueOf(newValue));
 				} else {
 					return; //Something else like a list or entire compound.
 				}
@@ -163,7 +175,7 @@ public class ExprTagOf extends SimpleExpression<Object> {
 			}
 		} else if (mode == ChangeMode.RESET || mode == ChangeMode.DELETE) {
 			try {
-				NBT.getClass().getMethod("set", String.class, nbtBaseClass).invoke(NBT, stringTag, nbtBaseClass.newInstance());
+				nbtClass.getMethod("set", String.class, nbtBaseClass).invoke(NBT, stringTag, nbtBaseClass.newInstance());
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}

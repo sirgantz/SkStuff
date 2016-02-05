@@ -28,9 +28,9 @@ import me.TheBukor.SkStuff.util.ReflectionUtils;
 public class ExprFileNBT extends SimpleExpression<Object> {
 	private Expression<String> input;
 
-	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound");
-	private Class<?> nbtParserClass = ReflectionUtils.getNMSClass("MojangsonParser");
-	private Class<?> nbtCompressedClass = ReflectionUtils.getNMSClass("NBTCompressedStreamTools");
+	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound", false);
+	private Class<?> nbtParserClass = ReflectionUtils.getNMSClass("MojangsonParser", false);
+	private Class<?> nbtCompressedClass = ReflectionUtils.getNMSClass("NBTCompressedStreamTools", false);
 
 	@Override
 	public Class<? extends Object> getReturnType() {

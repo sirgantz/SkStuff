@@ -25,10 +25,10 @@ import me.TheBukor.SkStuff.util.ReflectionUtils;
 public class ExprNBTOf extends SimpleExpression<Object> {
 	private Expression<?> target;
 
-	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound");
-	private Class<?> nbtParserClass = ReflectionUtils.getNMSClass("MojangsonParser");
-	private Class<?> nmsPosClass = ReflectionUtils.getNMSClass("BlockPosition");
-	private Class<?> nmsItemClass = ReflectionUtils.getNMSClass("ItemStack");
+	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound", false);
+	private Class<?> nbtParserClass = ReflectionUtils.getNMSClass("MojangsonParser", false);
+	private Class<?> nmsPosClass = ReflectionUtils.getNMSClass("BlockPosition", false);
+	private Class<?> nmsItemClass = ReflectionUtils.getNMSClass("ItemStack", false);
 
 	private Class<?> craftEntClass = ReflectionUtils.getOBCClass("entity.CraftEntity");
 	private Class<?> craftItemClass = ReflectionUtils.getOBCClass("inventory.CraftItemStack");
