@@ -3,7 +3,6 @@ package me.TheBukor.SkStuff.util;
 import java.lang.reflect.Field;
 
 import org.bukkit.Bukkit;
-import org.fusesource.jansi.Ansi;
 
 public class ReflectionUtils {
 
@@ -11,12 +10,12 @@ public class ReflectionUtils {
 		String version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3] + ".";
 		String name = "net.minecraft.server." + version + classString;
 		if (isArray)
-			name = "[L" + name;
+			name = "[L" + name + ";";
 		Class<?> nmsClass = null;
 		try {
 			nmsClass = Class.forName(name);
 		} catch (ClassNotFoundException ex) {
-			Bukkit.getLogger().warning(Ansi.ansi().fgBright(Ansi.Color.RED) + "Unable to get NMS class! You are probably running an unsupported version!" + Ansi.ansi().fgBright(Ansi.Color.DEFAULT));
+			Bukkit.getLogger().warning("Unable to get NMS class \'" + name + "\'! You are probably running an unsupported version!");
 			return null;
 		}
 		return nmsClass;
@@ -29,12 +28,12 @@ public class ReflectionUtils {
 		try {
 			obcClass = Class.forName(name);
 		} catch (ClassNotFoundException ex) {
-			Bukkit.getLogger().warning(Ansi.ansi().fgBright(Ansi.Color.RED) + "Unable to get OBC class! You are probably running an unsupported version!" + Ansi.ansi().fgBright(Ansi.Color.DEFAULT));
+			Bukkit.getLogger().warning("Unable to get OBC class \'" + name + "\'! You are probably running an unsupported version!");
 			return null;
 		}
 		return obcClass;
 	}
-	
+
 	public static Object getField(String field, Class<?> clazz, Object object) {
 		Field f = null;
 		Object obj = null;
