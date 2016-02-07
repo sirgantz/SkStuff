@@ -125,7 +125,6 @@ public class EffRemovePathGoal extends Effect {
 				if (ReflectionUtils.getField("a", o.getClass(), o).getClass() == toRemove) {
 					goals.remove();
 					goalPriorities.remove();
-					break;
 				}
 			}
 		} catch (Exception ex) {
