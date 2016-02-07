@@ -3,9 +3,11 @@ package me.TheBukor.SkStuff.effects;
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Animals;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Tameable;
 import org.bukkit.event.Event;
 
 import ch.njol.skript.entity.EntityData;
@@ -171,7 +173,7 @@ public class EffSetPathGoal extends Effect {
 				newGoal = goalBreakDoor.getConstructor(entInsent).newInstance(nmsEnt);
 			} else if (mark == 2) {
 				double spd = breedSpeed.getSingle(e).doubleValue();
-				if (!(nmsEnt.getClass().isAssignableFrom(entAnimal))) {
+				if (!(ent instanceof Animals)) {
 					Bukkit.broadcastMessage("\u00A7c" + ent.getType().toString() + " is not an animal - \u00A7e[DEBUG MESSAGE]");
 					return;
 				}
@@ -185,14 +187,14 @@ public class EffSetPathGoal extends Effect {
 				newGoal = goalFloat.getConstructor(entInsent).newInstance(nmsEnt);
 			} else if (mark == 6) {
 				double spd = followOwnerSpeed.getSingle(e).doubleValue();
-				if (!(nmsEnt.getClass().isAssignableFrom(entTameable))) {
+				if (!(ent instanceof Tameable)) {
 					Bukkit.broadcastMessage("\u00A7c" + ent.getType().toString() + " is not a tameable animal - \u00A7e[DEBUG MESSAGE]");
 					return;
 				}
 				newGoal = goalFollowOwner.getConstructor(entTameable, double.class, float.class, float.class).newInstance(nmsEnt, spd, 20.0F, 5.0F);
 			} else if (mark == 7) {
 				double spd = followAdultsSpeed.getSingle(e).doubleValue();
-				if (!(nmsEnt.getClass().isAssignableFrom(entAnimal))) {
+				if (!(ent instanceof Animals)) {
 					Bukkit.broadcastMessage("\u00A7c" + ent.getType().toString() + " is not an animal - \u00A7e[DEBUG MESSAGE]");
 					return;
 				}
@@ -287,7 +289,7 @@ public class EffSetPathGoal extends Effect {
 				int interval = randomWalkInterval.getSingle(e).getTicks();
 				newGoal = goalWander.getConstructor(entCreature, double.class, int.class).newInstance(nmsEnt, spd, interval);
 			} else if (mark == 20) {
-				if (!(nmsEnt.getClass().isAssignableFrom(entTameable))) {
+				if (!(ent instanceof Tameable)) {
 					Bukkit.broadcastMessage("\u00A7c" + ent.getType().toString() + " is not a tameable animal - \u00A7e[DEBUG MESSAGE]");
 					return;
 				}
