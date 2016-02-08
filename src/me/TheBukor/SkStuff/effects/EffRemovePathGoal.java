@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -44,7 +45,9 @@ public class EffRemovePathGoal extends Effect {
 	private Class<?> goalSit = ReflectionUtils.getNMSClass("PathfinderGoalSit", false);
 	private Class<?> goalSwell = ReflectionUtils.getNMSClass("PathfinderGoalSwell", false);
 
+	private Class<?> entBlaze = ReflectionUtils.getNMSClass("EntityBlaze", false);
 	private Class<?> entInsent = ReflectionUtils.getNMSClass("EntityInsentient", false);
+	private Class<?> entSquid = ReflectionUtils.getNMSClass("EntitySquid", false);
 	private Class<?> craftLivEnt = ReflectionUtils.getOBCClass("entity.CraftLivingEntity");
 
 	@SuppressWarnings("unchecked")
@@ -116,7 +119,27 @@ public class EffRemovePathGoal extends Effect {
 				toRemove = goalSit;
 			} else if (mark == 21) {
 				toRemove = goalSwell;
+			} else if (mark == 22) {
+				Class<?>[] classes = entSquid.getDeclaredClasses();
+				for (Class<?> c : classes) {
+					Bukkit.broadcastMessage("\u00A79loop-class: \u00A7b" + c);
+					if (c.getSimpleName().equals("PathfinderGoalSquid")) {
+						toRemove = c;
+						break;
+					}
+				}
+			} else if (mark == 23) {
+				Class<?>[] classes = entBlaze.getDeclaredClasses();
+				for (Class<?> c : classes) {
+					Bukkit.broadcastMessage("\u00A79loop-class: \u00A7b" + c);
+					if (c.getSimpleName().equals("PathfinderGoalBlazeFireball")) {
+						toRemove = c;
+						break;
+					}
+				}
 			}
+			if (toRemove == null)
+				return;
 			Iterator<?> goals = ((List<?>) ReflectionUtils.getField("b", goalSelectorClass, goalSelector)).iterator();
 			Iterator<?> goalPriorities = ((List<?>) ReflectionUtils.getField("c", goalSelectorClass, goalSelector)).iterator();
 			while (goals.hasNext()) {

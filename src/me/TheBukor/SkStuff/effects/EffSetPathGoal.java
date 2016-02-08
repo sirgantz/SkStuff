@@ -4,9 +4,12 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Animals;
+import org.bukkit.entity.Blaze;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Ocelot;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Squid;
 import org.bukkit.entity.Tameable;
 import org.bukkit.event.Event;
 
@@ -70,12 +73,11 @@ public class EffSetPathGoal extends Effect {
 	private Class<?> goalSit = ReflectionUtils.getNMSClass("PathfinderGoalSit", false);
 	private Class<?> goalSwell = ReflectionUtils.getNMSClass("PathfinderGoalSwell", false);
 
+	private Class<?> craftLivEnt = ReflectionUtils.getOBCClass("entity.CraftLivingEntity");
 	private Class<?> entAnimal = ReflectionUtils.getNMSClass("EntityAnimal", false);
 	private Class<?> entCreature = ReflectionUtils.getNMSClass("EntityCreature", false);
 	private Class<?> entInsent = ReflectionUtils.getNMSClass("EntityInsentient", false);
-	private Class<?> entOcelot = ReflectionUtils.getNMSClass("EntityOcelot", false);
 	private Class<?> entTameable = ReflectionUtils.getNMSClass("EntityTameableAnimal", false);
-	private Class<?> craftLivEnt = ReflectionUtils.getOBCClass("entity.CraftLivingEntity");
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -145,10 +147,12 @@ public class EffSetPathGoal extends Effect {
 		if (ent instanceof Player || ent == null)
 			return;
 		Object obcEnt = craftLivEnt.cast(ent);
+		Object nmsEnt = null;
+		Class<?> clazz = null;
 		try {
 			boolean target = false;
 			Object newGoal = null;
-			Object nmsEnt = entInsent.cast(obcEnt.getClass().getMethod("getHandle").invoke(obcEnt));
+			nmsEnt = entInsent.cast(obcEnt.getClass().getMethod("getHandle").invoke(obcEnt));
 			Object goals = ReflectionUtils.getField("goalSelector", entInsent, nmsEnt);
 			Object targets = ReflectionUtils.getField("targetSelector", entInsent, nmsEnt);
 			if (mark == 0) {
@@ -217,9 +221,9 @@ public class EffSetPathGoal extends Effect {
 				newGoal = goalReactAttack.getConstructor(entCreature, boolean.class, Class[].class).newInstance(nmsEnt, false, nmsClass[0]);
 			} else if (mark == 9) {
 				double spd = jumpOnBlockSpeed.getSingle(e).doubleValue();
-				if (nmsEnt.getClass() != entOcelot)
+				if (!(ent instanceof Ocelot))
 					return;
-				newGoal = goalJumpOnBlock.getConstructor(entOcelot, double.class).newInstance(nmsEnt, spd);
+				newGoal = goalJumpOnBlock.getConstructor(nmsEnt.getClass(), double.class).newInstance(nmsEnt, spd);
 			} else if (mark == 10) {
 				float height = leapHeight.getSingle(e).floatValue();
 				newGoal = goalLeapTarget.getConstructor(entInsent, float.class).newInstance(nmsEnt, height);
@@ -300,14 +304,67 @@ public class EffSetPathGoal extends Effect {
 					return;
 				}
 				newGoal = goalSwell.getConstructor(nmsEnt.getClass()).newInstance(nmsEnt);
+			} else if (mark == 22) {
+				if (!(ent instanceof Squid)) {
+					Bukkit.broadcastMessage("\u00A7c" + ent.getType().toString() + " is not a squid - \u00A7e[DEBUG MESSAGE]");
+					return;
+				}
+				Class<?>[] classes = nmsEnt.getClass().getDeclaredClasses();
+				for (Class<?> c : classes) {
+					Bukkit.broadcastMessage("\u00A79loop-class: \u00A7b" + c);
+					if (c.getSimpleName().equals("PathfinderGoalSquid")) {
+						clazz = c;
+						clazz.getConstructor(nmsEnt.getClass()).setAccessible(true);
+						break;
+					}
+				}
+				if (clazz == null)
+					return;
+				newGoal = clazz.getConstructor(nmsEnt.getClass()).newInstance(nmsEnt);
+				clazz.getConstructor(nmsEnt.getClass()).setAccessible(false);
+			} else if (mark == 23) {
+				if (!(ent instanceof Blaze)) {
+					Bukkit.broadcastMessage("\u00A7c" + ent.getType().toString() + " is not a blaze - \u00A7e[DEBUG MESSAGE]");
+					return;
+				}
+				Class<?>[] classes = nmsEnt.getClass().getDeclaredClasses();
+				for (Class<?> c : classes) {
+					Bukkit.broadcastMessage("\u00A79loop-class: \u00A7b" + c);
+					if (c.getSimpleName().equals("PathfinderGoalBlazeFireball")) {
+						clazz = c;
+						clazz.getConstructor(nmsEnt.getClass()).setAccessible(true);
+						break;
+					}
+				}
+				if (clazz == null)
+					return;
+				newGoal = clazz.getConstructor(nmsEnt.getClass()).newInstance(nmsEnt);
+				clazz.getConstructor(nmsEnt.getClass()).setAccessible(false);
+			} else if (mark == 24) {
+				// TODO: Add more goal/target selectors
+
+				/* Classes that have their own pathfinder goals:
+				 * Enderman, 3 goals, place blocks, pickup blocks and player who looked (?).
+				 * Ghast, 3 goals, all copy of existing ones, but adapted to a flying ghast.
+				 * Rabbit, 3 goals, 2 adapted copies, 1 new (eat carrot crops)
+				 * Silverfish, 2 goals, hide in block and wake other silverfish blocks.
+				 * Slime, 4 goals, random jump, go to near player, go in random direction and idle.
+				 * Spider, 2 goals, adapted copies of melee and nearest attackable.
+				 */
 			}
 			if (target) {
 				newGoal = goalSelector.getMethod("a", int.class, goal).invoke(targets, priority, newGoal);
 			} else {
 				newGoal = goalSelector.getMethod("a", int.class, goal).invoke(goals, priority, newGoal);
 			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
+		} catch (Exception ex1) {
+			if (clazz != null)
+				try {
+					clazz.getConstructor(nmsEnt.getClass()).setAccessible(true);
+				} catch (SecurityException | NoSuchMethodException ex2) {
+					ex2.printStackTrace();
+				}
+			ex1.printStackTrace();
 		}
 	}
 }
