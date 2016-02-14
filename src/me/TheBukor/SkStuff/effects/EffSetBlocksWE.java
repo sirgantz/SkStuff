@@ -38,8 +38,8 @@ public class EffSetBlocksWE extends Effect {
 		return true;
 	}
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "set all blocks from " + location1.toString(e, false) + " to " + location2.toString(e, false) + " to " + blockList.toString(e, false) + " using an edit session";
+	public String toString(@Nullable Event e, boolean debug) {
+		return "set all blocks from " + location1.toString(e, debug) + " to " + location2.toString(e, debug) + " to " + blockList.toString(e, debug) + " using an edit session";
 	}
 
 	@SuppressWarnings("deprecation")

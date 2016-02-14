@@ -31,7 +31,7 @@ public class ExprChangedBlocksSession extends SimpleExpression<Integer> {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
+	public String toString(@Nullable Event e, boolean debug) {
 		return "the number of changed blocks in an edit session";
 	}
 

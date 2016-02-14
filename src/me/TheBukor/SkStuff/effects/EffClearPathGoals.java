@@ -29,8 +29,8 @@ public class EffClearPathGoals extends Effect {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "clear all pathfind goals of " + entity.toString(e, false);
+	public String toString(@Nullable Event e, boolean debug) {
+		return "clear all pathfinder goals from " + entity.toString(e, debug);
 	}
 
 	@Override

@@ -1,14 +1,20 @@
 package me.TheBukor.SkStuff.effects;
 
+import java.lang.reflect.Constructor;
+
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Animals;
 import org.bukkit.entity.Blaze;
 import org.bukkit.entity.Creeper;
+import org.bukkit.entity.Enderman;
+import org.bukkit.entity.Ghast;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Ocelot;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Silverfish;
+import org.bukkit.entity.Spider;
 import org.bukkit.entity.Squid;
 import org.bukkit.entity.Tameable;
 import org.bukkit.event.Event;
@@ -47,31 +53,6 @@ public class EffSetPathGoal extends Effect {
 	private Expression<LivingEntity> entity;
 
 	private int mark;
-
-	private Class<?> goal = ReflectionUtils.getNMSClass("PathfinderGoal", false);
-	private Class<?> goalSelector = ReflectionUtils.getNMSClass("PathfinderGoalSelector", false);
-	private Class<?> goalAvoid = ReflectionUtils.getNMSClass("PathfinderGoalAvoidTarget", false);
-	private Class<?> goalBreed = ReflectionUtils.getNMSClass("PathfinderGoalBreed", false);
-	private Class<?> goalBreakDoor = ReflectionUtils.getNMSClass("PathfinderGoalBreakDoor", false);
-	private Class<?> goalEatGrass = ReflectionUtils.getNMSClass("PathfinderGoalEatTile", false);
-	private Class<?> goalFleeSun = ReflectionUtils.getNMSClass("PathfinderGoalFleeSun", false);
-	private Class<?> goalFloat = ReflectionUtils.getNMSClass("PathfinderGoalFloat", false);
-	private Class<?> goalFollowOwner = ReflectionUtils.getNMSClass("PathfinderGoalFollowOwner", false);
-	private Class<?> goalFollowAdults = ReflectionUtils.getNMSClass("PathfinderGoalFollowParent", false);
-	private Class<?> goalReactAttack = ReflectionUtils.getNMSClass("PathfinderGoalHurtByTarget", false);
-	private Class<?> goalJumpOnBlock = ReflectionUtils.getNMSClass("PathfinderGoalJumpOnBlock", false);
-	private Class<?> goalLeapTarget = ReflectionUtils.getNMSClass("PathfinderGoalLeapAtTarget", false);
-	private Class<?> goalLookEntities = ReflectionUtils.getNMSClass("PathfinderGoalLookAtPlayer", false);
-	private Class<?> goalMeleeAttack = ReflectionUtils.getNMSClass("PathfinderGoalMeleeAttack", false);
-	private Class<?> goalGotoTarget = ReflectionUtils.getNMSClass("PathfinderGoalMoveTowardsTarget", false);
-	private Class<?> goalNearTarget = ReflectionUtils.getNMSClass("PathfinderGoalNearestAttackableTarget", false);
-	private Class<?> goalOcelotAttack = ReflectionUtils.getNMSClass("PathfinderGoalOcelotAttack", false);
-	private Class<?> goalOpenDoors = ReflectionUtils.getNMSClass("PathfinderGoalOpenDoor", false);
-	private Class<?> goalPanic = ReflectionUtils.getNMSClass("PathfinderGoalPanic", false);
-	private Class<?> goalRandomLook = ReflectionUtils.getNMSClass("PathfinderGoalRandomLookaround", false);
-	private Class<?> goalWander = ReflectionUtils.getNMSClass("PathfinderGoalRandomStroll", false);
-	private Class<?> goalSit = ReflectionUtils.getNMSClass("PathfinderGoalSit", false);
-	private Class<?> goalSwell = ReflectionUtils.getNMSClass("PathfinderGoalSwell", false);
 
 	private Class<?> craftLivEnt = ReflectionUtils.getOBCClass("entity.CraftLivingEntity");
 	private Class<?> entAnimal = ReflectionUtils.getNMSClass("EntityAnimal", false);
@@ -125,8 +106,8 @@ public class EffSetPathGoal extends Effect {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "add pathfinder goal to ent";
+	public String toString(@Nullable Event e, boolean debug) {
+		return "add pathfinder goal to entity";
 	}
 
 	@SuppressWarnings("deprecation")
@@ -136,26 +117,26 @@ public class EffSetPathGoal extends Effect {
 		if (goalPriority != null) {
 			priority = goalPriority.getSingle(e).intValue();
 		} else {
-			priority = 1;
+			priority = 4;
 		}
-		if (priority < 0) {
+		if (priority < 1) {
 			priority = 1;
 		} else if (priority > 9) {
 			priority = 9;
 		}
 		LivingEntity ent = entity.getSingle(e);
-		if (ent instanceof Player || ent == null)
+		if (ent == null ||ent instanceof Player)
 			return;
 		Object obcEnt = craftLivEnt.cast(ent);
-		Object nmsEnt = null;
-		Class<?> clazz = null;
 		try {
+			Object nmsEnt = null;
 			boolean target = false;
 			Object newGoal = null;
 			nmsEnt = entInsent.cast(obcEnt.getClass().getMethod("getHandle").invoke(obcEnt));
 			Object goals = ReflectionUtils.getField("goalSelector", entInsent, nmsEnt);
 			Object targets = ReflectionUtils.getField("targetSelector", entInsent, nmsEnt);
 			if (mark == 0) {
+				Class<?> goalAvoid = ReflectionUtils.getNMSClass("PathfinderGoalAvoidTarget", false);
 				float radius = avoidRadius.getSingle(e).floatValue();
 				double spd1 = avoidSpeed1.getSingle(e).doubleValue();
 				double spd2 = avoidSpeed2.getSingle(e).doubleValue();
@@ -165,6 +146,9 @@ public class EffSetPathGoal extends Effect {
 					exprInput = exprInput.substring(4);
 				}
 				entityData = EntityData.parseWithoutIndefiniteArticle(exprInput);
+				if (!LivingEntity.class.isAssignableFrom(entityData.getType())) {
+					return;
+				}
 				String className = entityData.getType().getSimpleName();
 				if (className.equals("HumanEntity"))
 					className = "Human";
@@ -174,43 +158,47 @@ public class EffSetPathGoal extends Effect {
 					return;
 				newGoal = goalAvoid.getConstructor(entCreature, Class.class, float.class, double.class, double.class).newInstance(nmsEnt, nmsClass, radius, spd1, spd2);
 			} else if (mark == 1) {
+				Class<?> goalBreakDoor = ReflectionUtils.getNMSClass("PathfinderGoalBreakDoor", false);
 				newGoal = goalBreakDoor.getConstructor(entInsent).newInstance(nmsEnt);
 			} else if (mark == 2) {
+				Class<?> goalBreed = ReflectionUtils.getNMSClass("PathfinderGoalBreed", false);
 				double spd = breedSpeed.getSingle(e).doubleValue();
-				if (!(ent instanceof Animals)) {
-					Bukkit.broadcastMessage("\u00A7c" + ent.getType().toString() + " is not an animal - \u00A7e[DEBUG MESSAGE]");
+				if (!(ent instanceof Animals))
 					return;
-				}
 				newGoal = goalBreed.getConstructor(entAnimal, double.class).newInstance(nmsEnt, spd);
 			} else if (mark == 3) {
+				Class<?> goalEatGrass = ReflectionUtils.getNMSClass("PathfinderGoalEatTile", false);
 				newGoal = goalEatGrass.getConstructor(entInsent).newInstance(nmsEnt);
 			} else if (mark == 4) {
+				Class<?> goalFleeSun = ReflectionUtils.getNMSClass("PathfinderGoalFleeSun", false);
 				double spd = fleeSunSpeed.getSingle(e).doubleValue();
 				newGoal = goalFleeSun.getConstructor(entCreature, double.class).newInstance(nmsEnt, spd);
 			} else if (mark == 5) {
+				Class<?> goalFloat = ReflectionUtils.getNMSClass("PathfinderGoalFloat", false);
 				newGoal = goalFloat.getConstructor(entInsent).newInstance(nmsEnt);
 			} else if (mark == 6) {
+				Class<?> goalFollowOwner = ReflectionUtils.getNMSClass("PathfinderGoalFollowOwner", false);
 				double spd = followOwnerSpeed.getSingle(e).doubleValue();
-				if (!(ent instanceof Tameable)) {
-					Bukkit.broadcastMessage("\u00A7c" + ent.getType().toString() + " is not a tameable animal - \u00A7e[DEBUG MESSAGE]");
+				if (!(ent instanceof Tameable))
 					return;
-				}
 				newGoal = goalFollowOwner.getConstructor(entTameable, double.class, float.class, float.class).newInstance(nmsEnt, spd, 20.0F, 5.0F);
 			} else if (mark == 7) {
+				Class<?> goalFollowAdults = ReflectionUtils.getNMSClass("PathfinderGoalFollowParent", false);
 				double spd = followAdultsSpeed.getSingle(e).doubleValue();
-				if (!(ent instanceof Animals)) {
-					Bukkit.broadcastMessage("\u00A7c" + ent.getType().toString() + " is not an animal - \u00A7e[DEBUG MESSAGE]");
+				if (!(ent instanceof Animals))
 					return;
-				}
 				newGoal = goalFollowAdults.getConstructor(entAnimal, double.class).newInstance(nmsEnt, spd);
 			} else if (mark == 8) {
 				target = true;
+				Class<?> goalReactAttack = ReflectionUtils.getNMSClass("PathfinderGoalHurtByTarget", false);
 				EntityData<?> entityData;
 				String exprInput = typesToFightBack.toString(e, false);
 				if (exprInput.startsWith("the ")) {
 					exprInput = exprInput.substring(4);
 				}
 				entityData = EntityData.parseWithoutIndefiniteArticle(exprInput);
+				if (!LivingEntity.class.isAssignableFrom(entityData.getType()))
+					return;
 				String className = entityData.getType().getSimpleName();
 				if (className.equals("HumanEntity"))
 					className = "Human";
@@ -220,20 +208,25 @@ public class EffSetPathGoal extends Effect {
 					return;
 				newGoal = goalReactAttack.getConstructor(entCreature, boolean.class, Class[].class).newInstance(nmsEnt, false, nmsClass[0]);
 			} else if (mark == 9) {
+				Class<?> goalJumpOnBlock = ReflectionUtils.getNMSClass("PathfinderGoalJumpOnBlock", false);
 				double spd = jumpOnBlockSpeed.getSingle(e).doubleValue();
 				if (!(ent instanceof Ocelot))
 					return;
 				newGoal = goalJumpOnBlock.getConstructor(nmsEnt.getClass(), double.class).newInstance(nmsEnt, spd);
 			} else if (mark == 10) {
+				Class<?> goalLeapTarget = ReflectionUtils.getNMSClass("PathfinderGoalLeapAtTarget", false);
 				float height = leapHeight.getSingle(e).floatValue();
 				newGoal = goalLeapTarget.getConstructor(entInsent, float.class).newInstance(nmsEnt, height);
 			} else if (mark == 11) {
+				Class<?> goalLookEntities = ReflectionUtils.getNMSClass("PathfinderGoalLookAtPlayer", false);
 				EntityData<?> entityData;
 				String exprInput = lookType.toString(e, false);
 				if (exprInput.startsWith("the ")) {
 					exprInput = exprInput.substring(4);
 				}
 				entityData = EntityData.parseWithoutIndefiniteArticle(exprInput);
+				if (!LivingEntity.class.isAssignableFrom(entityData.getType()))
+					return;
 				String className = entityData.getType().getSimpleName();
 				if (className.equals("HumanEntity"))
 					className = "Human";
@@ -250,16 +243,41 @@ public class EffSetPathGoal extends Effect {
 					exprInput = exprInput.substring(4);
 				}
 				entityData = EntityData.parseWithoutIndefiniteArticle(exprInput);
-				String className = entityData.getType().getSimpleName();
-				if (className.equals("HumanEntity"))
-					className = "Human";
-				className = "Entity" + className;
-				Class<?> nmsClass = ReflectionUtils.getNMSClass(className, false);
-				if (nmsClass == null)
+				if (!LivingEntity.class.isAssignableFrom(entityData.getType()))
 					return;
-				double spd = meleeSpeed.getSingle(e).doubleValue();
-				newGoal = goalMeleeAttack.getConstructor(entCreature, Class.class, double.class, boolean.class).newInstance(nmsEnt, nmsClass, spd, false);
+				if (ent instanceof Spider) {
+					Class<?>[] classes = nmsEnt.getClass().getDeclaredClasses();
+					Class<?> clazz = null;
+					for (Class<?> c : classes) {
+						Bukkit.broadcastMessage("Class name: \u00A7e" + c.getName());
+						if (c.getName().equals("PathfinderGoalSpiderMeleeAttack"))
+							clazz = c;
+					}
+					Constructor<?>[] constructors = clazz.getDeclaredConstructors();
+					Constructor<?> constr = null;
+					for (Constructor<?> constructor : constructors) {
+						Bukkit.broadcastMessage("Constructor name: \u00A7a" + constructor.getName());
+						if (constructor.getName().equals("PathfinderGoalSpiderMeleeAttack"))
+							constr = constructor;
+					}
+					if (constr == null)
+						return;
+					constr.setAccessible(true);
+					newGoal = constr.newInstance(nmsEnt, entityData);
+				} else {
+					Class<?> goalMeleeAttack = ReflectionUtils.getNMSClass("PathfinderGoalMeleeAttack", false);
+					String className = entityData.getType().getSimpleName();
+					if (className.equals("HumanEntity"))
+						className = "Human";
+					className = "Entity" + className;
+					Class<?> nmsClass = ReflectionUtils.getNMSClass(className, false);
+					if (nmsClass == null)
+						return;
+					double spd = meleeSpeed.getSingle(e).doubleValue();
+					newGoal = goalMeleeAttack.getConstructor(entCreature, Class.class, double.class, boolean.class).newInstance(nmsEnt, nmsClass, spd, false);
+				}
 			} else if (mark == 13) {
+				Class<?> goalGotoTarget = ReflectionUtils.getNMSClass("PathfinderGoalMoveTowardsTarget", false);
 				double spd = moveTargetSpeed.getSingle(e).doubleValue();
 				float radius = moveTargetRadius.getSingle(e).floatValue();
 				newGoal = goalGotoTarget.getConstructor(entCreature, double.class, float.class).newInstance(nmsEnt, spd, radius);
@@ -271,100 +289,147 @@ public class EffSetPathGoal extends Effect {
 					exprInput = exprInput.substring(4);
 				}
 				entityData = EntityData.parseWithoutIndefiniteArticle(exprInput);
-				String className = entityData.getType().getSimpleName();
-				if (className.equals("HumanEntity"))
-					className = "Human";
-				className = "Entity" + className;
-				Class<?> nmsClass = ReflectionUtils.getNMSClass(className, false);
-				if (nmsClass == null)
+				if (!LivingEntity.class.isAssignableFrom(entityData.getType()))
 					return;
-				newGoal = goalNearTarget.getConstructor(entCreature, Class.class, boolean.class).newInstance(nmsEnt, nmsClass, false);
+				if (ent instanceof Spider) {
+					Class<?> goalSpiderNearTarget = ReflectionUtils.getNMSClass("EntitySpider$PathfinderGoalSpiderNearestAttackableTarget", false);
+					Constructor<?> constr = goalSpiderNearTarget.getDeclaredConstructor(nmsEnt.getClass(), Class.class);
+					constr.setAccessible(true);
+					newGoal = constr.newInstance(nmsEnt, entityData);
+				} else {
+					Class<?> goalNearTarget = ReflectionUtils.getNMSClass("PathfinderGoalNearestAttackableTarget", false);
+					String className = entityData.getType().getSimpleName();
+					if (className.equals("HumanEntity"))
+						className = "Human";
+					className = "Entity" + className;
+					Class<?> nmsClass = ReflectionUtils.getNMSClass(className, false);
+					if (nmsClass == null)
+						return;
+					newGoal = goalNearTarget.getConstructor(entCreature, Class.class, boolean.class).newInstance(nmsEnt, nmsClass, false);
+				}
 			} else if (mark == 15) {
+				Class<?> goalOcelotAttack = ReflectionUtils.getNMSClass("PathfinderGoalOcelotAttack", false);
 				newGoal = goalOcelotAttack.getConstructor(entInsent).newInstance(nmsEnt);
 			} else if (mark == 16) {
+				Class<?> goalOpenDoors = ReflectionUtils.getNMSClass("PathfinderGoalOpenDoor", false);
 				newGoal = goalOpenDoors.getConstructor(entInsent, boolean.class).newInstance(nmsEnt, false);
 			} else if (mark == 17) {
+				Class<?> goalPanic = ReflectionUtils.getNMSClass("PathfinderGoalPanic", false);
 				double spd = panicSpeed.getSingle(e).doubleValue();
 				newGoal = goalPanic.getConstructor(entCreature, double.class).newInstance(nmsEnt, spd);
 			} else if (mark == 18) {
+				Class<?> goalRandomLook = ReflectionUtils.getNMSClass("PathfinderGoalRandomLookaround", false);
 				newGoal = goalRandomLook.getConstructor(entInsent).newInstance(nmsEnt);
 			} else if (mark == 19) {
+				Class<?> goalWander = ReflectionUtils.getNMSClass("PathfinderGoalRandomStroll", false);
 				double spd = randomWalkSpeed.getSingle(e).doubleValue();
 				int interval = randomWalkInterval.getSingle(e).getTicks();
 				newGoal = goalWander.getConstructor(entCreature, double.class, int.class).newInstance(nmsEnt, spd, interval);
 			} else if (mark == 20) {
-				if (!(ent instanceof Tameable)) {
-					Bukkit.broadcastMessage("\u00A7c" + ent.getType().toString() + " is not a tameable animal - \u00A7e[DEBUG MESSAGE]");
+				Class<?> goalSit = ReflectionUtils.getNMSClass("PathfinderGoalSit", false);
+				if (!(ent instanceof Tameable))
 					return;
-				}
 				newGoal = goalSit.getConstructor(entTameable).newInstance(nmsEnt);
 			} else if (mark == 21) {
-				if (!(ent instanceof Creeper))  {
-					Bukkit.broadcastMessage("\u00A7c" + ent.getType().toString() + " is not a creeper - \u00A7e[DEBUG MESSAGE]");
+				Class<?> goalSwell = ReflectionUtils.getNMSClass("PathfinderGoalSwell", false);
+				if (!(ent instanceof Creeper))
 					return;
-				}
 				newGoal = goalSwell.getConstructor(nmsEnt.getClass()).newInstance(nmsEnt);
 			} else if (mark == 22) {
-				if (!(ent instanceof Squid)) {
-					Bukkit.broadcastMessage("\u00A7c" + ent.getType().toString() + " is not a squid - \u00A7e[DEBUG MESSAGE]");
+				Class<?> goalSquid = ReflectionUtils.getNMSClass("EntitySquid$PathfinderGoalSquid", false);
+				if (!(ent instanceof Squid))
 					return;
-				}
-				Class<?>[] classes = nmsEnt.getClass().getDeclaredClasses();
-				for (Class<?> c : classes) {
-					Bukkit.broadcastMessage("\u00A79loop-class: \u00A7b" + c);
-					if (c.getSimpleName().equals("PathfinderGoalSquid")) {
-						clazz = c;
-						clazz.getConstructor(nmsEnt.getClass()).setAccessible(true);
-						break;
-					}
-				}
-				if (clazz == null)
-					return;
-				newGoal = clazz.getConstructor(nmsEnt.getClass()).newInstance(nmsEnt);
-				clazz.getConstructor(nmsEnt.getClass()).setAccessible(false);
+				Constructor<?> constr = goalSquid.getDeclaredConstructor(nmsEnt.getClass());
+				constr.setAccessible(true);
+				newGoal = constr.newInstance(nmsEnt);
 			} else if (mark == 23) {
-				if (!(ent instanceof Blaze)) {
-					Bukkit.broadcastMessage("\u00A7c" + ent.getType().toString() + " is not a blaze - \u00A7e[DEBUG MESSAGE]");
-					return;
+				if (ent instanceof Blaze) {
+					Class<?> goalBlazeFireball = ReflectionUtils.getNMSClass("EntityBlaze$PathfinderGoalBlazeFireball", false);
+					Constructor<?> constr = goalBlazeFireball.getDeclaredConstructor(nmsEnt.getClass());
+					constr.setAccessible(true);
+					newGoal = constr.newInstance(nmsEnt);
+				} else if (ent instanceof Ghast) {
+					Class<?> goalGhastFireball = ReflectionUtils.getNMSClass("EntityGhast$PathfinderGoalGhastAttackTarget", false);
+					Constructor<?> constr = goalGhastFireball.getDeclaredConstructor(nmsEnt.getClass());
+					constr.setAccessible(true);
+					newGoal = constr.newInstance(nmsEnt);
 				}
-				Class<?>[] classes = nmsEnt.getClass().getDeclaredClasses();
-				for (Class<?> c : classes) {
-					Bukkit.broadcastMessage("\u00A79loop-class: \u00A7b" + c);
-					if (c.getSimpleName().equals("PathfinderGoalBlazeFireball")) {
-						clazz = c;
-						clazz.getConstructor(nmsEnt.getClass()).setAccessible(true);
-						break;
-					}
-				}
-				if (clazz == null)
-					return;
-				newGoal = clazz.getConstructor(nmsEnt.getClass()).newInstance(nmsEnt);
-				clazz.getConstructor(nmsEnt.getClass()).setAccessible(false);
 			} else if (mark == 24) {
+				Class<?> goalHideInBlock = ReflectionUtils.getNMSClass("EntitySilverfish$PathfinderGoalSilverfishHideInBlocks", false);
+				if (!(ent instanceof Silverfish))
+					return;
+				Constructor<?> constr = goalHideInBlock.getDeclaredConstructor(nmsEnt.getClass());
+				constr.setAccessible(true);
+				newGoal = constr.newInstance(nmsEnt);
+			} else if (mark == 25) {
+				Class<?> goalWakeSilverfish = ReflectionUtils.getNMSClass("EntitySilverfish$PathfinderGoalSilverfishWakeOthers", false);
+				if (!(ent instanceof Silverfish))
+					return;
+				Constructor<?> constr = goalWakeSilverfish.getDeclaredConstructor(nmsEnt.getClass());
+				constr.setAccessible(true);
+				newGoal = constr.newInstance(nmsEnt);
+			} else if (mark == 26) {
+				Class<?> goalPickBlocks = ReflectionUtils.getNMSClass("EntityEnderman$PathfinderGoalEndermanPickupBlock", false);
+				if (!(ent instanceof Enderman))
+					return;
+				Constructor<?> constr = goalPickBlocks.getDeclaredConstructor(nmsEnt.getClass());
+				constr.setAccessible(true);
+				newGoal = constr.newInstance(nmsEnt);
+			} else if (mark == 27) {
+				Class<?> goalPlaceBlocks = ReflectionUtils.getNMSClass("EntityEnderman$PathfinderGoalEndermanPlaceBlock", false);
+				if (!(ent instanceof Enderman))
+					return;
+				Constructor<?> constr = goalPlaceBlocks.getDeclaredConstructor(nmsEnt.getClass());
+				constr.setAccessible(true);
+				newGoal = constr.newInstance(nmsEnt);
+			} else if (mark == 28) {
+				target = true;
+				Class<?> goalAttackLooker = ReflectionUtils.getNMSClass("EntityEnderman$PathfinderGoalPlayerWhoLookedAtTarget", false);
+				if (!(ent instanceof Enderman))
+					return;
+				Constructor<?> constr = goalAttackLooker.getDeclaredConstructor(nmsEnt.getClass());
+				constr.setAccessible(true);
+				newGoal = constr.newInstance(nmsEnt);
+			} else if (mark == 29) {
+				Class<?> goalGhastMoveTarget = ReflectionUtils.getNMSClass("EntityGhast$PathfinderGoalGhastMoveTowardsTarget", false);
+				if (!(ent instanceof Ghast))
+					return;
+				Constructor<?> constr = goalGhastMoveTarget.getDeclaredConstructor(nmsEnt.getClass());
+				constr.setAccessible(true);
+				newGoal = constr.newInstance(nmsEnt);
+			} else if (mark == 30) {
+				Class<?> goalGhastIdleMove = ReflectionUtils.getNMSClass("EntityGhast$PathfinderGoalGhastIdleMove", false);
+				if (!(ent instanceof Ghast))
+					return;
+				Constructor<?> constr = goalGhastIdleMove.getDeclaredConstructor(nmsEnt.getClass());
+				constr.setAccessible(true);
+				newGoal = constr.newInstance(nmsEnt);
+			} else if (mark == 31) {
 				// TODO: Add more goal/target selectors
 
 				/* Classes that have their own pathfinder goals:
-				 * Enderman, 3 goals, place blocks, pickup blocks and player who looked (?).
-				 * Ghast, 3 goals, all copy of existing ones, but adapted to a flying ghast.
 				 * Rabbit, 3 goals, 2 adapted copies, 1 new (eat carrot crops)
-				 * Silverfish, 2 goals, hide in block and wake other silverfish blocks.
 				 * Slime, 4 goals, random jump, go to near player, go in random direction and idle.
-				 * Spider, 2 goals, adapted copies of melee and nearest attackable.
+				 * ZPigMan, 2 goals, anger and anger other (adapted HurtByTarget to work with Anger tag)
+				 */
+				
+				/* Goals to add:
+				 * Tempt - Mob follows you with a certain item in hand (e.g cow follows wheat)
+				 * AttackNonTamed - Used by ocelots, to attack chickens (maybe for wolves to attack sheep to?)
 				 */
 			}
+			if (newGoal == null)
+				return;
+			Class<?> goal = ReflectionUtils.getNMSClass("PathfinderGoal", false);
+			Class<?> goalSelector = ReflectionUtils.getNMSClass("PathfinderGoalSelector", false);
 			if (target) {
 				newGoal = goalSelector.getMethod("a", int.class, goal).invoke(targets, priority, newGoal);
 			} else {
 				newGoal = goalSelector.getMethod("a", int.class, goal).invoke(goals, priority, newGoal);
+				
 			}
-		} catch (Exception ex1) {
-			if (clazz != null)
-				try {
-					clazz.getConstructor(nmsEnt.getClass()).setAccessible(true);
-				} catch (SecurityException | NoSuchMethodException ex2) {
-					ex2.printStackTrace();
-				}
-			ex1.printStackTrace();
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 	}
 }

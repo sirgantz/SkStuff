@@ -35,8 +35,8 @@ public class ExprVanishState extends SimpleExpression<Boolean> {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "vanish state of " + player.toString(e, false);
+	public String toString(@Nullable Event e, boolean debug) {
+		return "vanish state of " + player.toString(e, debug);
 	}
 
 	@Override

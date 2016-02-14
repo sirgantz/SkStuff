@@ -43,8 +43,8 @@ public class EffReplaceBlocksWE extends Effect {
 		return true;
 	}
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "replace all " + blockList1.toString(e, false) + " from " + location1.toString(e, false) + " to " + location2.toString(e, false) + " with " + blockList1.toString(e, false) + " using an edit session";
+	public String toString(@Nullable Event e, boolean debug) {
+		return "replace all " + blockList1.toString(e, debug) + " from " + location1.toString(e, debug) + " to " + location2.toString(e, debug) + " with " + blockList1.toString(e, debug) + " using an edit session";
 	}
 
 	@SuppressWarnings({ "deprecation" })

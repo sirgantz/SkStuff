@@ -52,8 +52,8 @@ public class ExprSchematicArea extends SimpleExpression<Integer> {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "the " + toStringMark + " of the schematic from " + schematic.toString(e, false);
+	public String toString(@Nullable Event e, boolean debug) {
+		return "the " + toStringMark + " of the schematic from " + schematic.toString(e, debug);
 	}
 
 	@SuppressWarnings("deprecation")

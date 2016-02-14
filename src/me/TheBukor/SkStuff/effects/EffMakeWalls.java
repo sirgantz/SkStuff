@@ -38,8 +38,8 @@ public class EffMakeWalls extends Effect {
 		return true;
 	}
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "make walls from " + location1.toString(e, false) + " to " + location2.toString(e, false) + " using an edit session with " + blockList.toString(e, false);
+	public String toString(@Nullable Event e, boolean debug) {
+		return "make walls from " + location1.toString(e, debug) + " to " + location2.toString(e, debug) + " using an edit session with " + blockList.toString(e, debug);
 	}
 
 	@SuppressWarnings("deprecation")

@@ -30,8 +30,8 @@ public class EffNaturalize extends Effect {
 		return true;
 	}
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "naturalize all blocks from " + location1.toString(e, false) + " to " + location2.toString(e, false);
+	public String toString(@Nullable Event e, boolean debug) {
+		return "naturalize all blocks from " + location1.toString(e, debug) + " to " + location2.toString(e, debug);
 	}
 
 	@Override

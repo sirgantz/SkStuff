@@ -44,8 +44,8 @@ public class ExprSelectionOfPlayer extends SimpleExpression<Location> {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "the WorldEdit selection of " + player.toString(e, false);
+	public String toString(@Nullable Event e, boolean debug) {
+		return "the WorldEdit selection of " + player.toString(e, debug);
 	}
 
 	@Override

@@ -34,8 +34,8 @@ public class ExprNoClip extends SimpleExpression<Boolean> {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "no clip state of " + entity.toString(e, false);
+	public String toString(@Nullable Event e, boolean debug) {
+		return "no clip state of " + entity.toString(e, debug);
 	}
 
 	@Override

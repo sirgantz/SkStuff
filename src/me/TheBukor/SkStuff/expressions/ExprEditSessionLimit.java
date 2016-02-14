@@ -38,7 +38,7 @@ public class ExprEditSessionLimit extends SimpleExpression<Integer> {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
+	public String toString(@Nullable Event e, boolean debug) {
 		return "the block change limit of an edit session";
 	}
 

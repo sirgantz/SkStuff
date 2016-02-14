@@ -30,8 +30,8 @@ public class ExprToLowerCase extends SimpleExpression<String> {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "convert all characters in " + text.toString(e, false) + " to lowercase";
+	public String toString(@Nullable Event e, boolean debug) {
+		return "convert all characters in " + text.toString(e, debug) + " to lowercase";
 	}
 
 	@Override

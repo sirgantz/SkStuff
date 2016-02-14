@@ -51,8 +51,8 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "the NBT of " + target.toString(e, false);
+	public String toString(@Nullable Event e, boolean debug) {
+		return "the NBT of " + target.toString(e, debug);
 	}
 
 	@Override

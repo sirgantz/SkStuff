@@ -29,8 +29,8 @@ public class EffSimulateSnow extends Effect {
 		return true;
 	}
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "make " + location.toString(e, false) + " snowy in a radius of " + radius.toString(e, false);
+	public String toString(@Nullable Event e, boolean debug) {
+		return "make " + location.toString(e, debug) + " snowy in a radius of " + radius.toString(e, debug);
 	}
 
 	@Override

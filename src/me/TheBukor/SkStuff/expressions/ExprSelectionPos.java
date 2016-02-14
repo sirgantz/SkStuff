@@ -49,8 +49,8 @@ public class ExprSelectionPos extends SimpleExpression<Location> {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "the WorldEdit point " + (usePos2 ? "2" : "1") + " selection of " + player.toString(e, false);
+	public String toString(@Nullable Event e, boolean debug) {
+		return "the WorldEdit point " + (usePos2 ? "2" : "1") + " selection of " + player.toString(e, debug);
 	}
 
 	@Override

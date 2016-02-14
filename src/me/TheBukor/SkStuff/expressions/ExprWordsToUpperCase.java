@@ -39,8 +39,8 @@ public class ExprWordsToUpperCase extends SimpleExpression<String> {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "convert first character of each word in " + text.toString(e, false) + toStringEnd;
+	public String toString(@Nullable Event e, boolean debug) {
+		return "convert first character of each word in " + text.toString(e, debug) + toStringEnd;
 	}
 
 	@Override

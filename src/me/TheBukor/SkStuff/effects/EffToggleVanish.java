@@ -31,8 +31,8 @@ public class EffToggleVanish extends Effect {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "toggle vanished state of " + player.toString(e, false) + toStringMark;
+	public String toString(@Nullable Event e, boolean debug) {
+		return "toggle vanished state of " + player.toString(e, debug) + toStringMark;
 	}
 
 	@Override

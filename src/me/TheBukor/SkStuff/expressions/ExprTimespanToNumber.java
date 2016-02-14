@@ -46,8 +46,8 @@ public class ExprTimespanToNumber extends SimpleExpression<Number> {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return time.toString(e, false) + "converted to " + toStringMark;
+	public String toString(@Nullable Event e, boolean debug) {
+		return time.toString(e, debug) + "converted to " + toStringMark;
 	}
 
 	@SuppressWarnings("deprecation")

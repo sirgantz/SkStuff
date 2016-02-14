@@ -39,8 +39,8 @@ public class EffMakePyramid extends Effect {
 		return true;
 	}
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "create a pyramid at " + location.toString(e, false) + " with a radius of " + radius.toString(e, false) + " using an edit session with " + blockList.toString(e, false);
+	public String toString(@Nullable Event e, boolean debug) {
+		return "create a pyramid at " + location.toString(e, debug) + " with a radius of " + radius.toString(e, debug) + " using an edit session with " + blockList.toString(e, debug);
 	}
 
 	@SuppressWarnings("deprecation")

@@ -49,8 +49,8 @@ public class ExprSelectionArea extends SimpleExpression<Integer> {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "the " + toStringMark + " of the WorldEdit selection of " + player.toString(e, false);
+	public String toString(@Nullable Event e, boolean debug) {
+		return "the " + toStringMark + " of the WorldEdit selection of " + player.toString(e, debug);
 	}
 
 	@Override

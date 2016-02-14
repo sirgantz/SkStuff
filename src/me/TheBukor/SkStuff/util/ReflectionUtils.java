@@ -41,10 +41,7 @@ public class ReflectionUtils {
 			f = clazz.getDeclaredField(field);
 			f.setAccessible(true);
 			obj = f.get(object);
-			f.setAccessible(false);
 		} catch (Exception ex) {
-			if (f != null)
-				f.setAccessible(false);
 			ex.printStackTrace();
 		}
 		return obj;
@@ -56,10 +53,7 @@ public class ReflectionUtils {
 			f = clazz.getDeclaredField(field);
 			f.setAccessible(true);
 			f.set(object, toSet);
-			f.setAccessible(false);
 		} catch (Exception ex) {
-			if (f != null)
-				f.setAccessible(false);
 			ex.printStackTrace();
 		}
 	}

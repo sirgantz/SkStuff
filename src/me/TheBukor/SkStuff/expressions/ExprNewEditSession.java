@@ -38,8 +38,8 @@ public class ExprNewEditSession extends SimpleExpression<EditSession> {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "new edit session in world " + world.toString(e, false) + " with maximum block change limit of " + blockLimit.toString(e, false);
+	public String toString(@Nullable Event e, boolean debug) {
+		return "new edit session in world " + world.toString(e, debug) + " with maximum block change limit of " + blockLimit.toString(e, debug);
 	}
 
 	@Override

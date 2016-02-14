@@ -35,8 +35,8 @@ public class ExprTagOf extends SimpleExpression<Object> {
 		return true;
 	}
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "the tag " + string.toString(e, false) + " of compound";
+	public String toString(@Nullable Event e, boolean debug) {
+		return "the tag " + string.toString(e, debug) + " of compound";
 	}
 
 	@Override

@@ -44,8 +44,8 @@ public class EffShowEntityEffect extends Effect {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "play entity effect " + toStringMark + "at" + entity.toString(e, false);
+	public String toString(@Nullable Event e, boolean debug) {
+		return "play entity effect " + toStringMark + "at" + entity.toString(e, debug);
 	}
 
 	@Override

@@ -29,8 +29,8 @@ public class EffDrainLiquid extends Effect {
 		return true;
 	}
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "drain liquids at " + location.toString(e, false) + " in a radius of " + radius.toString(e, false);
+	public String toString(@Nullable Event e, boolean debug) {
+		return "drain liquids at " + location.toString(e, debug) + " in a radius of " + radius.toString(e, debug);
 	}
 
 	@Override

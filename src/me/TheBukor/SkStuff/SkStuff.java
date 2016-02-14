@@ -8,6 +8,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.fusesource.jansi.Ansi;
@@ -35,6 +36,7 @@ import me.TheBukor.SkStuff.effects.EffMakePyramid;
 import me.TheBukor.SkStuff.effects.EffMakeSphere;
 import me.TheBukor.SkStuff.effects.EffMakeWalls;
 import me.TheBukor.SkStuff.effects.EffNaturalize;
+import me.TheBukor.SkStuff.effects.EffPasteSchematic;
 import me.TheBukor.SkStuff.effects.EffRememberChanges;
 import me.TheBukor.SkStuff.effects.EffRemovePathGoal;
 import me.TheBukor.SkStuff.effects.EffReplaceBlocksWE;
@@ -47,6 +49,7 @@ import me.TheBukor.SkStuff.effects.EffUndoRedoSession;
 import me.TheBukor.SkStuff.events.EvtWorldEditChange;
 import me.TheBukor.SkStuff.events.WorldEditChangeHandler;
 import me.TheBukor.SkStuff.expressions.ExprChangedBlocksSession;
+import me.TheBukor.SkStuff.expressions.ExprClickedInventory;
 import me.TheBukor.SkStuff.expressions.ExprEditSessionLimit;
 import me.TheBukor.SkStuff.expressions.ExprFileNBT;
 import me.TheBukor.SkStuff.expressions.ExprFireProof;
@@ -90,13 +93,14 @@ public class SkStuff extends JavaPlugin {
 			Skript.registerExpression(ExprToLowerCase.class, String.class, ExpressionType.SIMPLE, "%string% [converted] to [all] lower[ ]case", "convert %string% to [all] lower[ ]case", "un[( |-)]capitalize [all] [char[acter]s (of|in)] %string%");
 			Skript.registerExpression(ExprWordsToUpperCase.class, String.class, ExpressionType.SIMPLE, "(first|1st) (letter|char[acter]) (of|in) (each word|[all] words) (of|in) %string% [converted] to (cap[ital]s|upper[ ]case) (0¦|1¦ignoring [other] upper[ ]case [(char[acter]s|letters)])", "convert (first|1st) (letter|char[acter]) (of|in) (each word|[all] words) (of|in) %string% to (cap[ital]s|upper[ ]case) (0¦|1¦ignoring [other] upper[ ]case [(char[acter]s|letters)])", "capitalize (first|1st) (letter|char[acter]) (of|in) (each word|[all] words) (of|in) %string% (0¦|1¦ignoring [other] upper[ ]case [(char[acter]s|letters)])");
 			Skript.registerExpression(ExprTimespanToNumber.class, Number.class, ExpressionType.SIMPLE, "%timespan% [converted] [in]to (0¦ticks|1¦sec[ond]s|2¦min[ute]s|3¦hours|4¦days)");
-			exprAmount += 4;
+			Skript.registerExpression(ExprClickedInventory.class, Inventory.class, ExpressionType.SIMPLE, "[skstuff] clicked inventory");
+			exprAmount += 5;
 
 			getLogger().info("Trying to register version specific stuff...");
 			Skript.registerEffect(EffClearPathGoals.class, "(clear|delete) [all] pathfind[er] goals (of|from) %livingentity%");
-			Skript.registerEffect(EffRemovePathGoal.class, "remove pathfind[er] goal (0¦(avoid|run away from) entit(y|ies)|1¦break door[s]|2¦breed|3¦eat grass|4¦(flee from the sun|seek shad(e|ow))|5¦float (in[side]|on) water|6¦follow (owner|tamer)|7¦follow (adult|parent)[s]|8¦(fight back|react to|target) (damager|attacker)|9¦o(c|z)elot jump on blocks|10¦leap at target|11¦look at entit(y|ies)|12¦melee attack entit(y|ies)|13¦move to[wards] target|14¦attack nearest entity|15¦o(c|z)elot attack [chicken[s]]|16¦open door[s]|17¦(panic|flee)|18¦look around randomly|19¦(walk around randomly|wander)|20¦sit|21¦[creeper] swell|22¦squid (swim|wander)|23¦[blaze] shoot fireball[s]) from %livingentity%");
-			Skript.registerEffect(EffSetPathGoal.class, "add pathfind[er] goal [[with] priority %-integer%] (0¦(avoid|run away from) %entitydata%,[ ]radius %number%,[ ][at] speed %number%,[ ][at] speed if close %number%|1¦break door[s]|2¦breed,[ ][move to[wards] lover at] speed %number%|3¦eat grass|4¦(flee from the sun|seek shad(e|ow)),[ ][at] speed %number%|5¦float (in[side]|on) water|6¦follow (owner|tamer),[ ][at] speed %number%|7¦follow (adult|parent)[s],[ ][at] speed %number%|8¦(fight back|react to|target) (damager|attacker) [[of] type] %entitydata%|9¦o(c|z)elot jump on blocks,[ ][at] speed %number%|10¦leap at target [with [leap]] height %number%|11¦look at %entitydata%,[ ]radius %number%|12¦melee attack %entitydata%,[ ][at] speed %number%|13¦move to[wards] target,[ ][at] speed %number%,[ ]radius %number%|14¦attack nearest [entity [of] type] %entitydata%|15¦o(c|z)elot attack [chicken]|16¦open door[s]|17¦(panic|flee),[ ][at] speed %number%|18¦look around randomly|19¦(walk around randomly|wander),[ ][at] speed %number%,[ ][with] min[imum] [of] %-timespan% between mov(e[ment][s]|ing)|20¦sit|21¦[creeper] swell|22¦squid (swim|wander)|23¦[blaze] shoot fireball[s]) to %livingentity%");
-			Skript.registerEffect(EffMakeJump.class, "make %livingentities% jump");
+			Skript.registerEffect(EffRemovePathGoal.class, "remove pathfind[er] goal (0¦(avoid|run away from) entit(y|ies)|1¦break door[s]|2¦breed|3¦eat grass|4¦(flee from the sun|seek shad(e|ow))|5¦float (in[side]|on) water|6¦follow (owner|tamer)|7¦follow (adult|parent)[s]|8¦(fight back|react to|target) (damager|attacker)|9¦o(c|z)elot jump on blocks|10¦leap at target|11¦look at entit(y|ies)|12¦melee attack entit(y|ies)|13¦move to[wards] target|14¦attack nearest entity|15¦o(c|z)elot attack [chicken[s]]|16¦open door[s]|17¦(panic|flee)|18¦look around randomly|19¦(walk around randomly|wander)|20¦sit|21¦[creeper] swell|22¦squid (swim|wander)|23¦shoot fireball[s]|24¦[silverfish] hide (in[side]|on) block[s]|25¦(wake other silverfish[es]|[silverfish] call (help|reinforcement|other [hidden] silverfish[es]))|26¦[enderm(a|e)n] pick[[ ]up] block[s]|27¦[enderm(a|e)n] place block[s]|28¦[enderman] attack player (staring|looking) [at eye[s]]|29¦ghast move to[wards] target|30¦ghast (idle move[ment]|wander|random fl(ight|y[ing]))) from %livingentity%");
+			Skript.registerEffect(EffSetPathGoal.class, "add pathfind[er] goal [[with] priority %-integer%] (0¦(avoid|run away from) %entitydata%,[ ]radius %number%,[ ][at] speed %number%,[ ][at] speed if close %number%|1¦break door[s]|2¦breed,[ ][move to[wards] lover at] speed %number%|3¦eat grass|4¦(flee from the sun|seek shad(e|ow)),[ ][at] speed %number%|5¦float (in[side]|on) water|6¦follow (owner|tamer),[ ][at] speed %number%|7¦follow (adult|parent)[s],[ ][at] speed %number%|8¦(fight back|react to|target) (damager|attacker) [[of] type] %entitydata%|9¦o(c|z)elot jump on blocks,[ ][at] speed %number%|10¦leap at target [with [leap]] height %number%|11¦look at %entitydata%,[ ]radius %number%|12¦melee attack %entitydata%,[ ][at] speed %number%|13¦move to[wards] target,[ ][at] speed %number%,[ ]radius %number%|14¦attack nearest [entity [of] type] %entitydata%|15¦o(c|z)elot attack [chicken]|16¦open door[s]|17¦(panic|flee),[ ][at] speed %number%|18¦look around randomly|19¦(walk around randomly|wander),[ ][at] speed %number%,[ ][with] min[imum] [of] %-timespan% between mov(e[ment][s]|ing)|20¦sit|21¦[creeper] swell|22¦squid (swim|wander)|23¦shoot fireball[s]|24¦[silverfish] hide (in[side]|on) block[s]|25¦(wake other silverfish[es]|[silverfish] call (help|reinforcement|other [hidden] silverfish[es]))|26¦[enderm(a|e)n] pick[[ ]up] block[s]|27¦[enderm(a|e)n] place block[s]|28¦[enderman] attack player (staring|looking) [at eye[s]]|29¦ghast move to[wards] target|30¦ghast (idle move[ment]|wander|random fl(ight|y[ing]))) to %livingentity%");
+			Skript.registerEffect(EffMakeJump.class, "make %livingentities% jump", "force %livingentities% to jump");
 			Skript.registerEffect(EffShowEntityEffect.class, "(display|play|show) entity effect (0¦firework[s] explo(de|sion)|1¦hurt|2¦[[iron] golem] (give|offer) (rose|poppy)|3¦[sheep] eat grass|4¦wolf shake) at %entity%");
 			Skript.registerExpression(ExprNBTOf.class, Object.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of %entity/block/itemstack%", "%entity/block/itemstack%'s nbt[[ ]tag[s]]");
 			Skript.registerExpression(ExprItemNBT.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
@@ -104,6 +108,7 @@ public class SkStuff extends JavaPlugin {
 			Skript.registerExpression(ExprFileNBT.class, Object.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] from [file] %string%");
 			Skript.registerExpression(ExprNoClip.class, Boolean.class, ExpressionType.PROPERTY, "no[( |-)]clip (state|mode) of %entity%", "%entity%'s no[( |-)]clip (state|mode)");
 			Skript.registerExpression(ExprFireProof.class, Boolean.class, ExpressionType.PROPERTY, "fire[ ]proof (state|mode) of %entity%", "%entity%'s fire[ ]proof (state|mode)");
+			//Skript.registerExpression(ExprEndermanBlocks.class, ItemStack.class, ExpressionType.PROPERTY, "blocks that [enderman] %entity% can (carry|hold|grab)");
 
 			Classes.registerClass(new ClassInfo<Object>((Class<Object>) nbtClass, "compound").user("((nbt)?( ?tag)?) ?compounds?").name("NBT Compound").changer(new Changer<Object>() {
 
@@ -189,7 +194,7 @@ public class SkStuff extends JavaPlugin {
 
 				@Override
 				public String toVariableNameString(Object compound) {
-					return compound.toString();
+					return "nbt:" + compound.toString();
 				}
 			}));
 
@@ -275,9 +280,9 @@ public class SkStuff extends JavaPlugin {
 					return list.toString();
 				}
 			}));
-			typeAmount += 2;
 			effAmount += 5;
 			exprAmount += 6;
+			typeAmount += 2;
 			if (Bukkit.getPluginManager().getPlugin("WorldEdit") != null) {
 				getLogger().info("WorldEdit found! Registering WorldEdit stuff...");
 				Skript.registerCondition(CondSelectionContains.class, "[(world[ ]edit|we)] selection of %player% (contains|has) %location%", "%player%'s [(world[ ]edit|we)] selection (contains|has) %location%", "[(world[ ]edit|we)] selection of %player% does(n't| not) (contain|have) %location%", "%player%'s [(world[ ]edit|we)] selection does(n't| not) (contain|have) %location%");
@@ -293,6 +298,7 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerEffect(EffSetBlocksWE.class, "set [all] blocks (from|between) %location% (to|and) %location% to %itemstacks% (using|with) [edit[ ]session] %editsession%");
 				Skript.registerEffect(EffMakeCylinder.class, "(create|make) [a[n]] (0¦(no(n|t)(-| )hollow|filled|)|1¦hollow) cylinder at %location% [with] radius [of] %double%,[ ]%integer%(,[ ]| and )%double% (using|with) [edit[ ]session] %editsession% (using|with) [block[s]] %itemstacks%");
 				Skript.registerEffect(EffReplaceBlocksWE.class, "replace [all] %itemstacks% (from|between) %location% (to|and) %location% with %itemstacks% (using|with) [edit[ ]session] %editsession%");
+				Skript.registerEffect(EffPasteSchematic.class, "paste schem[atic] %string% at %location% using [edit[ ]session] %editsession% (0¦|1¦(ignor(e|ing)|without|[with] no) air)");
 				Skript.registerExpression(ExprEditSessionLimit.class, Integer.class, ExpressionType.PROPERTY, "[block] limit [change] of [edit[ ]session] %editsession%");
 				Skript.registerExpression(ExprChangedBlocksSession.class, Integer.class, ExpressionType.PROPERTY, "number of [all] changed blocks (in|of) [edit[ ]session] %editsession%");
 				Skript.registerExpression(ExprNewEditSession.class, EditSession.class, ExpressionType.PROPERTY, "[new] edit[ ]session in [world] %world% [with] [max[imum]] [block] limit [change] [of] %integer%");
@@ -325,7 +331,7 @@ public class SkStuff extends JavaPlugin {
 					return;
 				}
 				condAmount += 1;
-				effAmount += 12;
+				effAmount += 13;
 				exprAmount += 7;
 				typeAmount += 1;
 			}

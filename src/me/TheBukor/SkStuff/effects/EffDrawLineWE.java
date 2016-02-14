@@ -41,8 +41,8 @@ public class EffDrawLineWE extends Effect {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "draw a line from " + location1.toString(e, false) + " to " + location2.toString(e, false) + " using an edit session with " + blockList.toString(e, false) + " and thickness " + thickness.toString(e, false);
+	public String toString(@Nullable Event e, boolean debug) {
+		return "draw a line from " + location1.toString(e, debug) + " to " + location2.toString(e, debug) + " using an edit session with " + blockList.toString(e, debug) + " and thickness " + thickness.toString(e, debug);
 	}
 
 	@SuppressWarnings("deprecation")

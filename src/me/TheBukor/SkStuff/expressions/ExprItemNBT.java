@@ -45,8 +45,8 @@ public class ExprItemNBT extends SimpleExpression<ItemStack> {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return itemStack.toString(e, false) + " with custom NBT " + string.toString(e, false);
+	public String toString(@Nullable Event e, boolean debug) {
+		return itemStack.toString(e, debug) + " with custom NBT " + string.toString(e, debug);
 	}
 
 	@Override

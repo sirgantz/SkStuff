@@ -27,8 +27,8 @@ public class EffRememberChanges extends Effect {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "make " + player.toString(e, false) + " remember changes from edit session";
+	public String toString(@Nullable Event e, boolean debug) {
+		return "make " + player.toString(e, debug) + " remember changes from edit session";
 	}
 
 	@Override

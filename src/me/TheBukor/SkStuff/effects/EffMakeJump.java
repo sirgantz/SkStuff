@@ -2,6 +2,7 @@ package me.TheBukor.SkStuff.effects;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -27,15 +28,15 @@ public class EffMakeJump extends Effect {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "make " + entities.toString(e, false) + " jump";
+	public String toString(@Nullable Event e, boolean debug) {
+		return "make " + entities.toString(e, debug) + " jump";
 	}
 
 	@Override
 	protected void execute(Event e) {
 		LivingEntity[] ents = entities.getAll(e);
 		for (Entity ent : ents) {
-			if (ent instanceof Player || ent == null)
+			if (ent == null || ent instanceof Player || ent instanceof ArmorStand)
 				continue;
 			Object obcEnt = craftLivEnt.cast(ent);
 			try {

@@ -50,8 +50,8 @@ public class ExprFileNBT extends SimpleExpression<Object> {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "the NBT from file " + input.toString(e, false);
+	public String toString(@Nullable Event e, boolean debug) {
+		return "the NBT from file " + input.toString(e, debug);
 	}
 
 	@Override

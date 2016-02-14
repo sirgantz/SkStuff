@@ -35,8 +35,8 @@ public class ExprFireProof extends SimpleExpression<Boolean> {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "fireproof state of " + entity.toString(e, false);
+	public String toString(@Nullable Event e, boolean debug) {
+		return "fireproof state of " + entity.toString(e, debug);
 	}
 
 	@Override

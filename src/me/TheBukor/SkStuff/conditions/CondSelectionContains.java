@@ -29,8 +29,8 @@ public class CondSelectionContains extends Condition {
 	}
 
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "if WorldEdit selection of " + player.toString(e, false) + (isNegated() ? " doesn't contain " : " contains ") + loc.toString(e, false);
+	public String toString(@Nullable Event e, boolean debug) {
+		return "if WorldEdit selection of " + player.toString(e, debug) + (isNegated() ? " doesn't contain " : " contains ") + loc.toString(e, debug);
 	}
 
 	@Override

@@ -43,8 +43,8 @@ public class EffMakeSphere extends Effect {
 		return true;
 	}
 	@Override
-	public String toString(@Nullable Event e, boolean arg1) {
-		return "create a sphere centered at " + location.toString(e, false) + " with a radius of " + radius1.toString(e, false) + " " + radius2.toString(e, false) + " " + radius3.toString(e, false) + " using an edit session with " + blockList.toString(e, false);
+	public String toString(@Nullable Event e, boolean debug) {
+		return "create a sphere centered at " + location.toString(e, debug) + " with a radius of " + radius1.toString(e, debug) + " " + radius2.toString(e, debug) + " " + radius3.toString(e, debug) + " using an edit session with " + blockList.toString(e, debug);
 	}
 
 	@SuppressWarnings("deprecation")
