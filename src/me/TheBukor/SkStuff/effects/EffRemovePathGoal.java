@@ -169,6 +169,13 @@ public class EffRemovePathGoal extends Effect {
 			} else if (mark == 30) {
 				Class<?> goalGhastIdleMove = ReflectionUtils.getNMSClass("EntityGhast$PathfinderGoalGhastIdleMove", false);
 				toRemove = goalGhastIdleMove;
+			} else if (mark == 31) {
+				Class<?> goalTempt = ReflectionUtils.getNMSClass("PathfinderGoalTempt", false);
+				toRemove = goalTempt;
+			} else if (mark == 32) {
+				target = true;
+				Class<?> goalTargetNonTamed = ReflectionUtils.getNMSClass("PathfinderGoalRandomTargetNonTamed", false);
+				toRemove = goalTargetNonTamed;
 			}
 			if (toRemove == null)
 				return;

@@ -4,7 +4,7 @@ import java.lang.reflect.Constructor;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.entity.Animals;
 import org.bukkit.entity.Blaze;
 import org.bukkit.entity.Creeper;
@@ -18,6 +18,10 @@ import org.bukkit.entity.Spider;
 import org.bukkit.entity.Squid;
 import org.bukkit.entity.Tameable;
 import org.bukkit.event.Event;
+import org.bukkit.inventory.ItemStack;
+
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 
 import ch.njol.skript.entity.EntityData;
 import ch.njol.skript.lang.Effect;
@@ -31,8 +35,7 @@ public class EffSetPathGoal extends Effect {
 	private Expression<Integer> goalPriority;
 	private Expression<EntityData<?>> typeToAvoid;
 	private Expression<Number> avoidRadius;
-	private Expression<Number> avoidSpeed1;
-	private Expression<Number> avoidSpeed2;
+	private Expression<Number> avoidSpeed;
 	private Expression<Number> breedSpeed;
 	private Expression<Number> fleeSunSpeed;
 	private Expression<Number> followOwnerSpeed;
@@ -50,15 +53,20 @@ public class EffSetPathGoal extends Effect {
 	private Expression<Number> panicSpeed;
 	private Expression<Number> randomWalkSpeed;
 	private Expression<Timespan> randomWalkInterval;
+	private Expression<ItemStack> temptItem;
+	private Expression<Number> temptSpeed;
+	private Expression<EntityData<?>> nonTamedTarget;
 	private Expression<LivingEntity> entity;
 
 	private int mark;
 
+	private Class<?> craftItemClass = ReflectionUtils.getOBCClass("inventory.CraftItemStack");
 	private Class<?> craftLivEnt = ReflectionUtils.getOBCClass("entity.CraftLivingEntity");
 	private Class<?> entAnimal = ReflectionUtils.getNMSClass("EntityAnimal", false);
 	private Class<?> entCreature = ReflectionUtils.getNMSClass("EntityCreature", false);
 	private Class<?> entInsent = ReflectionUtils.getNMSClass("EntityInsentient", false);
 	private Class<?> entTameable = ReflectionUtils.getNMSClass("EntityTameableAnimal", false);
+	private Class<?> nmsItemClass = ReflectionUtils.getNMSClass("Item", false);
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -68,40 +76,44 @@ public class EffSetPathGoal extends Effect {
 		if (mark == 0) {
 			typeToAvoid = (Expression<EntityData<?>>) expr[1];
 			avoidRadius = (Expression<Number>) expr[2];
-			avoidSpeed1 = (Expression<Number>) expr[3];
-			avoidSpeed2 = (Expression<Number>) expr[4];
+			avoidSpeed = (Expression<Number>) expr[3];
 		} else if (mark == 2) {
-			breedSpeed = (Expression<Number>) expr[5];
+			breedSpeed = (Expression<Number>) expr[4];
 		} else if (mark == 4) {
-			fleeSunSpeed = (Expression<Number>) expr[6];
+			fleeSunSpeed = (Expression<Number>) expr[5];
 		} else if (mark == 6) {
-			followOwnerSpeed = (Expression<Number>) expr[7];
+			followOwnerSpeed = (Expression<Number>) expr[6];
 		} else if (mark == 7) {
-			followAdultsSpeed = (Expression<Number>) expr[8];
+			followAdultsSpeed = (Expression<Number>) expr[7];
 		} else if (mark == 8) {
-			typesToFightBack = (Expression<EntityData<?>>) expr[9];
+			typesToFightBack = (Expression<EntityData<?>>) expr[8];
 		} else if (mark == 9) {
-			jumpOnBlockSpeed = (Expression<Number>) expr[10];
+			jumpOnBlockSpeed = (Expression<Number>) expr[9];
 		} else if (mark == 10) {
-			leapHeight = (Expression<Number>) expr[11];
+			leapHeight = (Expression<Number>) expr[10];
 		} else if (mark == 11) {
-			lookType = (Expression<EntityData<?>>) expr[12];
-			lookRadius = (Expression<Number>) expr[13];
+			lookType = (Expression<EntityData<?>>) expr[11];
+			lookRadius = (Expression<Number>) expr[12];
 		} else if (mark == 12) {
-			meleeTarget = (Expression<EntityData<?>>) expr[14];
-			meleeSpeed = (Expression<Number>) expr[15];
+			meleeTarget = (Expression<EntityData<?>>) expr[13];
+			meleeSpeed = (Expression<Number>) expr[14];
 		} else if (mark == 13) {
-			moveTargetSpeed = (Expression<Number>) expr[16];
-			moveTargetRadius = (Expression<Number>) expr[17];
+			moveTargetSpeed = (Expression<Number>) expr[15];
+			moveTargetRadius = (Expression<Number>) expr[16];
 		} else if (mark == 14) {
-			nearTarget = (Expression<EntityData<?>>) expr[18];
+			nearTarget = (Expression<EntityData<?>>) expr[17];
 		} else if (mark == 17) {
-			panicSpeed = (Expression<Number>) expr[19];
+			panicSpeed = (Expression<Number>) expr[18];
 		} else if (mark == 19) {
-			randomWalkSpeed = (Expression<Number>) expr[20];
-			randomWalkInterval = (Expression<Timespan>) expr[21];
+			randomWalkSpeed = (Expression<Number>) expr[19];
+			randomWalkInterval = (Expression<Timespan>) expr[20];
+		} else if (mark == 31) {
+			temptItem = (Expression<ItemStack>) expr[21];
+			temptSpeed = (Expression<Number>) expr[22];
+		} else if (mark == 32) {
+			nonTamedTarget = (Expression<EntityData<?>>) expr[23];
 		}
-		entity = (Expression<LivingEntity>) expr[22];
+		entity = (Expression<LivingEntity>) expr[24];
 		return true;
 	}
 
@@ -138,8 +150,7 @@ public class EffSetPathGoal extends Effect {
 			if (mark == 0) {
 				Class<?> goalAvoid = ReflectionUtils.getNMSClass("PathfinderGoalAvoidTarget", false);
 				float radius = avoidRadius.getSingle(e).floatValue();
-				double spd1 = avoidSpeed1.getSingle(e).doubleValue();
-				double spd2 = avoidSpeed2.getSingle(e).doubleValue();
+				double spd = avoidSpeed.getSingle(e).doubleValue();
 				EntityData<?> entityData;
 				String exprInput = typeToAvoid.toString(e, false);
 				if (exprInput.startsWith("the ")) {
@@ -152,11 +163,13 @@ public class EffSetPathGoal extends Effect {
 				String className = entityData.getType().getSimpleName();
 				if (className.equals("HumanEntity"))
 					className = "Human";
+				else if (className.equals("LivingEntity"))
+					className = "Living";
 				className = "Entity" + className;
 				Class<?> nmsClass = ReflectionUtils.getNMSClass(className, false);
 				if (nmsClass == null)
 					return;
-				newGoal = goalAvoid.getConstructor(entCreature, Class.class, float.class, double.class, double.class).newInstance(nmsEnt, nmsClass, radius, spd1, spd2);
+				newGoal = goalAvoid.getConstructor(entCreature, Class.class, float.class, double.class, double.class).newInstance(nmsEnt, nmsClass, radius, spd, spd);
 			} else if (mark == 1) {
 				Class<?> goalBreakDoor = ReflectionUtils.getNMSClass("PathfinderGoalBreakDoor", false);
 				newGoal = goalBreakDoor.getConstructor(entInsent).newInstance(nmsEnt);
@@ -202,11 +215,13 @@ public class EffSetPathGoal extends Effect {
 				String className = entityData.getType().getSimpleName();
 				if (className.equals("HumanEntity"))
 					className = "Human";
+				else if (className.equals("LivingEntity"))
+					className = "Living";
 				className = "Entity" + className;
 				Class<?>[] nmsClass = new Class<?>[] { ReflectionUtils.getNMSClass(className, false) };
 				if (nmsClass[0] == null)
 					return;
-				newGoal = goalReactAttack.getConstructor(entCreature, boolean.class, Class[].class).newInstance(nmsEnt, false, nmsClass[0]);
+				newGoal = goalReactAttack.getConstructor(entCreature, boolean.class, Class[].class).newInstance(nmsEnt, false, nmsClass);
 			} else if (mark == 9) {
 				Class<?> goalJumpOnBlock = ReflectionUtils.getNMSClass("PathfinderGoalJumpOnBlock", false);
 				double spd = jumpOnBlockSpeed.getSingle(e).doubleValue();
@@ -230,6 +245,8 @@ public class EffSetPathGoal extends Effect {
 				String className = entityData.getType().getSimpleName();
 				if (className.equals("HumanEntity"))
 					className = "Human";
+				else if (className.equals("LivingEntity"))
+					className = "Living";
 				className = "Entity" + className;
 				Class<?> nmsClass = ReflectionUtils.getNMSClass(className, false);
 				if (nmsClass == null)
@@ -245,34 +262,22 @@ public class EffSetPathGoal extends Effect {
 				entityData = EntityData.parseWithoutIndefiniteArticle(exprInput);
 				if (!LivingEntity.class.isAssignableFrom(entityData.getType()))
 					return;
+				String className = entityData.getType().getSimpleName();
+				if (className.equals("HumanEntity"))
+					className = "Human";
+				else if (className.equals("LivingEntity"))
+					className = "Living";
+				className = "Entity" + className;
+				Class<?> nmsClass = ReflectionUtils.getNMSClass(className, false);
+				if (nmsClass == null)
+					return;
 				if (ent instanceof Spider) {
-					Class<?>[] classes = nmsEnt.getClass().getDeclaredClasses();
-					Class<?> clazz = null;
-					for (Class<?> c : classes) {
-						Bukkit.broadcastMessage("Class name: \u00A7e" + c.getName());
-						if (c.getName().equals("PathfinderGoalSpiderMeleeAttack"))
-							clazz = c;
-					}
-					Constructor<?>[] constructors = clazz.getDeclaredConstructors();
-					Constructor<?> constr = null;
-					for (Constructor<?> constructor : constructors) {
-						Bukkit.broadcastMessage("Constructor name: \u00A7a" + constructor.getName());
-						if (constructor.getName().equals("PathfinderGoalSpiderMeleeAttack"))
-							constr = constructor;
-					}
-					if (constr == null)
-						return;
+					Class<?> goalSpiderMelee = ReflectionUtils.getNMSClass("EntitySpider$PathfinderGoalSpiderMeleeAttack", false);
+					Constructor<?> constr = goalSpiderMelee.getDeclaredConstructor(nmsEnt.getClass(), Class.class);
 					constr.setAccessible(true);
-					newGoal = constr.newInstance(nmsEnt, entityData);
+					newGoal = constr.newInstance(nmsEnt, nmsClass);
 				} else {
 					Class<?> goalMeleeAttack = ReflectionUtils.getNMSClass("PathfinderGoalMeleeAttack", false);
-					String className = entityData.getType().getSimpleName();
-					if (className.equals("HumanEntity"))
-						className = "Human";
-					className = "Entity" + className;
-					Class<?> nmsClass = ReflectionUtils.getNMSClass(className, false);
-					if (nmsClass == null)
-						return;
 					double spd = meleeSpeed.getSingle(e).doubleValue();
 					newGoal = goalMeleeAttack.getConstructor(entCreature, Class.class, double.class, boolean.class).newInstance(nmsEnt, nmsClass, spd, false);
 				}
@@ -291,20 +296,22 @@ public class EffSetPathGoal extends Effect {
 				entityData = EntityData.parseWithoutIndefiniteArticle(exprInput);
 				if (!LivingEntity.class.isAssignableFrom(entityData.getType()))
 					return;
+				String className = entityData.getType().getSimpleName();
+				if (className.equals("HumanEntity"))
+					className = "Human";
+				else if (className.equals("LivingEntity"))
+					className = "Living";
+				className = "Entity" + className;
+				Class<?> nmsClass = ReflectionUtils.getNMSClass(className, false);
+				if (nmsClass == null)
+					return;
 				if (ent instanceof Spider) {
 					Class<?> goalSpiderNearTarget = ReflectionUtils.getNMSClass("EntitySpider$PathfinderGoalSpiderNearestAttackableTarget", false);
 					Constructor<?> constr = goalSpiderNearTarget.getDeclaredConstructor(nmsEnt.getClass(), Class.class);
 					constr.setAccessible(true);
-					newGoal = constr.newInstance(nmsEnt, entityData);
+					newGoal = constr.newInstance(nmsEnt, nmsClass);
 				} else {
 					Class<?> goalNearTarget = ReflectionUtils.getNMSClass("PathfinderGoalNearestAttackableTarget", false);
-					String className = entityData.getType().getSimpleName();
-					if (className.equals("HumanEntity"))
-						className = "Human";
-					className = "Entity" + className;
-					Class<?> nmsClass = ReflectionUtils.getNMSClass(className, false);
-					if (nmsClass == null)
-						return;
 					newGoal = goalNearTarget.getConstructor(entCreature, Class.class, boolean.class).newInstance(nmsEnt, nmsClass, false);
 				}
 			} else if (mark == 15) {
@@ -405,18 +412,49 @@ public class EffSetPathGoal extends Effect {
 				constr.setAccessible(true);
 				newGoal = constr.newInstance(nmsEnt);
 			} else if (mark == 31) {
+				Class<?> goalTempt = ReflectionUtils.getNMSClass("PathfinderGoalTempt", false);
+				ItemStack itemStack = temptItem.getSingle(e);
+				if (itemStack.getType() == Material.AIR || itemStack == null)
+					return;
+				Object nmsItemStack = craftItemClass.getMethod("asNMSCopy", ItemStack.class).invoke(itemStack, itemStack);
+				Object nmsItem = nmsItemStack.getClass().getMethod("getItem").invoke(nmsItemStack);
+				double spd = temptSpeed.getSingle(e).doubleValue();
+				newGoal = goalTempt.getConstructor(entCreature, double.class, nmsItemClass, boolean.class).newInstance(nmsEnt, spd, nmsItem, false);
+			} else if (mark == 32) {
+				target = true;
+				Class<?> goalTargetNonTamed = ReflectionUtils.getNMSClass("PathfinderGoalRandomTargetNonTamed", false);
+				if (!(ent instanceof Tameable))
+					return;
+				EntityData<?> entityData;
+				String exprInput = nonTamedTarget.toString(e, false);
+				if (exprInput.startsWith("the ")) {
+					exprInput = exprInput.substring(4);
+				}
+				entityData = EntityData.parseWithoutIndefiniteArticle(exprInput);
+				if (!LivingEntity.class.isAssignableFrom(entityData.getType())) {
+					return;
+				}
+				String className = entityData.getType().getSimpleName();
+				if (className.equals("HumanEntity"))
+					className = "Human";
+				else if (className.equals("LivingEntity"))
+					className = "Living";
+				className = "Entity" + className;
+				Class<?> nmsClass = ReflectionUtils.getNMSClass(className, false);
+				if (nmsClass == null)
+					return;
+				newGoal = goalTargetNonTamed.getConstructor(entTameable, Class.class, boolean.class, Predicate.class).newInstance(nmsEnt, nmsClass, false, Predicates.alwaysTrue());
+			} else if (mark == 33) {
+
 				// TODO: Add more goal/target selectors
 
 				/* Classes that have their own pathfinder goals:
+				 * Guardian, 1 goal, guardian attack.
 				 * Rabbit, 3 goals, 2 adapted copies, 1 new (eat carrot crops)
 				 * Slime, 4 goals, random jump, go to near player, go in random direction and idle.
 				 * ZPigMan, 2 goals, anger and anger other (adapted HurtByTarget to work with Anger tag)
 				 */
-				
-				/* Goals to add:
-				 * Tempt - Mob follows you with a certain item in hand (e.g cow follows wheat)
-				 * AttackNonTamed - Used by ocelots, to attack chickens (maybe for wolves to attack sheep to?)
-				 */
+
 			}
 			if (newGoal == null)
 				return;
