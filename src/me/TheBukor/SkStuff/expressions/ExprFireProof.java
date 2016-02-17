@@ -1,5 +1,8 @@
 package me.TheBukor.SkStuff.expressions;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.Nullable;
 
 import org.bukkit.entity.Entity;
@@ -14,7 +17,7 @@ import ch.njol.util.coll.CollectionUtils;
 import me.TheBukor.SkStuff.util.ReflectionUtils;
 
 public class ExprFireProof extends SimpleExpression<Boolean> {
-	private Expression<Entity> entity;
+	private Expression<Entity> entities;
 
 	private Class<?> craftEntClass = ReflectionUtils.getOBCClass("entity.CraftEntity");
 	@Override
@@ -30,46 +33,50 @@ public class ExprFireProof extends SimpleExpression<Boolean> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean arg2, ParseResult arg3) {
-		entity = (Expression<Entity>) expr[0];
+		entities = (Expression<Entity>) expr[0];
 		return true;
 	}
 
 	@Override
 	public String toString(@Nullable Event e, boolean debug) {
-		return "fireproof state of " + entity.toString(e, debug);
+		return "fireproof state of " + entities.toString(e, debug);
 	}
 
 	@Override
 	@Nullable
 	protected Boolean[] get(Event e) {
-		Entity ent = entity.getSingle(e); 
-		if (ent == null)
+		Entity[] ents = entities.getAll(e); 
+		if (ents == null)
 			return null;
-		Object nmsEnt;
-		Boolean fireProof = null;
-		try {
-			nmsEnt = craftEntClass.getMethod("getHandle").invoke(ent);
-			fireProof = (Boolean) nmsEnt.getClass().getMethod("isFireProof").invoke(nmsEnt);
-		} catch (Exception ex) {
-			ex.printStackTrace();
+		List<Boolean> fireProofStates = new ArrayList<Boolean>();
+		for (Entity ent : ents) {
+			Object nmsEnt = null;
+			try {
+				nmsEnt = craftEntClass.getMethod("getHandle").invoke(ent);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			fireProofStates.add((Boolean) ReflectionUtils.getField("fireProof", nmsEnt.getClass(), nmsEnt));
 		}
-		return new Boolean[] { fireProof };
+		return (Boolean[]) fireProofStates.toArray();
 	}
 	
 	@Override
 	public void change(Event e, @Nullable Object[] delta, ChangeMode mode) {
-		Entity ent = entity.getSingle(e);
-		if (ent == null) 
+		Entity[] ents = entities.getAll(e);
+		if (ents == null) 
 			return;
-		Object nmsEnt = null;
-		try {
-			nmsEnt = craftEntClass.getMethod("getHandle").invoke(ent);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
 		if (mode == ChangeMode.SET) {
 			Boolean newValue = (Boolean) delta[0];
-			ReflectionUtils.setField("fireProof", nmsEnt.getClass(), nmsEnt, newValue);
+			for (Entity ent : ents) {
+				Object nmsEnt = null;
+				try {
+					nmsEnt = craftEntClass.getMethod("getHandle").invoke(ent);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				ReflectionUtils.setField("fireProof", nmsEnt.getClass(), nmsEnt, newValue);
+			}
 		}
 	}
 

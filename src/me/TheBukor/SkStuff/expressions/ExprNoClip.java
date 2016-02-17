@@ -1,8 +1,10 @@
 package me.TheBukor.SkStuff.expressions;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.annotation.Nullable;
 
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
 
@@ -12,9 +14,12 @@ import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import ch.njol.util.coll.CollectionUtils;
+import me.TheBukor.SkStuff.util.ReflectionUtils;
 
 public class ExprNoClip extends SimpleExpression<Boolean> {
-	private Expression<Entity> entity;
+	private Expression<Entity> entities;
+
+	private Class<?> craftEntClass = ReflectionUtils.getOBCClass("entity.CraftEntity");
 
 	@Override
 	public Class<? extends Boolean> getReturnType() {
@@ -23,38 +28,56 @@ public class ExprNoClip extends SimpleExpression<Boolean> {
 
 	@Override
 	public boolean isSingle() {
-		return true;
+		return false;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean arg2, ParseResult arg3) {
-		entity = (Expression<Entity>) expr[0];
+		entities = (Expression<Entity>) expr[0];
 		return true;
 	}
 
 	@Override
 	public String toString(@Nullable Event e, boolean debug) {
-		return "no clip state of " + entity.toString(e, debug);
+		return "the no clip state of " + entities.toString(e, debug);
 	}
 
 	@Override
 	@Nullable
 	protected Boolean[] get(Event e) {
-		Entity ent = entity.getSingle(e); 
-		if (ent == null)
+		Entity[] ents = entities.getAll(e); 
+		if (ents == null)
 			return null;
-		return new Boolean[] { ((CraftEntity) ent).getHandle().noclip };
+		List<Boolean> noClipStates = new ArrayList<Boolean>();
+		for (Entity ent : ents) {
+			Object nmsEnt = null;
+			try {
+				nmsEnt = craftEntClass.getMethod("getHandle").invoke(ent);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
+			noClipStates.add((Boolean) ReflectionUtils.getField("noclip", nmsEnt.getClass(), nmsEnt));
+		}
+		return (Boolean[]) noClipStates.toArray();
 	}
-	
+
 	@Override
 	public void change(Event e, @Nullable Object[] delta, ChangeMode mode) {
-		Entity ent = entity.getSingle(e);
-		if (ent == null) 
+		Entity[] ents = entities.getAll(e);
+		if (ents == null) 
 			return;
 		if (mode == ChangeMode.SET) {
 			Boolean newValue = (Boolean) delta[0];
-			((CraftEntity) ent).getHandle().noclip = newValue;
+			for (Entity ent : ents) {
+				Object nmsEnt = null;
+				try {
+					nmsEnt = craftEntClass.getMethod("getHandle").invoke(ent);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				ReflectionUtils.setField("noclip", nmsEnt.getClass(), nmsEnt, newValue);
+			}
 		}
 	}
 

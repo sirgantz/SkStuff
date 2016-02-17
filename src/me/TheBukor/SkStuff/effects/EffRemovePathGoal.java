@@ -5,11 +5,11 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Blaze;
 import org.bukkit.entity.Ghast;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.Spider;
 import org.bukkit.event.Event;
 
@@ -23,7 +23,6 @@ public class EffRemovePathGoal extends Effect {
 	private Expression<LivingEntity> entity;
 
 	private int mark;
-
 
 	private Class<?> entInsent = ReflectionUtils.getNMSClass("EntityInsentient", false);
 	private Class<?> craftLivEnt = ReflectionUtils.getOBCClass("entity.CraftLivingEntity");
@@ -54,8 +53,13 @@ public class EffRemovePathGoal extends Effect {
 			Object toRemove = null;
 			boolean target = false;
 			if (mark == 0) {
-				Class<?> goalAvoid = ReflectionUtils.getNMSClass("PathfinderGoalAvoidTarget", false);
-				toRemove = goalAvoid;
+				if (ent instanceof Rabbit) {
+					Class<?> goalRabbitAvoid = ReflectionUtils.getNMSClass("EntityRabbit$PathfinderGoalRabbitAvoidTarget", false);
+					toRemove = goalRabbitAvoid;
+				} else {
+					Class<?> goalAvoid = ReflectionUtils.getNMSClass("PathfinderGoalAvoidTarget", false);
+					toRemove = goalAvoid;
+				}
 			} else if (mark == 1) {
 				Class<?> goalBreakDoor = ReflectionUtils.getNMSClass("PathfinderGoalBreakDoor", false);
 				toRemove = goalBreakDoor;
@@ -122,8 +126,13 @@ public class EffRemovePathGoal extends Effect {
 				Class<?> goalOpenDoors = ReflectionUtils.getNMSClass("PathfinderGoalOpenDoor", false);
 				toRemove = goalOpenDoors;
 			} else if (mark == 17) {
-				Class<?> goalPanic = ReflectionUtils.getNMSClass("PathfinderGoalPanic", false);
-				toRemove = goalPanic;
+				if (ent instanceof Rabbit) {
+					Class<?> goalRabbitPanic = ReflectionUtils.getNMSClass("EntityRabbit$PathfinderGoalRabbitPanic", false);
+					toRemove = goalRabbitPanic;
+				} else {
+					Class<?> goalPanic = ReflectionUtils.getNMSClass("PathfinderGoalPanic", false);
+					toRemove = goalPanic;
+				}
 			} else if (mark == 18) {
 				Class<?> goalRandomLook = ReflectionUtils.getNMSClass("PathfinderGoalRandomLookaround", false);
 				toRemove = goalRandomLook;
@@ -176,6 +185,32 @@ public class EffRemovePathGoal extends Effect {
 				target = true;
 				Class<?> goalTargetNonTamed = ReflectionUtils.getNMSClass("PathfinderGoalRandomTargetNonTamed", false);
 				toRemove = goalTargetNonTamed;
+			} else if (mark == 33) {
+				Class<?> goalGuardianAttack = ReflectionUtils.getNMSClass("EntityGuardian$PathfinderGoalGuardianAttack", false);
+				toRemove = goalGuardianAttack;
+			} else if (mark == 34) {
+				target = true;
+				Class<?> goalAnger = ReflectionUtils.getNMSClass("EntityPigZombie$PathfinderGoalAnger", false);
+				toRemove = goalAnger;
+			} else if (mark == 35) {
+				target = true;
+				Class<?> goalAngerOther = ReflectionUtils.getNMSClass("EntityPigZombie$PathfinderGoalAngerOther", false);
+				toRemove = goalAngerOther;
+			} else if (mark == 36) {
+				Class<?> goalEatCarrots = ReflectionUtils.getNMSClass("EntityRabbit$PathfinderGoalEatCarrots", false);
+				toRemove = goalEatCarrots;
+			} else if (mark == 37) {
+				Class<?> goalRabbitAttack = ReflectionUtils.getNMSClass("EntityRabbit$PathfinderGoalKillerRabbitMeleeAttack", false);
+				toRemove = goalRabbitAttack;
+			} else if (mark == 38) {
+				Class<?> goalJump = ReflectionUtils.getNMSClass("EntitySlime$PathfinderGoalSlimeRandomJump", false);
+				toRemove = goalJump;
+			} else if (mark == 39) {
+				Class<?> goalRandomDir = ReflectionUtils.getNMSClass("EntitySlime$PathfinderGoalSlimeRandomDirection", false);
+				toRemove = goalRandomDir;
+			} else if (mark == 40) {
+				Class<?> goalSlimeWander = ReflectionUtils.getNMSClass("EntitySlime$PathfinderGoalSlimeIdle", false);
+				toRemove = goalSlimeWander;
 			}
 			if (toRemove == null)
 				return;
@@ -184,9 +219,7 @@ public class EffRemovePathGoal extends Effect {
 				Iterator<?> targets = ((List<?>) ReflectionUtils.getField("b", goalSelectorClass, targetSelector)).iterator();
 				while (targets.hasNext()) {
 					Object o = targets.next();
-					Bukkit.broadcastMessage("Class: \u00A7a" + ReflectionUtils.getField("a", o.getClass(), o).getClass().getSimpleName());
 					if (ReflectionUtils.getField("a", o.getClass(), o).getClass() == toRemove) {
-						Bukkit.broadcastMessage("\u00A72Is same class");
 						targets.remove();
 					}
 				}
@@ -194,9 +227,7 @@ public class EffRemovePathGoal extends Effect {
 				Iterator<?> goals = ((List<?>) ReflectionUtils.getField("b", goalSelectorClass, goalSelector)).iterator();
 				while (goals.hasNext()) {
 					Object o = goals.next();
-					Bukkit.broadcastMessage("Class: \u00A7a" + ReflectionUtils.getField("a", o.getClass(), o).getClass().getSimpleName());
 					if (ReflectionUtils.getField("a", o.getClass(), o).getClass() == toRemove) {
-						Bukkit.broadcastMessage("\u00A72Is same class");
 						goals.remove();
 					}
 				}
