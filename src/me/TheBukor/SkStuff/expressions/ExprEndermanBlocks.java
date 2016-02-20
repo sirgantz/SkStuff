@@ -1,11 +1,14 @@
 package me.TheBukor.SkStuff.expressions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Material;
+import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
@@ -60,7 +63,7 @@ public class ExprEndermanBlocks extends SimpleExpression<ItemStack> {
 			return null;
 		Object nmsEnt = null;
 		try {
-			nmsEnt = craftEntClass.getMethod("getHandle").invoke(ent);
+			nmsEnt = craftEntClass.cast(ent).getClass().getMethod("getHandle").invoke(ent);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -70,39 +73,89 @@ public class ExprEndermanBlocks extends SimpleExpression<ItemStack> {
 			Object nmsBlockData;
 			try {
 				nmsBlockData = nmsBlockClass.getMethod("getBlockData").invoke(nmsBlock);
-				int dataValue = (int) nmsBlockClass.getMethod("toLegacyData", nmsIBlockData).invoke(nmsBlock, nmsBlockData);
-				Object nmsItem = nmsItemClass.getConstructor(nmsBlockClass, int.class, int.class).newInstance(nmsBlock, 1, dataValue);
-				ItemStack bukkitItem = (ItemStack) craftItemClass.getMethod("asCraftMirror", nmsItemClass).invoke(null, nmsItem);
+				int dataValue = (int) nmsBlockClass.getMethod("toLegacyData", nmsIBlockData).invoke(nmsBlock,
+						nmsBlockData);
+				Object nmsItem = nmsItemClass.getConstructor(nmsBlockClass, int.class, int.class).newInstance(nmsBlock,
+						1, dataValue);
+				ItemStack bukkitItem = (ItemStack) craftItemClass.getMethod("asCraftMirror", nmsItemClass).invoke(null,
+						nmsItem);
 				items.add(bukkitItem);
 			} catch (Exception ex) {
-				ex.printStackTrace();;
+				ex.printStackTrace();
+				;
 			}
 		}
-		return (ItemStack[]) items.toArray();
+		return Arrays.copyOf(items.toArray(), items.size(), ItemStack[].class);
 	}
 
-	@SuppressWarnings("unused")
+	@SuppressWarnings({ "unused", "unchecked" })
 	@Override
 	public void change(Event e, @Nullable Object[] delta, ChangeMode mode) {
-		if (mode == ChangeMode.SET) {
-			ItemStack[] toSet = (ItemStack[]) delta;
-			// TODO Convert bukkit items to NMS items (blocks). Then clear the list and add the delta items.
-		} else if (mode == ChangeMode.REMOVE) {
-			ItemStack[] toRemove = (ItemStack[]) delta;
-			// TODO The code.
-		} else if (mode == ChangeMode.ADD) {
-			ItemStack[] toAdd = (ItemStack[]) delta;
-			// TODO The code.
+		Entity ent = entity.getSingle(e);
+		if (ent == null || !(ent instanceof Enderman))
+			return;
+		Object nmsEnt = null;
+		try {
+			nmsEnt = craftEntClass.cast(ent).getClass().getMethod("getHandle").invoke(ent);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		Set<Object> enderBlocks = (Set<Object>) ReflectionUtils.getField("c", endermanClass, nmsEnt);
+		if (mode == ChangeMode.ADD || mode == ChangeMode.REMOVE || mode == ChangeMode.SET) {
+			ItemStack[] deltaItems = Arrays.copyOf(delta, delta.length, ItemStack[].class);
+			if (mode == ChangeMode.SET) {
+				enderBlocks.clear();
+			}
+			for (ItemStack itemStack : deltaItems) {
+				if (itemStack.getType() == Material.AIR || itemStack == null)
+					continue;
+				Object nmsItemStack = CraftItemStack.asNMSCopy(itemStack);
+				Object nmsItem = null;
+				try {
+					nmsItem = nmsItemStack.getClass().getMethod("getItem").invoke(nmsItemStack);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				if (mode == ChangeMode.ADD || mode == ChangeMode.SET)
+					enderBlocks.add(nmsItem);
+				else //ChangeMode.REMOVE
+					enderBlocks.remove(nmsItem);
+			}
 		} else if (mode == ChangeMode.RESET) {
-			// TODO The code.
+			ItemStack grass = new ItemStack(Material.GRASS);
+			ItemStack dirt = new ItemStack(Material.DIRT);
+			ItemStack sand = new ItemStack(Material.SAND);
+			ItemStack gravel = new ItemStack(Material.GRAVEL);
+			ItemStack dandelion = new ItemStack(Material.YELLOW_FLOWER);
+			ItemStack poppy = new ItemStack(Material.RED_ROSE);
+			ItemStack brownShroom = new ItemStack(Material.BROWN_MUSHROOM);
+			ItemStack redShroom = new ItemStack(Material.RED_MUSHROOM);
+			ItemStack tnt = new ItemStack(Material.TNT);
+			ItemStack cactus = new ItemStack(Material.CACTUS);
+			ItemStack clay = new ItemStack(Material.CLAY);
+			ItemStack pumpkin = new ItemStack(Material.PUMPKIN);
+			ItemStack melon = new ItemStack(Material.MELON_BLOCK);
+			ItemStack mycellium = new ItemStack(Material.MYCEL);
+			ItemStack[] defaultItems = new ItemStack[] { grass, dirt, gravel, dandelion, poppy, brownShroom, redShroom, tnt, cactus, clay, pumpkin, melon, mycellium };
+			enderBlocks.clear();
+			for (ItemStack itemStack : defaultItems) {
+				Object nmsItemStack = CraftItemStack.asNMSCopy(itemStack);
+				Object nmsItem = null;
+				try {
+					nmsItem = nmsItemStack.getClass().getMethod("getItem").invoke(nmsItemStack);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				enderBlocks.add(nmsItem);
+			}
 		}
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	@Nullable
 	public Class<?>[] acceptChange(ChangeMode mode) {
-		if (mode == ChangeMode.SET || mode == ChangeMode.REMOVE || mode == ChangeMode.ADD || mode == ChangeMode.RESET) {
+		if (mode == ChangeMode.ADD || mode == ChangeMode.REMOVE || mode == ChangeMode.RESET|| mode == ChangeMode.SET) {
 			return CollectionUtils.array(ItemStack[].class);
 		}
 		return null;

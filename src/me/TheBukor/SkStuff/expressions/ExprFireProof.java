@@ -1,6 +1,7 @@
 package me.TheBukor.SkStuff.expressions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -50,17 +51,19 @@ public class ExprFireProof extends SimpleExpression<Boolean> {
 			return null;
 		List<Boolean> fireProofStates = new ArrayList<Boolean>();
 		for (Entity ent : ents) {
+			if (ent == null)
+				continue;
 			Object nmsEnt = null;
 			try {
-				nmsEnt = craftEntClass.getMethod("getHandle").invoke(ent);
+				nmsEnt = craftEntClass.cast(ent).getClass().getMethod("getHandle").invoke(ent); //nmsEnt = ((CraftEntity) ent).getHandle();
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 			fireProofStates.add((Boolean) ReflectionUtils.getField("fireProof", nmsEnt.getClass(), nmsEnt));
 		}
-		return (Boolean[]) fireProofStates.toArray();
+		return Arrays.copyOf(fireProofStates.toArray(), fireProofStates.size(), Boolean[].class);
 	}
-	
+
 	@Override
 	public void change(Event e, @Nullable Object[] delta, ChangeMode mode) {
 		Entity[] ents = entities.getAll(e);
@@ -69,9 +72,11 @@ public class ExprFireProof extends SimpleExpression<Boolean> {
 		if (mode == ChangeMode.SET) {
 			Boolean newValue = (Boolean) delta[0];
 			for (Entity ent : ents) {
+				if (ent == null)
+					continue;
 				Object nmsEnt = null;
 				try {
-					nmsEnt = craftEntClass.getMethod("getHandle").invoke(ent);
+					nmsEnt = craftEntClass.cast(ent).getClass().getMethod("getHandle").invoke(ent); //nmsEnt = ((CraftEntity) ent).getHandle();
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}

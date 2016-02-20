@@ -7,7 +7,7 @@ import org.bukkit.Bukkit;
 public class ReflectionUtils {
 
 	public static Class<?> getNMSClass(String classString, boolean isArray) {
-		String version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3] + ".";
+		String version = getVersion();
 		String name = "net.minecraft.server." + version + classString;
 		if (isArray)
 			name = "[L" + name + ";";

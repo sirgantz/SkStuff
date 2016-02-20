@@ -23,7 +23,7 @@ import me.TheBukor.SkStuff.util.NBTUtil;
 import me.TheBukor.SkStuff.util.ReflectionUtils;
 
 public class ExprNBTOf extends SimpleExpression<Object> {
-	private Expression<?> target;
+	private Expression<Object> target;
 
 	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound", false);
 	private Class<?> nbtParserClass = ReflectionUtils.getNMSClass("MojangsonParser", false);
@@ -44,9 +44,10 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 		return true;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean arg2, ParseResult arg3) {
-		target = expr[0];
+		target = (Expression<Object>) expr[0];
 		return true;
 	}
 

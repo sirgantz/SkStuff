@@ -1,6 +1,7 @@
 package me.TheBukor.SkStuff.expressions;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -51,15 +52,17 @@ public class ExprNoClip extends SimpleExpression<Boolean> {
 			return null;
 		List<Boolean> noClipStates = new ArrayList<Boolean>();
 		for (Entity ent : ents) {
+			if (ent == null)
+				continue;
 			Object nmsEnt = null;
 			try {
-				nmsEnt = craftEntClass.getMethod("getHandle").invoke(ent);
+				nmsEnt = craftEntClass.cast(ent).getClass().getMethod("getHandle").invoke(ent); //nmsEnt = ((CraftEntity) ent).getHandle();
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
 			noClipStates.add((Boolean) ReflectionUtils.getField("noclip", nmsEnt.getClass(), nmsEnt));
 		}
-		return (Boolean[]) noClipStates.toArray();
+		return Arrays.copyOf(noClipStates.toArray(), noClipStates.size(), Boolean[].class);
 	}
 
 	@Override
@@ -70,9 +73,11 @@ public class ExprNoClip extends SimpleExpression<Boolean> {
 		if (mode == ChangeMode.SET) {
 			Boolean newValue = (Boolean) delta[0];
 			for (Entity ent : ents) {
+				if (ent == null)
+					continue;
 				Object nmsEnt = null;
 				try {
-					nmsEnt = craftEntClass.getMethod("getHandle").invoke(ent);
+					nmsEnt = craftEntClass.cast(ent).getClass().getMethod("getHandle").invoke(ent); //nmsEnt = ((CraftEntity) ent).getHandle();
 				} catch (Exception ex) {
 					ex.printStackTrace();
 				}

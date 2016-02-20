@@ -6,6 +6,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 
 import org.bukkit.entity.Blaze;
+import org.bukkit.entity.Creature;
 import org.bukkit.entity.Ghast;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -52,6 +53,7 @@ public class EffRemovePathGoal extends Effect {
 			Object targetSelector = ReflectionUtils.getField("targetSelector", entInsent, nmsEnt);
 			Object toRemove = null;
 			boolean target = false;
+			boolean resetGoalTarget = false;
 			if (mark == 0) {
 				if (ent instanceof Rabbit) {
 					Class<?> goalRabbitAvoid = ReflectionUtils.getNMSClass("EntityRabbit$PathfinderGoalRabbitAvoidTarget", false);
@@ -149,6 +151,7 @@ public class EffRemovePathGoal extends Effect {
 				Class<?> goalSquid = ReflectionUtils.getNMSClass("EntitySquid$PathfinderGoalSquid", false);
 				toRemove = goalSquid;
 			} else if (mark == 23) {
+				resetGoalTarget = true;
 				if (ent instanceof Blaze) {
 					Class<?> goalBlazeFireball = ReflectionUtils.getNMSClass("EntityBlaze$PathfinderGoalBlazeFireball", false);
 					toRemove = goalBlazeFireball;
@@ -186,6 +189,7 @@ public class EffRemovePathGoal extends Effect {
 				Class<?> goalTargetNonTamed = ReflectionUtils.getNMSClass("PathfinderGoalRandomTargetNonTamed", false);
 				toRemove = goalTargetNonTamed;
 			} else if (mark == 33) {
+				resetGoalTarget = true;
 				Class<?> goalGuardianAttack = ReflectionUtils.getNMSClass("EntityGuardian$PathfinderGoalGuardianAttack", false);
 				toRemove = goalGuardianAttack;
 			} else if (mark == 34) {
@@ -214,8 +218,21 @@ public class EffRemovePathGoal extends Effect {
 			}
 			if (toRemove == null)
 				return;
+
+			/* "Hey, why are you setting the entity's target to null?!"
+			 * 
+			 * For some goals (Blaze/Ghast fireball and Guardian attack), if you remove the goal while the entity is attacking, it will not stop attacking imediatelly, it will keep attacking its target.
+			 * So there's a "bug" with this behavior, as soon as the entity's target resets (null, A.K.A <none>) the server crashes. Because we messed with the entity's "attack target" goal, the game
+			 * still thinks it needs to get the target's location for some reason, and since the target is null... It throws an unhandled NPE (it never happens in Vanilla behavior), crashing the server.
+			 * So I'm just setting the target to null before removing the goal, so it stops attacking properly, and also prevents the said crash.
+			 */
+
+			if (resetGoalTarget) {
+				((Creature) entity.getSingle(e)).setTarget(null);
+			}
+
 			Class<?> goalSelectorClass = ReflectionUtils.getNMSClass("PathfinderGoalSelector", false);
-			if (target) {
+			if (target) { //Target Selector
 				Iterator<?> targets = ((List<?>) ReflectionUtils.getField("b", goalSelectorClass, targetSelector)).iterator();
 				while (targets.hasNext()) {
 					Object o = targets.next();
@@ -223,7 +240,7 @@ public class EffRemovePathGoal extends Effect {
 						targets.remove();
 					}
 				}
-			} else {
+			} else { //Goal Selector
 				Iterator<?> goals = ((List<?>) ReflectionUtils.getField("b", goalSelectorClass, goalSelector)).iterator();
 				while (goals.hasNext()) {
 					Object o = goals.next();
