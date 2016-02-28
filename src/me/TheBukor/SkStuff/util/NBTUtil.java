@@ -99,12 +99,7 @@ public class NBTUtil {
 	public static List<Object> getContents(Object list) {
 		if (list.getClass() == nbtListClass) {
 			List<Object> result = null;
-			try {
-				result = (List<Object>) ReflectionUtils.getField("list", nbtListClass, list);
-				return result;
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
+			result = (List<Object>) ReflectionUtils.getField("list", nbtListClass, list);
 			return result;
 		}
 		return null;
@@ -138,7 +133,7 @@ public class NBTUtil {
 			}
 		}
 	}
-	
+
 	public static void removefromList(Object list, int index) {
 		if (list.getClass() == nbtListClass) {
 			if (index >= 0 && index < NBTUtil.getContents(list).size()) {
@@ -146,7 +141,7 @@ public class NBTUtil {
 			}
 		}
 	}
-	
+
 	public static void setIndex(Object list, int index, Object toAdd) {
 		if (list.getClass() == nbtListClass && toAdd.getClass() == nbtBaseClass) {
 			if (index >= 0 && index < NBTUtil.getContents(list).size()) {
@@ -164,15 +159,15 @@ public class NBTUtil {
 						ex.printStackTrace();
 					}
 				} else if (listTypeId != toAddId) {
-					Skript.warning(Ansi.ansi().fgBright(Ansi.Color.RED) + "Adding mismatching tag types to NBT list" + Ansi.ansi().fgBright(Ansi.Color.DEFAULT));
+					Skript.warning("Adding mismatching tag types to NBT list");
 					return;
 				}
-				
+
 				NBTUtil.getContents(list).set(index, toAdd);
 			}
 		}
 	}
-	
+
 	public static Object getIndex(Object list, int index) {
 		if (list.getClass() == nbtListClass) {
 			if (index >= 0 && index < NBTUtil.getContents(list).size()) {

@@ -1,7 +1,5 @@
 package me.TheBukor.SkStuff;
 
-import java.lang.reflect.InvocationTargetException;
-
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
@@ -11,25 +9,21 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.fusesource.jansi.Ansi;
 
 import com.sk89q.worldedit.EditSession;
 
 import ch.njol.skript.Skript;
-import ch.njol.skript.classes.Changer;
 import ch.njol.skript.classes.ClassInfo;
-import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ExpressionType;
-import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.lang.util.SimpleEvent;
 import ch.njol.skript.registrations.Classes;
 import ch.njol.skript.registrations.EventValues;
 import ch.njol.skript.util.Getter;
-import ch.njol.util.coll.CollectionUtils;
 import me.TheBukor.SkStuff.conditions.CondSelectionContains;
 import me.TheBukor.SkStuff.effects.EffClearPathGoals;
 import me.TheBukor.SkStuff.effects.EffDrainLiquid;
 import me.TheBukor.SkStuff.effects.EffDrawLineWE;
+import me.TheBukor.SkStuff.effects.EffGZipFile;
 import me.TheBukor.SkStuff.effects.EffMakeCylinder;
 import me.TheBukor.SkStuff.effects.EffMakeJump;
 import me.TheBukor.SkStuff.effects.EffMakePyramid;
@@ -55,6 +49,8 @@ import me.TheBukor.SkStuff.expressions.ExprEndermanBlocks;
 import me.TheBukor.SkStuff.expressions.ExprFileNBT;
 import me.TheBukor.SkStuff.expressions.ExprFireProof;
 import me.TheBukor.SkStuff.expressions.ExprItemNBT;
+import me.TheBukor.SkStuff.expressions.ExprNBTListContents;
+import me.TheBukor.SkStuff.expressions.ExprNBTListIndex;
 import me.TheBukor.SkStuff.expressions.ExprNBTOf;
 import me.TheBukor.SkStuff.expressions.ExprNewEditSession;
 import me.TheBukor.SkStuff.expressions.ExprNoClip;
@@ -68,7 +64,11 @@ import me.TheBukor.SkStuff.expressions.ExprToLowerCase;
 import me.TheBukor.SkStuff.expressions.ExprToUpperCase;
 import me.TheBukor.SkStuff.expressions.ExprVanishState;
 import me.TheBukor.SkStuff.expressions.ExprWordsToUpperCase;
-import me.TheBukor.SkStuff.util.NBTUtil;
+import me.TheBukor.SkStuff.util.NMSInterface;
+import me.TheBukor.SkStuff.util.NMS_v1_7_R4;
+import me.TheBukor.SkStuff.util.NMS_v1_8_R1;
+import me.TheBukor.SkStuff.util.NMS_v1_8_R2;
+import me.TheBukor.SkStuff.util.NMS_v1_8_R3;
 import me.TheBukor.SkStuff.util.ReflectionUtils;
 
 public class SkStuff extends JavaPlugin {
@@ -77,213 +77,48 @@ public class SkStuff extends JavaPlugin {
 	private int evtAmount = 0;
 	private int exprAmount = 0;
 	private int typeAmount = 0;
+	
+	public static SkStuff instance;
 
-	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound", false);
-	private Class<?> nbtListClass = ReflectionUtils.getNMSClass("NBTTagList", false);
-	private Class<?> nbtArrayClass = ReflectionUtils.getNMSClass("NBTTagCompound", true);
-	private Class<?> nbtParserClass = ReflectionUtils.getNMSClass("MojangsonParser", false);
+	private static NMSInterface nmsMethods;
 
-	@SuppressWarnings("unchecked")
 	public void onEnable() {
 		if (Bukkit.getPluginManager().getPlugin("Skript") != null && Skript.isAcceptRegistrations()) {
 			Skript.registerAddon(this);
 			getLogger().info("SkStuff " + this.getDescription().getVersion() + " has been successfully enabled!");
 
 			getLogger().info("Registering general non version specific stuff...");
+			Skript.registerEffect(EffShowEntityEffect.class, "(display|play|show) entity effect (0¦firework[s] explo(de|sion)|1¦hurt|2¦[[iron] golem] (give|offer) (rose|poppy)|3¦[sheep] eat grass|4¦wolf shake) at %entity%");
 			Skript.registerExpression(ExprToUpperCase.class, String.class, ExpressionType.SIMPLE, "%string% [converted] to [all] (cap[ital]s|upper[ ]case)", "convert %string% to [all] (cap[ital]s|upper[ ]case)", "capitalize [all] [char[acter]s (of|in)] %string%");
 			Skript.registerExpression(ExprToLowerCase.class, String.class, ExpressionType.SIMPLE, "%string% [converted] to [all] lower[ ]case", "convert %string% to [all] lower[ ]case", "un[( |-)]capitalize [all] [char[acter]s (of|in)] %string%");
 			Skript.registerExpression(ExprWordsToUpperCase.class, String.class, ExpressionType.SIMPLE, "(first|1st) (letter|char[acter]) (of|in) (each word|[all] words) (of|in) %string% [converted] to (cap[ital]s|upper[ ]case) (0¦|1¦ignoring [other] upper[ ]case [(char[acter]s|letters)])", "convert (first|1st) (letter|char[acter]) (of|in) (each word|[all] words) (of|in) %string% to (cap[ital]s|upper[ ]case) (0¦|1¦ignoring [other] upper[ ]case [(char[acter]s|letters)])", "capitalize (first|1st) (letter|char[acter]) (of|in) (each word|[all] words) (of|in) %string% (0¦|1¦ignoring [other] upper[ ]case [(char[acter]s|letters)])");
 			Skript.registerExpression(ExprTimespanToNumber.class, Number.class, ExpressionType.SIMPLE, "%timespan% [converted] [in]to (0¦ticks|1¦sec[ond]s|2¦min[ute]s|3¦hours|4¦days)");
 			Skript.registerExpression(ExprClickedInventory.class, Inventory.class, ExpressionType.SIMPLE, "[skstuff] clicked inventory");
+			effAmount += 1;
 			exprAmount += 5;
 
-			getLogger().info("Trying to register version specific stuff...");
-			Skript.registerEffect(EffClearPathGoals.class, "(clear|delete) [all] pathfind[er] goals (of|from) %livingentity%");
-			Skript.registerEffect(EffRemovePathGoal.class, "remove pathfind[er] goal (0¦(avoid|run away from) entit(y|ies)|1¦break door[s]|2¦breed|3¦eat grass|4¦(flee from the sun|seek shad(e|ow))|5¦float (in[side]|on) water|6¦follow (owner|tamer)|7¦follow (adult|parent)[s]|8¦(fight back|react to|target) (damager|attacker)|9¦o(c|z)elot jump on blocks|10¦leap at target|11¦look at entit(y|ies)|12¦melee attack entit(y|ies)|13¦move to[wards] target|14¦target nearest entity|15¦o(c|z)elot attack [chicken[s]]|16¦open door[s]|17¦(panic|flee)|18¦look around randomly|19¦(walk around randomly|wander)|20¦sit|21¦[creeper] (explode|inflate|swell)|22¦squid (swim|wander)|23¦shoot fireball[s]|24¦[silverfish] hide (in[side]|on) block[s]|25¦(wake other silverfish[es]|[silverfish] call (help|reinforcement|other [hidden] silverfish[es]))|26¦[enderm(a|e)n] pick[[ ]up] block[s]|27¦[enderm(a|e)n] place block[s]|28¦[enderman] attack player (staring|looking) [at eye[s]]|29¦ghast move to[wards] target|30¦ghast (idle move[ment]|wander|random fl(ight|y[ing]))|31¦(tempt to|follow players (holding|with)) [a[n]] item|32¦target [random] entity (if|when) (not tamed|untamed)|33¦guardian attack [entity]|34¦[z[ombie[ ]]pig[man]] attack [player[s]] (if|when) angry|35¦[z[ombie[ ]]pig[man]] (react to|fight back|target) (attacker|damager) (if|when) angry|36¦[rabbit] eat carrot crops|37¦[killer] rabbit [melee] attack|38¦slime [random] jump|39¦slime change (direction|facing) randomly|40¦slime (idle move[ment]|wander)) from %livingentity%");
-			Skript.registerEffect(EffSetPathGoal.class, "add pathfind[er] goal [[with] priority %-integer%] (0¦(avoid|run away from) %entitydata%[, radius %-number%[, speed %-number%[, speed (if|when) (close|near) %-number]]]|1¦break door[s]|2¦breed[,[move[ment]] speed %-number%]|3¦eat grass|4¦(flee from the sun|seek shad(e|ow))[, [move[ment]] speed %-number%]|5¦(float (in[side]|on) water|swim)|6¦follow (owner|tamer)[, speed %-number%[, min[imum] distance %-number%[, max[imum] distance %-number%]]]|7¦follow (adult|parent)[s][, [move[ment]] speed %-number%]|8¦(fight back|react to|target) (damager|attacker) [[of] type] %entitydata%[, call ([for] help|reinforcement) %-boolean%]|9¦o(c|z)elot jump on blocks[, [move[ment]] speed %-number%]|10¦leap at target[, [leap] height %-number%]|11¦look at %entitydata%[, (radius|max[imum] distance) %-number%]|12¦melee attack %entitydata%[, [move[ment]] speed %-number%[, (memorize|do('nt| not) forget) target [for [a] long[er] time] %-boolean%]]|13¦move to[wards] target[, [move[ment]] speed %-number%[, (radius|max[imum] distance) %-number%]]|14¦target nearest [entity [of] type] %entitydata%[, check sight %-boolean%]|15¦o(c|z)elot attack|16¦open door[s]|17¦(panic|flee)[, [move[ment]] speed %-number%]|18¦look around randomly|19¦(walk around randomly|wander)[, [move[ment]] speed %-number%[, min[imum] [of] %-timespan% between mov(e[ment][s]|ing)]]|20¦sit|21¦[creeper] (explode|inflate|swell)|22¦squid (swim around|wander)|23¦shoot fireball[s]|24¦[silverfish] hide (in[side]|on) block[s]|25¦((call|summon|wake) [other] [hidden] silverfish[es])|26¦[enderman] pick[[ ]up] block[s]|27¦[enderman] place block[s]|28¦[enderman] attack player (staring|looking) at [their] eye[s]]|29¦ghast move to[wards] target|30¦ghast (idle move[ment]|wander|random fl(ight|y[ing]))|31¦(tempt to|follow players (holding|with)) %-itemstack%[, [move[ment]] speed %number%[, scared of player movement %-boolean%]]|32¦target [random] %entitydata% (if|when) (not |un)tamed|33¦guardian attack [entities]|34¦[z[ombie[ ]]pig[man]] attack [player[s]] (if|when) angry|35¦[z[ombie[ ]]pig[man]] (react to|fight back|target) (attacker|damager) (if|when) angry|36¦[rabbit] eat carrot crops|37¦[killer] rabbit [melee] attack|38¦slime [random] jump|39¦slime change (direction|facing) randomly|40¦slime (idle move[ment]|wander)) to %livingentity%");
-			Skript.registerEffect(EffMakeJump.class, "make %livingentities% jump", "force %livingentities% to jump");
-			Skript.registerEffect(EffShowEntityEffect.class, "(display|play|show) entity effect (0¦firework[s] explo(de|sion)|1¦hurt|2¦[[iron] golem] (give|offer) (rose|poppy)|3¦[sheep] eat grass|4¦wolf shake) at %entity%");
-			Skript.registerExpression(ExprNBTOf.class, Object.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of %object%", "%object%'s nbt[[ ]tag[s]]");
-			Skript.registerExpression(ExprItemNBT.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
-			Skript.registerExpression(ExprTagOf.class, Object.class, ExpressionType.PROPERTY, "[nbt[ ]]tag %string% of [[nbt] compound] %compound%");
-			Skript.registerExpression(ExprFileNBT.class, Object.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] from [file] %string%");
-			Skript.registerExpression(ExprNoClip.class, Boolean.class, ExpressionType.PROPERTY, "no[( |-)]clip (state|mode) of %entities%", "%entities%'s no[( |-)]clip (state|mode)");
-			Skript.registerExpression(ExprFireProof.class, Boolean.class, ExpressionType.PROPERTY, "fire[ ]proof (state|mode) of %entities%", "%entities%'s fire[ ]proof (state|mode)");
-			Skript.registerExpression(ExprEndermanBlocks.class, ItemStack.class, ExpressionType.PROPERTY, "blocks that %entity% can (carry|hold|grab|steal)");
-
-			Classes.registerClass(new ClassInfo<Object>((Class<Object>) nbtClass, "compound").user("((nbt)?( ?tag)?) ?compounds?").name("NBT Compound").changer(new Changer<Object>() {
-
-				@Override
-				@Nullable
-				public Class<?>[] acceptChange(ChangeMode mode) {
-					if (mode == ChangeMode.ADD || mode == ChangeMode.REMOVE || mode == ChangeMode.SET) {
-						return CollectionUtils.array(String[].class, nbtArrayClass);
-					}
-					return null;
-				}
-
-				@Override
-				public void change(Object[] NBT, @Nullable Object[] delta, ChangeMode mode) {
-					if (NBT[0].getClass().getName().contains("NBTTagCompound")) {
-						if (!(delta[0] instanceof String) || !(delta[0].getClass().isInstance(nbtClass)))
-							return;
-						String newTags = (String) delta[0];
-						if (mode == ChangeMode.SET) {
-							if (!(delta[0] instanceof String))
-								NBT[0] = delta[0];
-						} else if (mode == ChangeMode.ADD) {
-							if (delta[0] instanceof String) {
-								Object NBT1 = null;
-								try {
-									NBT1 = nbtParserClass.getMethod("parse", String.class).invoke(NBT1, newTags);
-								} catch (Exception ex) {
-									if (ex instanceof InvocationTargetException && ex.getCause().getClass().getName().contains("MojangsonParseException")) {
-										getLogger().warning(Ansi.ansi().fgBright(Ansi.Color.RED) + "Error when parsing NBT - " + ex.getCause().getMessage() + Ansi.ansi().fgBright(Ansi.Color.DEFAULT));
-										return;
-									}
-									ex.printStackTrace();
-								}
-								NBTUtil.addCompound(NBT[0], NBT1);
-							} else {
-								NBTUtil.addCompound(NBT[0], delta[0]);
-							}
-						} else if (mode == ChangeMode.REMOVE) {
-							if (!(delta[0] instanceof String))
-								return;
-							for (Object s : delta) {
-								try {
-									nbtClass.getMethod("remove", String.class).invoke(NBT[0], (String) s);
-								} catch (Exception ex) {
-									ex.printStackTrace();
-								}
-							}
-						}
-					}
-				}
-			}).parser(new Parser<Object>() {
-
-				@Override
-				public String getVariableNamePattern() {
-					return ".+";
-				}
-
-				@Override
-				@Nullable
-				public Object parse(String rawNBT, ParseContext context) {
-					if (rawNBT.startsWith("nbt:{") && rawNBT.endsWith("}")) {
-						Object NBT = null;
-						try {
-							NBT = nbtParserClass.getMethod("parse", String.class).invoke(NBT, rawNBT);
-						} catch (Exception ex) {
-							if (ex instanceof InvocationTargetException && ex.getCause().getClass().getName().contains("MojangsonParseException")) {
-								return null;
-							}
-							ex.printStackTrace();
-						}
-						if (NBT.toString().equals("{}") || NBT == null) {
-							return null;
-						}
-						return NBT;
-					}
-					return null;
-				}
-
-				@Override
-				public String toString(Object compound, int arg1) {
-					return compound.toString();
-				}
-
-				@Override
-				public String toVariableNameString(Object compound) {
-					return "nbt:" + compound.toString();
-				}
-			}));
-
-			Classes.registerClass(new ClassInfo<Object>((Class<Object>) nbtListClass, "nbtlist").user("nbt ?list ?(tag)?").name("NBT List").changer(new Changer<Object>() {
-
-				@Override
-				@Nullable
-				public Class<?>[] acceptChange(ChangeMode mode) {
-					if (mode == ChangeMode.ADD || mode == ChangeMode.SET || mode == ChangeMode.DELETE || mode == ChangeMode.RESET) {
-						return CollectionUtils.array(Float[].class, Double[].class, String[].class, nbtArrayClass, Integer[].class);
-					}
-					return null;
-				}
-
-				@Override
-				public void change(Object[] list, @Nullable Object[] delta, ChangeMode mode) {
-					if (list[0].getClass().getName().contains("NBTTagList")) {
-						int typeId = 0;
-						if (delta instanceof Float[]) {
-							typeId = 5;
-						} else if (delta instanceof Double[]) {
-							typeId = 6;
-						} else if (delta instanceof String[]) {
-							typeId = 8;
-						} else if (delta.getClass() == nbtArrayClass) {
-							typeId = 10;
-						} else if (delta instanceof Integer[]) {
-							typeId = 11;
-						} else {
-							return;
-						}
-						if (mode == ChangeMode.SET) {
-							if (NBTUtil.getContentsId(list) == typeId)
-								list[0] = delta[0];
-						} else if (mode == ChangeMode.ADD) {
-							if (NBTUtil.getContentsId(list) == typeId) {
-								if (typeId == 10) {
-									String newTags = (String) delta[0];
-									Object NBT1 = null;
-									try {
-										NBT1 = nbtParserClass.getMethod("parse", String.class).invoke(NBT1, newTags);
-									} catch (Exception ex) {
-										if (ex instanceof InvocationTargetException && ex.getCause().getClass().getName().contains("MojangsonParseException")) {
-											Skript.warning(Ansi.ansi().fgBright(Ansi.Color.RED) + "Error when parsing NBT - " + ex.getCause().getMessage() + Ansi.ansi().fgBright(Ansi.Color.DEFAULT));
-											return;
-										}
-										ex.printStackTrace();
-									}
-									NBTUtil.addToList(list[0], new Object[] { NBT1 });
-								} else {
-									NBTUtil.addToList(list[0], delta);
-								}
-							}
-						} else if (mode == ChangeMode.DELETE || mode == ChangeMode.RESET) {
-							try {
-								list[0] = nbtListClass.newInstance();
-							} catch (Exception ex) {
-								ex.printStackTrace();
-							}
-						}
-					}
-				}
-			}).parser(new Parser<Object>() {
-
-				@Override
-				public String getVariableNamePattern() {
-					return ".+";
-				}
-
-				@Override
-				@Nullable
-				public Object parse(String rawNBTList, ParseContext context) {
-					return null;
-				}
-
-				@Override
-				public String toString(Object list, int arg1) {
-					return list.toString();
-				}
-
-				@Override
-				public String toVariableNameString(Object list) {
-					return list.toString();
-				}
-			}));
-			effAmount += 5;
-			exprAmount += 6;
-			typeAmount += 2;
+			if (setupNMSVersion()) {
+				getLogger().info("Trying to register version specific stuff...");
+				Skript.registerEffect(EffClearPathGoals.class, "(clear|delete) [all] pathfind[er] goals (of|from) %livingentity%");
+				Skript.registerEffect(EffRemovePathGoal.class, "remove pathfind[er] goal (0¦(avoid|run away from) entit(y|ies)|1¦break door[s]|2¦breed|3¦eat grass|4¦(flee from the sun|seek shad(e|ow))|5¦float (in[side]|on) water|6¦follow (owner|tamer)|7¦follow (adult|parent)[s]|8¦(fight back|react to|target) (damager|attacker)|9¦o(c|z)elot jump on blocks|10¦leap at target|11¦look at entit(y|ies)|12¦melee attack entit(y|ies)|13¦move to[wards] target|14¦target nearest entity|15¦o(c|z)elot attack [chicken[s]]|16¦open door[s]|17¦(panic|flee)|18¦look around randomly|19¦(walk around randomly|wander)|20¦sit|21¦[creeper] (explode|inflate|swell)|22¦squid (swim|wander)|23¦shoot fireball[s]|24¦[silverfish] hide (in[side]|on) block[s]|25¦(wake other silverfish[es]|[silverfish] call (help|reinforcement|other [hidden] silverfish[es]))|26¦[enderm(a|e)n] pick[[ ]up] block[s]|27¦[enderm(a|e)n] place block[s]|28¦[enderman] attack player (staring|looking) [at eye[s]]|29¦ghast move to[wards] target|30¦ghast (idle move[ment]|wander|random fl(ight|y[ing]))|31¦(tempt to|follow players (holding|with)) [a[n]] item|32¦target [random] entity (if|when) (not tamed|untamed)|33¦guardian attack [entity]|34¦[z[ombie[ ]]pig[man]] attack [player[s]] (if|when) angry|35¦[z[ombie[ ]]pig[man]] (react to|fight back|target) (attacker|damager) (if|when) angry|36¦[rabbit] eat carrot crops|37¦[killer] rabbit [melee] attack|38¦slime [random] jump|39¦slime change (direction|facing) randomly|40¦slime (idle move[ment]|wander)) from %livingentity%");
+				Skript.registerEffect(EffSetPathGoal.class, "add pathfind[er] goal [[with] priority %-integer%] (0¦(avoid|run away from) %entitydata%[, radius %-number%[, speed %-number%[, speed (if|when) (close|near) %-number%]]]|1¦break door[s]|2¦breed[,[move[ment]] speed %-number%]|3¦eat grass|4¦(flee from the sun|seek shad(e|ow))[, [move[ment]] speed %-number%]|5¦(float (in[side]|on) water|swim)|6¦follow (owner|tamer)[, speed %-number%[, min[imum] distance %-number%[, max[imum] distance %-number%]]]|7¦follow (adult|parent)[s][, [move[ment]] speed %-number%]|8¦(fight back|react to|target) (damager|attacker) [[of] type] %entitydata%[, call ([for] help|reinforcement) %-boolean%]|9¦o(c|z)elot jump on blocks[, [move[ment]] speed %-number%]|10¦leap at target[, [leap] height %-number%]|11¦look at %entitydata%[, (radius|max[imum] distance) %-number%]|12¦melee attack %entitydata%[, [move[ment]] speed %-number%[, (memorize|do('nt| not) forget) target [for [a] long[er] time] %-boolean%]]|13¦move to[wards] target[, [move[ment]] speed %-number%[, (radius|max[imum] distance) %-number%]]|14¦target nearest [entity [of] type] %entitydata%[, check sight %-boolean%]|15¦o(c|z)elot attack|16¦open door[s]|17¦(panic|flee)[, [move[ment]] speed %-number%]|18¦look around randomly|19¦(walk around randomly|wander)[, [move[ment]] speed %-number%[, min[imum] [of] %-timespan% between mov(e[ment][s]|ing)]]|20¦sit|21¦[creeper] (explode|inflate|swell)|22¦squid (swim around|wander)|23¦shoot fireball[s]|24¦[silverfish] hide (in[side]|on) block[s]|25¦((call|summon|wake) [other] [hidden] silverfish[es])|26¦[enderman] pick[[ ]up] block[s]|27¦[enderman] place block[s]|28¦[enderman] attack player (staring|looking) at [their] eye[s]]|29¦ghast move to[wards] target|30¦ghast (idle move[ment]|wander|random fl(ight|y[ing]))|31¦(tempt to|follow players (holding|with)) %-itemstack%[, [move[ment]] speed %number%[, scared of player movement %-boolean%]]|32¦target [random] %entitydata% (if|when) (not |un)tamed|33¦guardian attack [entities]|34¦[z[ombie[ ]]pig[man]] attack [player[s]] (if|when) angry|35¦[z[ombie[ ]]pig[man]] (react to|fight back|target) (attacker|damager) (if|when) angry|36¦[rabbit] eat carrot crops|37¦[killer] rabbit [melee] attack|38¦slime [random] jump|39¦slime change (direction|facing) randomly|40¦slime (idle move[ment]|wander)) to %livingentity%");
+				Skript.registerEffect(EffMakeJump.class, "make %livingentities% jump", "force %livingentities% to jump");
+				Skript.registerEffect(EffGZipFile.class, "create [a] gzip[ped] file [at] %string%");
+				Skript.registerExpression(ExprNBTOf.class, Object.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of %~object%", "%~object%'s nbt[[ ]tag[s]]");
+				Skript.registerExpression(ExprItemNBT.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
+				Skript.registerExpression(ExprTagOf.class, Object.class, ExpressionType.PROPERTY, "[nbt[ ]]tag %string% of [[nbt] compound] %compound%");
+				Skript.registerExpression(ExprFileNBT.class, Object.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] from [file] %string%");
+				Skript.registerExpression(ExprNBTListIndex.class, Object.class, ExpressionType.PROPERTY, "[nbt[ ]list] %nbtlist% index %number%");
+				Skript.registerExpression(ExprNBTListContents.class, Object.class, ExpressionType.PROPERTY, "[all] contents (of|from) [nbt[ ]list] %nbtlist%", "[nbt[ ]list] %nbtlist% contents");
+				Skript.registerExpression(ExprNoClip.class, Boolean.class, ExpressionType.PROPERTY, "no[( |-)]clip (state|mode) of %entities%", "%entities%'s no[( |-)]clip (state|mode)");
+				Skript.registerExpression(ExprFireProof.class, Boolean.class, ExpressionType.PROPERTY, "fire[ ]proof (state|mode) of %entities%", "%entities%'s fire[ ]proof (state|mode)");
+				Skript.registerExpression(ExprEndermanBlocks.class, ItemStack.class, ExpressionType.PROPERTY, "blocks that %entity% can (carry|hold|grab|steal)");
+				nmsMethods.registerCompoundClassInfo();
+				nmsMethods.registerNBTListClassInfo();
+				effAmount += 5;
+				exprAmount += 9;
+				typeAmount += 2;
+			}
 			if (Bukkit.getPluginManager().getPlugin("WorldEdit") != null) {
 				getLogger().info("WorldEdit found! Registering WorldEdit stuff...");
 				Skript.registerCondition(CondSelectionContains.class, "[(world[ ]edit|we)] selection of %player% (contains|has) %location%", "%player%'s [(world[ ]edit|we)] selection (contains|has) %location%", "[(world[ ]edit|we)] selection of %player% does(n't| not) (contain|have) %location%", "%player%'s [(world[ ]edit|we)] selection does(n't| not) (contain|have) %location%");
@@ -348,6 +183,34 @@ public class SkStuff extends JavaPlugin {
 			getLogger().info("Unable to find Skript or Skript isn't accepting registrations, disabling SkStuff...");
 			Bukkit.getPluginManager().disablePlugin(this);;
 		}
+	}
+
+	private boolean setupNMSVersion() {
+		String version = ReflectionUtils.getVersion();
+		if (version.equals("v1_7_R4.")) {
+			nmsMethods = new NMS_v1_7_R4();
+			getLogger().info("It looks like you're running 1.7.10!");
+		} else if (version.equals("v1_8_R1.")) {
+			nmsMethods = new NMS_v1_8_R1();
+			getLogger().info("It looks like you're running 1.8.0!");
+		} else if (version.equals("v1_8_R2.")) {
+			nmsMethods = new NMS_v1_8_R2();
+			getLogger().info("It looks like you're running 1.8.3!");
+		} else if (version.equals("v1_8_R3.")) {
+			nmsMethods = new NMS_v1_8_R3();
+			getLogger().info("It looks like you're either running 1.8.7, 1.8.8 or 1.8.9!");
+		} else {
+			getLogger().warning("It looks like you're running an unsupported server version, some features will not be available :(");
+		}
+		return nmsMethods != null;
+	}
+
+	public static SkStuff getInstance() {
+		return instance;
+	}
+	
+	public static NMSInterface getNMSMethods() {
+		return nmsMethods;
 	}
 
 	public void onDisable() {

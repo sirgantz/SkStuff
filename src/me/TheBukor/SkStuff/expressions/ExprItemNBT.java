@@ -1,30 +1,21 @@
 package me.TheBukor.SkStuff.expressions;
 
-import java.lang.reflect.InvocationTargetException;
-
 import javax.annotation.Nullable;
 
 import org.bukkit.Material;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
-import org.fusesource.jansi.Ansi;
 
-import ch.njol.skript.Skript;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
-import me.TheBukor.SkStuff.util.ReflectionUtils;
+import me.TheBukor.SkStuff.SkStuff;
 
 public class ExprItemNBT extends SimpleExpression<ItemStack> {
 	private Expression<ItemStack> itemStack;
 	private Expression<String> string;
 
-	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound", false);
-	private Class<?> nbtParseClass = ReflectionUtils.getNMSClass("MojangsonParser", false);
-	private Class<?> nmsItemClass = ReflectionUtils.getNMSClass("ItemStack", false);
-
-	private Class<?> craftItemClass = ReflectionUtils.getOBCClass("inventory.CraftItemStack");
 
 	@Override
 	public Class<? extends ItemStack> getReturnType() {
@@ -57,32 +48,8 @@ public class ExprItemNBT extends SimpleExpression<ItemStack> {
 		if (item.getType() == Material.AIR || item == null) {
 			return null;
 		}
-		Object nmsItem = null;
-		try {
-			nmsItem = craftItemClass.getMethod("asNMSCopy", ItemStack.class).invoke(item, item);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		try {
-			Object NBT = null;
-			NBT = nbtParseClass.getMethod("parse", String.class).invoke(NBT, newTags);
-			if (NBT == null || NBT.toString().equals("{}")) { //"{}" is an empty compound.
-				return new ItemStack[] { item }; //There's no NBT involved, so just give a normal item.
-			}
-			nmsItem.getClass().getMethod("setTag", nbtClass).invoke(nmsItem, NBT);
-		} catch (Exception ex) {
-			if (ex instanceof InvocationTargetException && ex.getCause().getClass().getName().contains("MojangsonParseException")) {
-				Skript.warning(Ansi.ansi().fgBright(Ansi.Color.RED) + "Error when parsing NBT - " + ex.getCause().getMessage() + Ansi.ansi().fgBright(Ansi.Color.DEFAULT));
-				return null;
-			}
-			ex.printStackTrace();
-		}
-		Object newItem = null;
-		try {
-			newItem = craftItemClass.getMethod("asCraftMirror", nmsItemClass).invoke(newItem, nmsItem);
-		} catch (Exception ex) {
-			ex.printStackTrace();
-		}
-		return new ItemStack[] { (ItemStack) newItem };
+		Object parsedNBT = SkStuff.getNMSMethods().parseRawNBT(newTags);
+		ItemStack newItem = SkStuff.getNMSMethods().getItemWithNBT(item, parsedNBT);
+		return new ItemStack[] { newItem };
 	}
 }

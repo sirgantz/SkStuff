@@ -28,6 +28,7 @@ public class WorldEditExtent extends AbstractLoggingExtent {
     protected void onBlockChange(final Vector vec, BaseBlock baseBlock) {
         final Block b = BukkitUtil.toLocation(world, vec).getBlock();
        	final Player p = Bukkit.getPlayerExact(actor.getName());
-		Bukkit.getPluginManager().callEvent(new EvtWorldEditChange(p, b));
+       	EvtWorldEditChange event = new EvtWorldEditChange(p, b);
+		Bukkit.getPluginManager().callEvent(event);
     }
 }
