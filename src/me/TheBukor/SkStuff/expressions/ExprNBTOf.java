@@ -4,13 +4,11 @@ import java.util.Arrays;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.ItemStack;
 
-import ch.njol.skript.ScriptLoader;
 import ch.njol.skript.Skript;
 import ch.njol.skript.classes.Changer.ChangeMode;
 import ch.njol.skript.lang.Expression;
@@ -26,7 +24,7 @@ import me.TheBukor.SkStuff.util.ReflectionUtils;
 public class ExprNBTOf extends SimpleExpression<Object> {
 	private Expression<Object> target;
 
-	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound", false);
+	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound");
 
 	@Override
 	public Class<? extends Object> getReturnType() {
@@ -43,11 +41,6 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 	public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean arg2, ParseResult result) {
 		target = (Expression<Object>) expr[0];
 		Class<?> type = target.getReturnType();
-		Class<? extends Event>[] evts = ScriptLoader.getCurrentEvents();
-		for (int i = 0; i < evts.length; i++) {
-			Bukkit.broadcastMessage("Event #" + i + ": \u00A7b" + evts[i].getSimpleName());
-		}
-		Bukkit.broadcastMessage("Object type: \u00A79" + type.getSimpleName());
 		if (type != Entity.class || type != Block.class || type != ItemStack.class || type != Slot.class) {
 			Skript.error(target.toString() + " is neither an entity, a block nor an itemstack.", ErrorQuality.SEMANTIC_ERROR);
 		}
@@ -69,6 +62,8 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 			return new Object[] { SkStuff.getNMSMethods().getTileNBT((Block) tar) };
 		} else if (tar instanceof ItemStack) {
 			return new Object[] { SkStuff.getNMSMethods().getItemNBT((ItemStack) tar) };
+		} else if (tar instanceof Slot) {
+			return new Object[] { SkStuff.getNMSMethods().getItemNBT(((Slot) tar).getItem()) };
 		}
 		return null;
 	}
@@ -76,10 +71,13 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 	@Override
 	public void change(Event e, Object[] delta, ChangeMode mode) {
 		Object tar = target.getSingle(e);
+		Object parsedNBT = null;
+		if (delta != null) {
+			parsedNBT = SkStuff.getNMSMethods().parseRawNBT((String) delta[0]);
+		}
 		if (tar instanceof Entity) {
 			Object entNBT = SkStuff.getNMSMethods().getEntityNBT((Entity) tar);
 			if (mode == ChangeMode.ADD) {
-				Object parsedNBT = SkStuff.getNMSMethods().parseRawNBT((String) delta[0]);
 				SkStuff.getNMSMethods().removeFromCompound(parsedNBT, "UUIDMost", "UUIDLeast", "WorldUUDMost", "WorldUUIDLeast", "Bukkit.updateLevel");
 				SkStuff.getNMSMethods().addToCompound(entNBT, parsedNBT);
 				SkStuff.getNMSMethods().setEntityNBT((Entity) tar, entNBT);
@@ -94,7 +92,6 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 		} else if (tar instanceof Block) {
 			Object blockNBT = SkStuff.getNMSMethods().getTileNBT((Block) tar);
 			if (mode == ChangeMode.ADD) {
-				Object parsedNBT = SkStuff.getNMSMethods().parseRawNBT((String) delta[0]);
 				SkStuff.getNMSMethods().removeFromCompound(parsedNBT, "x", "y", "z", "id");
 				SkStuff.getNMSMethods().addToCompound(blockNBT, parsedNBT);
 				SkStuff.getNMSMethods().setTileNBT((Block) tar, blockNBT);
@@ -109,7 +106,6 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 		} else if (tar instanceof ItemStack) {
 			Object itemNBT = SkStuff.getNMSMethods().getItemNBT((ItemStack) tar);
 			if (mode == ChangeMode.ADD) {
-				Object parsedNBT = SkStuff.getNMSMethods().parseRawNBT((String) delta[0]);
 				SkStuff.getNMSMethods().addToCompound(itemNBT, parsedNBT);
 				ItemStack newItem = SkStuff.getNMSMethods().getItemWithNBT((ItemStack) tar, itemNBT);
 				Object slot = target.getSource().getSingle(e);
@@ -130,6 +126,21 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 				if (slot instanceof Slot) {
 					((Slot) slot).setItem(newItem);
 				}
+			}
+		} else if (tar instanceof Slot) {
+			Object itemNBT = SkStuff.getNMSMethods().getItemNBT(((Slot) tar).getItem());
+			if (mode == ChangeMode.ADD) {
+				SkStuff.getNMSMethods().addToCompound(itemNBT, parsedNBT);
+				ItemStack newItem = SkStuff.getNMSMethods().getItemWithNBT((ItemStack) tar, itemNBT);
+				((Slot) tar).setItem(newItem);
+			} else if (mode == ChangeMode.REMOVE) {
+				String[] toRemove = Arrays.copyOf(delta, delta.length, String[].class);
+				SkStuff.getNMSMethods().removeFromCompound(itemNBT, toRemove);
+				ItemStack newItem = SkStuff.getNMSMethods().getItemWithNBT((ItemStack) tar, itemNBT);
+				((Slot) tar).setItem(newItem);
+			} else if (mode == ChangeMode.DELETE || mode == ChangeMode.RESET) {
+				ItemStack newItem = SkStuff.getNMSMethods().getItemWithNBT((ItemStack) tar, null);
+				((Slot) tar).setItem(newItem);
 			}
 		}
 	}

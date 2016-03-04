@@ -18,7 +18,7 @@ import me.TheBukor.SkStuff.util.ReflectionUtils;
 public class ExprFileNBT extends SimpleExpression<Object> {
 	private Expression<String> input;
 
-	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound", false);
+	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound");
 
 	@Override
 	public Class<? extends Object> getReturnType() {
@@ -62,7 +62,8 @@ public class ExprFileNBT extends SimpleExpression<Object> {
 			return;
 		Object fileNBT = SkStuff.getNMSMethods().getFileNBT(file);
 		if (mode == ChangeMode.ADD) {
-			Object parsedNBT = SkStuff.getNMSMethods().parseRawNBT((String) delta[0]);
+			Object parsedNBT = null;
+			parsedNBT = SkStuff.getNMSMethods().parseRawNBT((String) delta[0]);
 			SkStuff.getNMSMethods().addToCompound(fileNBT, parsedNBT);
 			SkStuff.getNMSMethods().setFileNBT(file, fileNBT);
 		} else if (mode == ChangeMode.REMOVE) {

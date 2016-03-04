@@ -1,16 +1,15 @@
 package me.TheBukor.SkStuff.util;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 
 import org.bukkit.Bukkit;
 
 public class ReflectionUtils {
 
-	public static Class<?> getNMSClass(String classString, boolean isArray) {
+	public static Class<?> getNMSClass(String classString) {
 		String version = getVersion();
 		String name = "net.minecraft.server." + version + classString;
-		if (isArray)
-			name = "[L" + name + ";";
 		Class<?> nmsClass = null;
 		try {
 			nmsClass = Class.forName(name);
@@ -56,6 +55,17 @@ public class ReflectionUtils {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+	}
+
+	public static Constructor<?> getConstructor(String constructor, Class<?> clazz, Object object, Class<?> ... params) {
+		Constructor<?> constr = null;
+		try {
+			constr = clazz.getDeclaredConstructor(params);
+			constr.setAccessible(true);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		return constr;
 	}
 
 	public static String getVersion() {

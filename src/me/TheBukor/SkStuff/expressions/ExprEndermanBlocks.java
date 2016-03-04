@@ -25,10 +25,10 @@ import me.TheBukor.SkStuff.util.ReflectionUtils;
 public class ExprEndermanBlocks extends SimpleExpression<ItemStack> {
 	private Expression<Entity> entity;
 
-	private Class<?> nmsBlockClass = ReflectionUtils.getNMSClass("Block", false);
-	private Class<?> endermanClass = ReflectionUtils.getNMSClass("EntityEnderman", false);
-	private Class<?> nmsIBlockData = ReflectionUtils.getNMSClass("IBlockData", false);
-	private Class<?> nmsItemClass = ReflectionUtils.getNMSClass("ItemStack", false);
+	private Class<?> nmsBlockClass = ReflectionUtils.getNMSClass("Block");
+	private Class<?> endermanClass = ReflectionUtils.getNMSClass("EntityEnderman");
+	private Class<?> nmsIBlockData = ReflectionUtils.getNMSClass("IBlockData");
+	private Class<?> nmsItemClass = ReflectionUtils.getNMSClass("ItemStack");
 	private Class<?> craftEntClass = ReflectionUtils.getOBCClass("entity.CraftEntity");
 	private Class<?> craftItemClass = ReflectionUtils.getOBCClass("inventory.CraftItemStack");
 

@@ -16,9 +16,9 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_8_R2.CraftWorld;
-import org.bukkit.craftbukkit.v1_8_R2.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_8_R2.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_9_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_9_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_9_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 
@@ -31,27 +31,28 @@ import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
 import ch.njol.util.coll.CollectionUtils;
 import ch.njol.yggdrasil.Fields;
-import net.minecraft.server.v1_8_R2.BlockPosition;
-import net.minecraft.server.v1_8_R2.EntityInsentient;
-import net.minecraft.server.v1_8_R2.MojangsonParseException;
-import net.minecraft.server.v1_8_R2.MojangsonParser;
-import net.minecraft.server.v1_8_R2.NBTBase;
-import net.minecraft.server.v1_8_R2.NBTCompressedStreamTools;
-import net.minecraft.server.v1_8_R2.NBTTagByte;
-import net.minecraft.server.v1_8_R2.NBTTagCompound;
-import net.minecraft.server.v1_8_R2.NBTTagDouble;
-import net.minecraft.server.v1_8_R2.NBTTagFloat;
-import net.minecraft.server.v1_8_R2.NBTTagInt;
-import net.minecraft.server.v1_8_R2.NBTTagList;
-import net.minecraft.server.v1_8_R2.NBTTagLong;
-import net.minecraft.server.v1_8_R2.NBTTagShort;
-import net.minecraft.server.v1_8_R2.NBTTagString;
-import net.minecraft.server.v1_8_R2.PathfinderGoal;
-import net.minecraft.server.v1_8_R2.PathfinderGoalSelector;
-import net.minecraft.server.v1_8_R2.TileEntity;
-import net.minecraft.server.v1_8_R2.World;
+import net.minecraft.server.v1_9_R1.BlockPosition;
+import net.minecraft.server.v1_9_R1.EntityInsentient;
+import net.minecraft.server.v1_9_R1.IBlockData;
+import net.minecraft.server.v1_9_R1.MojangsonParseException;
+import net.minecraft.server.v1_9_R1.MojangsonParser;
+import net.minecraft.server.v1_9_R1.NBTBase;
+import net.minecraft.server.v1_9_R1.NBTCompressedStreamTools;
+import net.minecraft.server.v1_9_R1.NBTTagByte;
+import net.minecraft.server.v1_9_R1.NBTTagCompound;
+import net.minecraft.server.v1_9_R1.NBTTagDouble;
+import net.minecraft.server.v1_9_R1.NBTTagFloat;
+import net.minecraft.server.v1_9_R1.NBTTagInt;
+import net.minecraft.server.v1_9_R1.NBTTagList;
+import net.minecraft.server.v1_9_R1.NBTTagLong;
+import net.minecraft.server.v1_9_R1.NBTTagShort;
+import net.minecraft.server.v1_9_R1.NBTTagString;
+import net.minecraft.server.v1_9_R1.PathfinderGoal;
+import net.minecraft.server.v1_9_R1.PathfinderGoalSelector;
+import net.minecraft.server.v1_9_R1.TileEntity;
+import net.minecraft.server.v1_9_R1.World;
 
-public class NMS_v1_8_R2 implements NMSInterface {
+public class NMS_v1_9_R1 implements NMSInterface {
 
 	@Override
 	public void addToCompound(Object compound, Object toAdd) {
@@ -83,7 +84,7 @@ public class NMS_v1_8_R2 implements NMSInterface {
 	@Override
 	public int getContentsId(Object nbtList) {
 		if (nbtList instanceof NBTTagList) {
-			return ((NBTTagList) nbtList).f();
+			return ((NBTTagList) nbtList).d();
 		}
 		return 0;
 	}
@@ -112,7 +113,7 @@ public class NMS_v1_8_R2 implements NMSInterface {
 	@Override
 	public void removeFromList(Object nbtList, int index) {
 		if (nbtList instanceof NBTTagList && index >= 0 && index < ((NBTTagList) nbtList).size()) {
-			((NBTTagList) nbtList).a(index);
+			((NBTTagList) nbtList).remove(index);
 		}
 	}
 
@@ -132,7 +133,7 @@ public class NMS_v1_8_R2 implements NMSInterface {
 	@Override
 	public Object getIndex(Object nbtList, int index) {
 		if (nbtList instanceof NBTTagList && index >= 0 && index < ((NBTTagList) nbtList).size()) {
-			NBTBase value = ((NBTTagList) nbtList).g(index);
+			NBTBase value = ((NBTTagList) nbtList).h(index);
 			if (value instanceof NBTTagByte) {
 				return ((NBTTagByte) value).f(); //Byte stored inside a NBTNumber
 			} else if (value instanceof NBTTagShort) {
@@ -426,7 +427,7 @@ public class NMS_v1_8_R2 implements NMSInterface {
 
 	@Override
 	public NBTTagCompound getEntityNBT(Entity entity) {
-		net.minecraft.server.v1_8_R2.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+		net.minecraft.server.v1_9_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
 		NBTTagCompound NBT = new NBTTagCompound();
 		nmsEntity.e(NBT);
 		return NBT;
@@ -439,7 +440,7 @@ public class NMS_v1_8_R2 implements NMSInterface {
 		TileEntity tileEntity = nmsWorld.getTileEntity(new BlockPosition(block.getX(), block.getY(), block.getZ()));
 		if (tileEntity == null)
 			return null;
-		tileEntity.b(NBT);
+		tileEntity.save(NBT);
 		return NBT;
 	}
 
@@ -456,7 +457,7 @@ public class NMS_v1_8_R2 implements NMSInterface {
 	@Override
 	public void setEntityNBT(Entity entity, Object newCompound) {
 		if (newCompound instanceof NBTTagCompound) {
-			net.minecraft.server.v1_8_R2.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+			net.minecraft.server.v1_9_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
 			nmsEntity.f((NBTTagCompound) newCompound);
 		}
 	}
@@ -470,13 +471,14 @@ public class NMS_v1_8_R2 implements NMSInterface {
 				return;
 			tileEntity.a((NBTTagCompound) newCompound);
 			tileEntity.update();
-			nmsWorld.notify(tileEntity.getPosition());
+			IBlockData tileEntType = nmsWorld.getType(new BlockPosition(block.getX(), block.getY(), block.getZ()));
+			nmsWorld.notify(tileEntity.getPosition(), tileEntType, tileEntType, 3);
 		}
 	}
 
 	@Override
 	public ItemStack getItemWithNBT(ItemStack itemStack, Object compound) {
-		net.minecraft.server.v1_8_R2.ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
+		net.minecraft.server.v1_9_R1.ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
 		if (compound instanceof NBTTagCompound && itemStack != null) {
 			if (itemStack.getType() == Material.AIR)
 				return null;

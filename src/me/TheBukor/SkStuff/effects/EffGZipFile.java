@@ -28,28 +28,21 @@ public class EffGZipFile extends Effect {
 
 	@Override
 	public String toString(@Nullable Event e, boolean debug) {
-		return "create GZipped file at " + filePath.toString(e, debug);
+		return "create GZipped file at path " + filePath.toString(e, debug);
 	}
 
 	@Override
 	protected void execute(Event e) {
 		File newFile = new File(filePath.getSingle(e));
-		/*
 		if (!newFile.exists()) {
 			try {
-				newFile.createNewFile();
+				new GZIPOutputStream(new FileOutputStream(newFile)).close();
+			} catch (FileNotFoundException ex) {
+				ex.printStackTrace();
 			} catch (IOException ex) {
-				ex.printStackTrace();
-			}
-		}
-		*/
-		try {
-			new GZIPOutputStream(new FileOutputStream(newFile)).close();
-		} catch (FileNotFoundException ex) {
-			ex.printStackTrace();
-		} catch (IOException ex) {
-			if (!(ex instanceof EOFException)) {
-				ex.printStackTrace();
+				if (!(ex instanceof EOFException)) {
+					ex.printStackTrace();
+				}
 			}
 		}
 	}

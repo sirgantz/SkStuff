@@ -17,7 +17,7 @@ import me.TheBukor.SkStuff.util.ReflectionUtils;
 public class EffMakeJump extends Effect {
 	private Expression<LivingEntity> entities;
 
-	private Class<?> entInsent = ReflectionUtils.getNMSClass("EntityInsentient", false);
+	private Class<?> entInsent = ReflectionUtils.getNMSClass("EntityInsentient");
 	private Class<?> craftLivEnt = ReflectionUtils.getOBCClass("entity.CraftLivingEntity");
 
 	@SuppressWarnings("unchecked")

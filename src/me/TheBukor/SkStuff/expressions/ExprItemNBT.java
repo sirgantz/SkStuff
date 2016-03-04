@@ -48,7 +48,8 @@ public class ExprItemNBT extends SimpleExpression<ItemStack> {
 		if (item.getType() == Material.AIR || item == null) {
 			return null;
 		}
-		Object parsedNBT = SkStuff.getNMSMethods().parseRawNBT(newTags);
+		Object parsedNBT = null;
+		parsedNBT = SkStuff.getNMSMethods().parseRawNBT(newTags);
 		ItemStack newItem = SkStuff.getNMSMethods().getItemWithNBT(item, parsedNBT);
 		return new ItemStack[] { newItem };
 	}

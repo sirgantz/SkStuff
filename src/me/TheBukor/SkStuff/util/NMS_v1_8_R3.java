@@ -9,13 +9,11 @@ import java.io.IOException;
 import java.io.NotSerializableException;
 import java.io.OutputStream;
 import java.io.StreamCorruptedException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
@@ -42,7 +40,6 @@ import net.minecraft.server.v1_8_R3.NBTCompressedStreamTools;
 import net.minecraft.server.v1_8_R3.NBTTagByte;
 import net.minecraft.server.v1_8_R3.NBTTagCompound;
 import net.minecraft.server.v1_8_R3.NBTTagDouble;
-import net.minecraft.server.v1_8_R3.NBTTagEnd;
 import net.minecraft.server.v1_8_R3.NBTTagFloat;
 import net.minecraft.server.v1_8_R3.NBTTagInt;
 import net.minecraft.server.v1_8_R3.NBTTagList;
@@ -73,7 +70,7 @@ public class NMS_v1_8_R3 implements NMSInterface {
 	}
 
 	@Override
-	public Object parseRawNBT(String rawNBT) {
+	public NBTTagCompound parseRawNBT(String rawNBT) {
 		NBTTagCompound parsedNBT = null;
 		try {
 			parsedNBT = MojangsonParser.parse(rawNBT);
@@ -94,13 +91,13 @@ public class NMS_v1_8_R3 implements NMSInterface {
 	@Override
 	public Object[] getContents(Object nbtList) {
 		if (nbtList instanceof NBTTagList) {
-			List<Object> contents = new ArrayList<Object>();
+			Object[] contents = new Object[((NBTTagList) nbtList).size()];
 			for (int i = 0; i < ((NBTTagList) nbtList).size(); i++) {
 				if (getIndex(nbtList, i) != null) {
-					contents.add(getIndex(nbtList, i));
+					contents[i] = getIndex(nbtList, i);
 				}
 			}
-			return contents.toArray();
+			return contents;
 		}
 		return null;
 	}
@@ -114,43 +111,29 @@ public class NMS_v1_8_R3 implements NMSInterface {
 
 	@Override
 	public void removeFromList(Object nbtList, int index) {
-		if (nbtList instanceof NBTTagList) {
+		if (nbtList instanceof NBTTagList && index >= 0 && index < ((NBTTagList) nbtList).size()) {
 			((NBTTagList) nbtList).a(index);
 		}
 	}
 
 	@Override
 	public void setIndex(Object nbtList, int index, Object toSet) {
-		if (nbtList instanceof NBTTagList) {
+		if (nbtList instanceof NBTTagList && index >= 0 && index < ((NBTTagList) nbtList).size()) {
 			if (toSet instanceof NBTBase) {
 				((NBTTagList) nbtList).a(index, (NBTBase) toSet);
-			} else {
-				if (toSet instanceof Byte) {
-					((NBTTagList) nbtList).a(index, new NBTTagByte((byte) toSet));
-				} else if (toSet instanceof Short) {
-					((NBTTagList) nbtList).a(index, new NBTTagShort((short) toSet));
-				} else if (toSet instanceof Integer) {
-					((NBTTagList) nbtList).a(index, new NBTTagInt((int) toSet));
-				} else if (toSet instanceof Long) {
-					((NBTTagList) nbtList).a(index, new NBTTagLong((long) toSet));
-				} else if (toSet instanceof Float) {
-					((NBTTagList) nbtList).a(index, new NBTTagFloat((float) toSet));
-				} else if (toSet instanceof Double) {
-					((NBTTagList) nbtList).a(index, new NBTTagDouble((double) toSet));
-				} else if (toSet instanceof String) {
-					((NBTTagList) nbtList).a(index, new NBTTagString((String) toSet));
-				} //No need to check for NBTTagList and NBTTagCompound, these extend NBTBase.
+			} else if (toSet instanceof Number) {
+				((NBTTagList) nbtList).a(index, convertToNBT((Number) toSet));
+			} else if (toSet instanceof String) {
+				((NBTTagList) nbtList).a(index, convertToNBT((String) toSet));
 			}
 		}
 	}
 
 	@Override
 	public Object getIndex(Object nbtList, int index) {
-		if (nbtList instanceof NBTTagList) {
+		if (nbtList instanceof NBTTagList && index >= 0 && index < ((NBTTagList) nbtList).size()) {
 			NBTBase value = ((NBTTagList) nbtList).g(index);
-			if (value instanceof NBTTagEnd) {
-				return null;
-			} else if (value instanceof NBTTagByte) {
+			if (value instanceof NBTTagByte) {
 				return ((NBTTagByte) value).f(); //Byte stored inside a NBTNumber
 			} else if (value instanceof NBTTagShort) {
 				return ((NBTTagShort) value).e(); //Short inside a NBTNumber
@@ -225,12 +208,14 @@ public class NMS_v1_8_R3 implements NMSInterface {
 					if (delta[0] instanceof NBTTagCompound) {
 						NBT[0] = (NBTTagCompound) delta[0];
 					} else {
-						NBTTagCompound parsedNBT = (NBTTagCompound) parseRawNBT((String) delta[0]);
+						NBTTagCompound parsedNBT = null;
+						parsedNBT = parseRawNBT((String) delta[0]);
 						NBT[0] = parsedNBT;
 					}
 				} else if (mode == ChangeMode.ADD) {
 					if (delta[0] instanceof String) {
-						NBTTagCompound parsedNBT = (NBTTagCompound) parseRawNBT((String) delta[0]);
+						NBTTagCompound parsedNBT = null;
+						parsedNBT = parseRawNBT((String) delta[0]);
 						addToCompound(NBT[0], parsedNBT);
 					} else {
 						addToCompound(NBT[0], delta[0]);
@@ -254,8 +239,8 @@ public class NMS_v1_8_R3 implements NMSInterface {
 			@Nullable
 			public NBTTagCompound parse(String rawNBT, ParseContext context) {
 				if (rawNBT.startsWith("nbt:{") && rawNBT.endsWith("}")) {
-					Bukkit.broadcastMessage("rawNBT: \u00A72" + rawNBT.substring(4));
-					NBTTagCompound NBT = (NBTTagCompound) parseRawNBT(rawNBT.substring(4));
+					NBTTagCompound NBT = null;
+					NBT = parseRawNBT(rawNBT.substring(4));
 					return NBT;
 				}
 				return null;
@@ -292,14 +277,16 @@ public class NMS_v1_8_R3 implements NMSInterface {
 			@Override
 			protected NBTTagCompound deserialize(Fields fields) throws StreamCorruptedException, NotSerializableException {
 				String s = fields.getObject("asString", String.class);
-				NBTTagCompound compound = (NBTTagCompound) parseRawNBT(s);
+				NBTTagCompound compound = null;
+				compound =  parseRawNBT(s);
 				return compound;
 			}
 
 			@Override
 			@Nullable
 			public NBTTagCompound deserialize(String s) {
-				NBTTagCompound compound = (NBTTagCompound) parseRawNBT(s);
+				NBTTagCompound compound = null;
+				compound =  parseRawNBT(s);
 				return compound;
 			}
 
@@ -354,32 +341,12 @@ public class NMS_v1_8_R3 implements NMSInterface {
 						nbtList[0] = (NBTTagList) delta[0];
 				} else if (mode == ChangeMode.ADD) {
 					if (getContentsId(nbtList[0]) == typeId) {
-						if (typeId == 1) {
-							NBTTagByte byteTag = new NBTTagByte((byte) delta[0]);
-							addToList(nbtList[0], byteTag);
-						} else if (typeId == 2) {
-							NBTTagShort shortTag = new NBTTagShort((short) delta[0]);
-							addToList(nbtList[0], shortTag);
-						} else if (typeId == 3) {
-							NBTTagInt intTag = new NBTTagInt((int) delta[0]);
-							addToList(nbtList[0], intTag);
-						} else if (typeId == 4) {
-							NBTTagLong longTag = new NBTTagLong((long) delta[0]);
-							addToList(nbtList[0], longTag);
-						} else if (typeId == 5) {
-							NBTTagFloat floatTag = new NBTTagFloat((float) delta[0]);
-							addToList(nbtList[0], floatTag);
-						} else if (typeId == 6) {
-							NBTTagDouble doubleTag = new NBTTagDouble((double) delta[0]);
-							addToList(nbtList[0], doubleTag);
-						} else if (typeId == 8) {
-							NBTTagString stringTag = new NBTTagString((String) delta [0]);
-							addToList(nbtList[0], stringTag);
-						} else if (typeId == 9) {
-							addToList(nbtList[0], delta[0]);
-						} else if (typeId == 10) {
-							addToList(nbtList[0], delta[0]);
-						}
+						if (delta[0] instanceof Number)
+							addToList(nbtList, convertToNBT((Number) delta[0]));
+						else if (delta[0] instanceof String)
+							addToList(nbtList, convertToNBT((String) delta[0]));
+						else if (delta[0] instanceof NBTTagCompound || delta[0] instanceof NBTTagList)
+							addToList(nbtList, delta[0]);
 					}
 				} else if (mode == ChangeMode.DELETE || mode == ChangeMode.RESET) {
 					nbtList[0] = new NBTTagList();
@@ -396,8 +363,9 @@ public class NMS_v1_8_R3 implements NMSInterface {
 			@Nullable
 			public NBTTagList parse(String listString, ParseContext context) {
 				if (listString.startsWith("[") && listString.endsWith("]")) {
-					NBTTagCompound NBT = (NBTTagCompound) parseRawNBT("{SkStuffIsCool:[0:" + listString.substring(1) + "}");
-					NBTTagList parsedList = (NBTTagList) NBT.get("SkStuffIsCool");
+					NBTTagCompound tempNBT = null;
+					tempNBT =  parseRawNBT("{SkStuffIsCool:[0:" + listString.substring(1) + "}");
+					NBTTagList parsedList = (NBTTagList) tempNBT.get("SkStuffIsCool");
 					return parsedList;
 				}
 				return null;
@@ -434,7 +402,8 @@ public class NMS_v1_8_R3 implements NMSInterface {
 			@Override
 			protected NBTTagList deserialize(Fields fields) throws StreamCorruptedException, NotSerializableException {
 				String s = fields.getObject("asString", String.class);
-				NBTTagCompound tempNBT = (NBTTagCompound) parseRawNBT("{SkStuffIsCool:" + s + "}");
+				NBTTagCompound tempNBT = null;
+				tempNBT =  parseRawNBT("{SkStuffIsCool:" + s + "}");
 				NBTTagList nbtList = (NBTTagList) tempNBT.get("SkStuffIsCool");
 				return nbtList;
 			}
@@ -442,7 +411,8 @@ public class NMS_v1_8_R3 implements NMSInterface {
 			@Override
 			@Nullable
 			public NBTTagList deserialize(String s) {
-				NBTTagCompound tempNBT = (NBTTagCompound) parseRawNBT("{SkStuffIsCool:" + s + "}");
+				NBTTagCompound tempNBT = null;
+				tempNBT =  parseRawNBT("{SkStuffIsCool:" + s + "}");
 				NBTTagList nbtList = (NBTTagList) tempNBT.get("SkStuffIsCool");
 				return nbtList;
 			}
@@ -455,7 +425,7 @@ public class NMS_v1_8_R3 implements NMSInterface {
 	}
 
 	@Override
-	public Object getEntityNBT(Entity entity) {
+	public NBTTagCompound getEntityNBT(Entity entity) {
 		net.minecraft.server.v1_8_R3.Entity nmsEntity = ((CraftEntity) entity).getHandle();
 		NBTTagCompound NBT = new NBTTagCompound();
 		nmsEntity.e(NBT);
@@ -463,7 +433,7 @@ public class NMS_v1_8_R3 implements NMSInterface {
 	}
 
 	@Override
-	public Object getTileNBT(Block block) {
+	public NBTTagCompound getTileNBT(Block block) {
 		NBTTagCompound NBT = new NBTTagCompound();
 		World nmsWorld = ((CraftWorld) block.getWorld()).getHandle();
 		TileEntity tileEntity = nmsWorld.getTileEntity(new BlockPosition(block.getX(), block.getY(), block.getZ()));
@@ -474,12 +444,11 @@ public class NMS_v1_8_R3 implements NMSInterface {
 	}
 
 	@Override
-	public Object getItemNBT(ItemStack itemStack) {
+	public NBTTagCompound getItemNBT(ItemStack itemStack) {
 		if (itemStack.getType() == Material.AIR)
 			return null;
 		NBTTagCompound itemNBT = CraftItemStack.asNMSCopy(itemStack).getTag();
-		Bukkit.broadcastMessage(String.valueOf(itemNBT));
-		if (itemNBT.isEmpty())
+		if (String.valueOf(itemNBT).equals("{}"))
 			itemNBT = null;
 		return itemNBT;
 	}
@@ -525,7 +494,7 @@ public class NMS_v1_8_R3 implements NMSInterface {
 	}
 
 	@Override
-	public Object getFileNBT(File file) {
+	public NBTTagCompound getFileNBT(File file) {
 		FileInputStream fis = null;
 		try {
 			fis = new FileInputStream(file);
@@ -542,47 +511,50 @@ public class NMS_v1_8_R3 implements NMSInterface {
 			} else {
 				ex.printStackTrace();
 			}
-		} finally {
-			try {
-				fis.close();
-			} catch (IOException ex) {
-				if (ex instanceof EOFException) {
-					; //Ignore it!
-				} else {
-					ex.printStackTrace();
-				}
-			}
 		}
 		return fileNBT;
 	}
 
 	@Override
 	public void setFileNBT(File file, Object newCompound) {
-		OutputStream os = null;
-		try {
-			os = new FileOutputStream(file);
-		} catch (FileNotFoundException ex) {
-			ex.printStackTrace();
-		}
-		try {
-			NBTCompressedStreamTools.a((NBTTagCompound) newCompound, os);
-			os.close();
-		} catch (IOException ex) {
-			if (ex instanceof EOFException) {
-				; //Ignore, just end of the file
-			} else {
+		if (newCompound instanceof NBTTagCompound) {
+			OutputStream os = null;
+			try {
+				os = new FileOutputStream(file);
+			} catch (FileNotFoundException ex) {
 				ex.printStackTrace();
 			}
-		} finally {
 			try {
+				NBTCompressedStreamTools.a((NBTTagCompound) newCompound, os);
 				os.close();
 			} catch (IOException ex) {
 				if (ex instanceof EOFException) {
-					; //Ignore.
+					; //Ignore, just end of the file
 				} else {
 					ex.printStackTrace();
 				}
 			}
 		}
+	}
+
+	public NBTBase convertToNBT(Number number) {
+		if (number instanceof Byte) {
+			return new NBTTagByte((byte) number);
+		} else if (number instanceof Short) {
+			return new NBTTagShort((short) number);
+		} else if (number instanceof Integer) {
+			return new NBTTagInt((int) number);
+		} else if (number instanceof Long) {
+			return new NBTTagLong((long) number);
+		} else if (number instanceof Float) {
+			return new NBTTagFloat((float) number);
+		} else if (number instanceof Double) {
+			return new NBTTagDouble((double) number);
+		}
+		return null;
+	}
+
+	public NBTTagString convertToNBT(String string) {
+		return new NBTTagString(string);
 	}
 }

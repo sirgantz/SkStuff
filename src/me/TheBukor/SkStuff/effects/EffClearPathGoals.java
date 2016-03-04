@@ -17,8 +17,8 @@ import me.TheBukor.SkStuff.util.ReflectionUtils;
 public class EffClearPathGoals extends Effect {
 	private Expression<LivingEntity> entity;
 
-	private Class<?> goalSelectorClass = ReflectionUtils.getNMSClass("PathfinderGoalSelector", false);
-	private Class<?> insentientEnt = ReflectionUtils.getNMSClass("EntityInsentient", false);
+	private Class<?> goalSelectorClass = ReflectionUtils.getNMSClass("PathfinderGoalSelector");
+	private Class<?> insentientEnt = ReflectionUtils.getNMSClass("EntityInsentient");
 	private Class<?> craftLivEnt = ReflectionUtils.getOBCClass("entity.CraftLivingEntity");
 
 	@SuppressWarnings("unchecked")

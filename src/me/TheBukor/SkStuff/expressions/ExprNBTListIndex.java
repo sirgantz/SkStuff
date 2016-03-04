@@ -17,7 +17,7 @@ public class ExprNBTListIndex extends SimpleExpression<Object> {
 	private Expression<Object> nbtList;
 	private Expression<Number> index;
 
-	private Class<?> nbtBaseClass = ReflectionUtils.getNMSClass("NBTBase", false);
+	private Class<?> nbtBaseClass = ReflectionUtils.getNMSClass("NBTBase");
 
 	@Override
 	public Class<? extends Object> getReturnType() {
@@ -34,7 +34,7 @@ public class ExprNBTListIndex extends SimpleExpression<Object> {
 	public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean arg2, ParseResult result) {
 		nbtList = (Expression<Object>) expr[0];
 		index = (Expression<Number>) expr[1];
-		return false;
+		return true;
 	}
 
 	@Override
@@ -47,8 +47,7 @@ public class ExprNBTListIndex extends SimpleExpression<Object> {
 	protected Object[] get(Event e) {
 		int i = index.getSingle(e).intValue();
 		Object list = nbtList.getSingle(e);
-		SkStuff.getNMSMethods().getIndex(list, i);
-		return null;
+		return new Object[] { SkStuff.getNMSMethods().getIndex(list, i) };
 	}
 
 	@Override

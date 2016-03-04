@@ -16,8 +16,8 @@ public class ExprTagOf extends SimpleExpression<Object> {
 	private Expression<String> string;
 	private Expression<Object> compound;
 
-	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound", false);
-	private Class<?> nbtBaseClass = ReflectionUtils.getNMSClass("NBTBase", false);
+	private Class<?> nbtClass = ReflectionUtils.getNMSClass("NBTTagCompound");
+	private Class<?> nbtBaseClass = ReflectionUtils.getNMSClass("NBTBase");
 
 	@Override
 	public Class<? extends Object> getReturnType() {

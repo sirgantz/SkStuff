@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -36,13 +35,15 @@ import net.minecraft.server.v1_7_R4.NBTBase;
 import net.minecraft.server.v1_7_R4.NBTCompressedStreamTools;
 import net.minecraft.server.v1_7_R4.NBTTagCompound;
 import net.minecraft.server.v1_7_R4.NBTTagDouble;
-import net.minecraft.server.v1_7_R4.NBTTagEnd;
 import net.minecraft.server.v1_7_R4.NBTTagFloat;
 import net.minecraft.server.v1_7_R4.NBTTagInt;
 import net.minecraft.server.v1_7_R4.NBTTagList;
 import net.minecraft.server.v1_7_R4.NBTTagString;
 import net.minecraft.server.v1_7_R4.TileEntity;
 import net.minecraft.server.v1_7_R4.World;
+import net.minecraft.server.v1_8_R3.NBTTagByte;
+import net.minecraft.server.v1_8_R3.NBTTagLong;
+import net.minecraft.server.v1_8_R3.NBTTagShort;
 
 public class NMS_v1_7_R4 implements NMSInterface {
 
@@ -74,12 +75,14 @@ public class NMS_v1_7_R4 implements NMSInterface {
 	@Override
 	public void removeFromCompound(Object compound, String ... toRemove) {
 		if (compound instanceof NBTTagCompound) {
-			((NBTTagCompound) compound).remove(toRemove.toString()); //FIXME
+			for (String s : toRemove) {
+				((NBTTagCompound) compound).remove(s);
+			}
 		}
 	}
 
 	@Override
-	public Object parseRawNBT(String rawNBT) {
+	public NBTTagCompound parseRawNBT(String rawNBT) {
 		NBTTagCompound parsedNBT = null;
 		parsedNBT = (NBTTagCompound) MojangsonParser.parse(rawNBT);
 		return parsedNBT;
@@ -96,13 +99,13 @@ public class NMS_v1_7_R4 implements NMSInterface {
 	@Override
 	public Object[] getContents(Object nbtList) {
 		if (nbtList instanceof NBTTagList) {
-			List<Object> contents = new ArrayList<Object>();
+			Object[] contents = new Object[((NBTTagList) nbtList).size()];
 			for (int i = 0; i < ((NBTTagList) nbtList).size(); i++) {
 				if (getIndex(nbtList, i) != null) {
-					contents.add(getIndex(nbtList, i));
+					contents[i] = getIndex(nbtList, i);
 				}
 			}
-			return contents.toArray();
+			return contents;
 		}
 		return null;
 	}
@@ -127,9 +130,18 @@ public class NMS_v1_7_R4 implements NMSInterface {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void setIndex(Object nbtList, int index, Object toSet) {
-		if (nbtList instanceof NBTTagList && toSet instanceof NBTBase && index >= 0 && index < ((NBTTagList) nbtList).size()) {
+		if (nbtList instanceof NBTTagList && index >= 0 && index < ((NBTTagList) nbtList).size()) {
 			int typeId = getContentsId(nbtList);
-			int toSetId = ((NBTBase) toSet).getTypeId();
+			NBTBase toSetNBT = null;
+			if (toSet instanceof NBTBase)
+				toSetNBT = (NBTBase) toSet;
+			else if (toSet instanceof Number)
+				toSetNBT = (NBTBase) convertToNBT((Number) toSet);
+			else if (toSet instanceof String)
+				toSetNBT = convertToNBT((String) toSet);
+			else
+				return;
+			int toSetId = (toSetNBT).getTypeId();
 			if (typeId == 0) {
 				ReflectionUtils.setField("type", NBTTagList.class, nbtList, toSetId);
 			} else if (typeId != toSetId) {
@@ -138,7 +150,7 @@ public class NMS_v1_7_R4 implements NMSInterface {
 			}
 			List<Object> actualList = null;
 			actualList = (List<Object>) ReflectionUtils.getField("list", NBTTagList.class, nbtList);
-			actualList.set(index, toSet);
+			actualList.set(index, toSetNBT);
 		}
 	}
 
@@ -149,10 +161,7 @@ public class NMS_v1_7_R4 implements NMSInterface {
 			List<NBTBase> actualList = null;
 			actualList = (List<NBTBase>) ReflectionUtils.getField("list", NBTTagList.class, nbtList);
 			NBTBase value = (NBTBase) actualList.get(index);
-			if (value instanceof NBTTagEnd)
-				return null;
-			else
-				return value;
+			return value;
 		}
 		return null;
 	}
@@ -187,12 +196,12 @@ public class NMS_v1_7_R4 implements NMSInterface {
 					if (delta[0] instanceof NBTTagCompound) {
 						NBT[0] = (NBTTagCompound) delta[0];
 					} else {
-						NBTTagCompound parsedNBT = (NBTTagCompound) parseRawNBT((String) delta[0]);
+						NBTTagCompound parsedNBT = parseRawNBT((String) delta[0]);
 						NBT[0] = parsedNBT;
 					}
 				} else if (mode == ChangeMode.ADD) {
 					if (delta[0] instanceof String) {
-						NBTTagCompound parsedNBT = (NBTTagCompound) parseRawNBT((String) delta[0]);
+						NBTTagCompound parsedNBT = parseRawNBT((String) delta[0]);
 						addToCompound(NBT[0], parsedNBT);
 					} else {
 						addToCompound(NBT[0], delta[0]);
@@ -217,7 +226,7 @@ public class NMS_v1_7_R4 implements NMSInterface {
 			public NBTTagCompound parse(String rawNBT, ParseContext context) {
 				if (rawNBT.startsWith("nbt:{") && rawNBT.endsWith("}")) {
 					rawNBT.substring(4);
-					NBTTagCompound NBT = (NBTTagCompound) parseRawNBT(rawNBT);
+					NBTTagCompound NBT = parseRawNBT(rawNBT);
 					if (NBT.toString().equals("{}")) {
 						return null;
 					}
@@ -322,7 +331,7 @@ public class NMS_v1_7_R4 implements NMSInterface {
 	}
 
 	@Override
-	public Object getEntityNBT(Entity entity) {
+	public NBTTagCompound getEntityNBT(Entity entity) {
 		net.minecraft.server.v1_7_R4.Entity nmsEntity = ((CraftEntity) entity).getHandle();
 		NBTTagCompound NBT = new NBTTagCompound();
 		nmsEntity.e(NBT);
@@ -330,7 +339,7 @@ public class NMS_v1_7_R4 implements NMSInterface {
 	}
 
 	@Override
-	public Object getTileNBT(Block block) {
+	public NBTTagCompound getTileNBT(Block block) {
 		NBTTagCompound NBT = new NBTTagCompound();
 		World nmsWorld = ((CraftWorld) block.getWorld()).getHandle();
 		TileEntity tileEntity = nmsWorld.getTileEntity(block.getX(), block.getY(), block.getZ());
@@ -341,7 +350,7 @@ public class NMS_v1_7_R4 implements NMSInterface {
 	}
 
 	@Override
-	public Object getItemNBT(ItemStack itemStack) {
+	public NBTTagCompound getItemNBT(ItemStack itemStack) {
 		if (itemStack.getType() == Material.AIR)
 			return null;
 		NBTTagCompound NBT = new NBTTagCompound();
@@ -349,7 +358,7 @@ public class NMS_v1_7_R4 implements NMSInterface {
 		NBT = nmsItem.getTag();
 		if (NBT == null || NBT.toString().equals("{}")) //Null or empty.
 			return null;
-		return new Object[] { NBT };
+		return NBT;
 	}
 
 	@Override
@@ -389,7 +398,7 @@ public class NMS_v1_7_R4 implements NMSInterface {
 	}
 
 	@Override
-	public Object getFileNBT(File file) {
+	public NBTTagCompound getFileNBT(File file) {
 		FileInputStream fis = null;
 		try {
 			fis = new FileInputStream(file);
@@ -440,5 +449,50 @@ public class NMS_v1_7_R4 implements NMSInterface {
 				}
 			}
 		}
+	}
+
+	public NBTTagByte convertToNBT(byte b) {
+		return new NBTTagByte(b);
+	}
+
+	public NBTTagShort convertToNBT(short s) {
+		return new NBTTagShort(s);
+	}
+
+	public NBTTagInt convertToNBT(int i) {
+		return new NBTTagInt(i);
+	}
+
+	public NBTTagLong convertToNBT(long l) {
+		return new NBTTagLong(l);
+	}
+
+	public NBTTagFloat convertToNBT(float f) {
+		return new NBTTagFloat(f);
+	}
+
+	public NBTTagDouble convertToNBT(double d) {
+		return new NBTTagDouble(d);
+	}
+
+	public NBTTagString convertToNBT(String string) {
+		return new NBTTagString(string);
+	}
+
+	@Override
+	public Object convertToNBT(Number number) {
+		if (number instanceof Byte)
+			return convertToNBT((byte) number);
+		else if (number instanceof Short)
+			return convertToNBT((short) number);
+		else if (number instanceof Integer)
+			return convertToNBT((int) number);
+		else if (number instanceof Long)
+			return convertToNBT((long) number);
+		else if (number instanceof Float)
+			return convertToNBT((float) number);
+		else if (number instanceof Double)
+			return convertToNBT((double) number);
+		return number;
 	}
 }

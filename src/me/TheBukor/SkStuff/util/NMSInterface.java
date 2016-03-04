@@ -49,4 +49,8 @@ public interface NMSInterface {
 	public Object getFileNBT(File file);
 
 	public void setFileNBT(File file, Object newCompound);
+
+	public Object convertToNBT(Number number);
+
+	public Object convertToNBT(String string);
 }
