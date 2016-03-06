@@ -51,9 +51,14 @@ public class ExprNBTListContents extends SimpleExpression<Object> {
 	public void change(Event e, @Nullable Object[] delta, ChangeMode mode) {
 		Object list = nbtList.getSingle(e);
 		if (mode == ChangeMode.ADD) {
-			if (!(delta[0] instanceof Number || delta[0] instanceof String || nbtBaseClass.isAssignableFrom(delta[0].getClass())))
-				return; //NBT can only store numbers, strings, lists or compounds.
-			SkStuff.getNMSMethods().addToList(list, delta[0]);
+			if (nbtBaseClass.isAssignableFrom(delta[0].getClass()))
+				SkStuff.getNMSMethods().addToList(list, delta[0]);
+			else if (delta[0] instanceof Number)
+				SkStuff.getNMSMethods().addToList(list, SkStuff.getNMSMethods().convertToNBT((Number) delta[0]));
+			else if (delta[0] instanceof String)
+				SkStuff.getNMSMethods().addToList(list, SkStuff.getNMSMethods().convertToNBT((String) delta[0]));
+		} else if (mode == ChangeMode.REMOVE || mode == ChangeMode.REMOVE_ALL) {
+			// TODO Code to remove a single or all objects of some value in an NBT array.
 		}
 	}
 
