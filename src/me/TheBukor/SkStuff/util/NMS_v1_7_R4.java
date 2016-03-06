@@ -167,6 +167,11 @@ public class NMS_v1_7_R4 implements NMSInterface {
 	}
 
 	@Override
+	public void clearPathfinderGoals(Entity entity) {
+		Bukkit.getLogger().warning("Sorry, Pathfinder Goal are only supported in 1.8 and above");
+	}
+
+	@Override
 	public void removePathfinderGoal(Object entity, Class<?> goalClass, boolean isTargetSelector) {
 		Bukkit.getLogger().warning("Sorry, Pathfinder Goals are only supported in 1.8 and above");
 	}

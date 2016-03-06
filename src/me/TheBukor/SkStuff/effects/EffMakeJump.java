@@ -1,5 +1,7 @@
 package me.TheBukor.SkStuff.effects;
 
+import java.lang.reflect.InvocationTargetException;
+
 import javax.annotation.Nullable;
 
 import org.bukkit.entity.ArmorStand;
@@ -43,7 +45,7 @@ public class EffMakeJump extends Effect {
 				Object nmsEnt = entInsent.cast(obcEnt.getClass().getMethod("getHandle").invoke(obcEnt));
 				Object controllerJump = nmsEnt.getClass().getMethod("getControllerJump").invoke(nmsEnt);
 				controllerJump.getClass().getMethod("a").invoke(controllerJump);
-			} catch (Exception ex) {
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
 				ex.printStackTrace();
 			}
 		}

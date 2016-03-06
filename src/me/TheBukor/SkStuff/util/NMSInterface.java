@@ -26,6 +26,8 @@ public interface NMSInterface {
 
 	public Object getIndex(Object nbtList, int index);
 
+	public void clearPathfinderGoals(Entity entity);
+
 	public void removePathfinderGoal(Object entity, Class<?> goalClass, boolean isTargetSelector);
 
 	public void addPathfinderGoal(Object entity, int priority, Object goal, boolean isTargetSelector);

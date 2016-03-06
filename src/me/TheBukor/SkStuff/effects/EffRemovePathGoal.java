@@ -1,5 +1,7 @@
 package me.TheBukor.SkStuff.effects;
 
+import java.lang.reflect.InvocationTargetException;
+
 import javax.annotation.Nullable;
 
 import org.bukkit.entity.Blaze;
@@ -19,7 +21,7 @@ import me.TheBukor.SkStuff.SkStuff;
 import me.TheBukor.SkStuff.util.ReflectionUtils;
 
 public class EffRemovePathGoal extends Effect {
-	private Expression<LivingEntity> entity;
+	private Expression<LivingEntity> entities;
 
 	private int mark;
 
@@ -30,23 +32,28 @@ public class EffRemovePathGoal extends Effect {
 	@Override
 	public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean arg2, ParseResult result) {
 		mark = result.mark;
-		entity = (Expression<LivingEntity>) expr[0];
+		entities = (Expression<LivingEntity>) expr[0];
 		return true;
 	}
 
 	@Override
 	public String toString(@Nullable Event e, boolean debug) {
-		return "remove pathfinder goal from " + entity.toString(e, debug);
+		return "remove pathfinder goal from " + entities.toString(e, debug);
 	}
 
 	@Override
 	protected void execute(Event e) {
-		LivingEntity ent = entity.getSingle(e);
-		if (ent instanceof Player || ent == null)
-			return;
-		Object obcEnt = craftLivEnt.cast(ent);
-		try {
-			Object nmsEnt = entInsent.cast(obcEnt.getClass().getMethod("getHandle").invoke(obcEnt));
+		LivingEntity[] ents = entities.getAll(e);
+		for (LivingEntity ent : ents) {
+			if (ent instanceof Player || ent == null)
+				return;
+			Object obcEnt = craftLivEnt.cast(ent);
+			Object nmsEnt = null;
+			try {
+				nmsEnt = entInsent.cast(obcEnt.getClass().getMethod("getHandle").invoke(obcEnt));
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
+				ex.printStackTrace();
+			}
 			Class<?> toRemove = null;
 			boolean target = false;
 			boolean resetGoalTarget = false;
@@ -114,8 +121,8 @@ public class EffRemovePathGoal extends Effect {
 					Class<?> goalSpiderNearTarget = ReflectionUtils.getNMSClass("EntitySpider$PathfinderGoalSpiderNearestAttackableTarget");
 					toRemove = goalSpiderNearTarget;
 				} else {
-				Class<?> goalNearTarget = ReflectionUtils.getNMSClass("PathfinderGoalNearestAttackableTarget");
-				toRemove = goalNearTarget;
+					Class<?> goalNearTarget = ReflectionUtils.getNMSClass("PathfinderGoalNearestAttackableTarget");
+					toRemove = goalNearTarget;
 				}
 			} else if (mark == 15) {
 				Class<?> goalOcelotAttack = ReflectionUtils.getNMSClass("PathfinderGoalOcelotAttack");
@@ -216,7 +223,7 @@ public class EffRemovePathGoal extends Effect {
 				return;
 
 			/* "Hey, why are you setting the entity's target to null?!"
-			 * 
+			 *
 			 * For some goals (Blaze/Ghast fireball and Guardian attack), if you remove the goal while the entity is attacking, it will not stop attacking imediatelly, it will keep attacking its target.
 			 * So there's a "bug" with this behavior, as soon as the entity's target resets (null, A.K.A <none>) the server crashes. Because we messed with the entity's "attack target" goal, the game
 			 * still thinks it needs to get the target's location for some reason, and since the target is null... It throws an unhandled NPE (it never happens in Vanilla behavior), crashing the server.
@@ -224,12 +231,10 @@ public class EffRemovePathGoal extends Effect {
 			 */
 
 			if (resetGoalTarget) {
-				((Creature) entity.getSingle(e)).setTarget(null);
+				((Creature) ent).setTarget(null);
 			}
 
 			SkStuff.getNMSMethods().removePathfinderGoal(nmsEnt, toRemove, target);
-		} catch (Exception ex) {
-			ex.printStackTrace();
 		}
 	}
 }

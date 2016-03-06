@@ -57,7 +57,7 @@ public class ReflectionUtils {
 		}
 	}
 
-	public static Constructor<?> getConstructor(String constructor, Class<?> clazz, Object object, Class<?> ... params) {
+	public static Constructor<?> getConstructor(Class<?> clazz, Class<?> ... params) {
 		Constructor<?> constr = null;
 		try {
 			constr = clazz.getDeclaredConstructor(params);

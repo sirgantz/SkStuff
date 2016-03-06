@@ -155,6 +155,15 @@ public class NMS_v1_8_R2 implements NMSInterface {
 	}
 
 	@Override
+	public void clearPathfinderGoals(Entity entity) {
+		EntityInsentient nmsEnt = (EntityInsentient) ((CraftEntity) entity).getHandle();
+		((List<?>) ReflectionUtils.getField("b", PathfinderGoalSelector.class, nmsEnt.goalSelector)).clear();
+		((List<?>) ReflectionUtils.getField("c", PathfinderGoalSelector.class, nmsEnt.goalSelector)).clear();
+		((List<?>) ReflectionUtils.getField("b", PathfinderGoalSelector.class, nmsEnt.targetSelector)).clear();
+		((List<?>) ReflectionUtils.getField("c", PathfinderGoalSelector.class, nmsEnt.targetSelector)).clear();
+	}
+
+	@Override
 	public void removePathfinderGoal(Object entity, Class<?> goalClass, boolean isTargetSelector) {
 		if (entity instanceof EntityInsentient) {
 			((EntityInsentient) entity).setGoalTarget(null);

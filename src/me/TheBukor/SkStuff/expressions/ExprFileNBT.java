@@ -61,6 +61,13 @@ public class ExprFileNBT extends SimpleExpression<Object> {
 		if (!file.exists())
 			return;
 		Object fileNBT = SkStuff.getNMSMethods().getFileNBT(file);
+		if (fileNBT == null) {
+			try {
+				fileNBT = nbtClass.newInstance();
+			} catch (InstantiationException | IllegalAccessException ex) {
+				ex.printStackTrace();
+			}
+		}
 		if (mode == ChangeMode.ADD) {
 			Object parsedNBT = null;
 			parsedNBT = SkStuff.getNMSMethods().parseRawNBT((String) delta[0]);
@@ -79,7 +86,7 @@ public class ExprFileNBT extends SimpleExpression<Object> {
 	@Nullable
 	public Class<?>[] acceptChange(ChangeMode mode) {
 		if (mode == ChangeMode.ADD || mode == ChangeMode.REMOVE) {
-			return CollectionUtils.array(String[].class);
+			return CollectionUtils.array(String.class);
 		}
 		return null;
 	}
