@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.inventory.Inventory;
@@ -106,7 +107,7 @@ public class SkStuff extends JavaPlugin {
 				getLogger().info("WOW! You're using Minecraft 1.9! Lemme register some cool stuff right away!");
 				Skript.registerEvent("Elytra glide toggle", SimpleEvent.class, EntityToggleGlideEvent.class, "[entity] elytra (fl(y|ight)|glid(e|ing)) toggl(e|ing)", "[entity] toggle elytra (fl(y|ight)|glid(e|ing))");
 				Skript.registerExpression(ExprGlideState.class, Boolean.class, ExpressionType.PROPERTY, "elytra (fl(y|ight)|glid(e|ing)) state of %player%", "%player%'s elytra (fl(y|ight)|glid(e|ing)) state");
-				/* Don't register it yet, Spigot isn't doing it properly as of now.
+
 				EventValues.registerEventValue(EntityToggleGlideEvent.class, Entity.class, new Getter<Entity, EntityToggleGlideEvent>() {
 					@Override
 					@Nullable
@@ -114,7 +115,7 @@ public class SkStuff extends JavaPlugin {
 						return e.getEntity();
 					}
 				}, 0);
-				*/
+
 				evtAmount += 1;
 				exprAmount += 1;
 			}
