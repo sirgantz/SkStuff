@@ -2,6 +2,7 @@ package me.TheBukor.SkStuff.effects;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -31,7 +32,7 @@ public class EffClearPathGoals extends Effect {
 	protected void execute(Event e) {
 		LivingEntity[] ents = entities.getAll(e);
 		for (LivingEntity ent : ents) {
-			if (ent instanceof Player || ent == null)
+			if (ent instanceof Player || ent instanceof ArmorStand || ent == null)
 				continue;
 			SkStuff.getNMSMethods().clearPathfinderGoals(ent);
 		}

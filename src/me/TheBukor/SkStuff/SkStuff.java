@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -34,6 +35,7 @@ import me.TheBukor.SkStuff.effects.EffPasteSchematic;
 import me.TheBukor.SkStuff.effects.EffRememberChanges;
 import me.TheBukor.SkStuff.effects.EffRemovePathGoal;
 import me.TheBukor.SkStuff.effects.EffReplaceBlocksWE;
+import me.TheBukor.SkStuff.effects.EffRestoreInv;
 import me.TheBukor.SkStuff.effects.EffSetBlocksWE;
 import me.TheBukor.SkStuff.effects.EffSetPathGoal;
 import me.TheBukor.SkStuff.effects.EffShowEntityEffect;
@@ -48,7 +50,9 @@ import me.TheBukor.SkStuff.expressions.ExprEditSessionLimit;
 import me.TheBukor.SkStuff.expressions.ExprEndermanBlocks;
 import me.TheBukor.SkStuff.expressions.ExprFileNBT;
 import me.TheBukor.SkStuff.expressions.ExprFireProof;
+import me.TheBukor.SkStuff.expressions.ExprGlideState;
 import me.TheBukor.SkStuff.expressions.ExprItemNBT;
+import me.TheBukor.SkStuff.expressions.ExprMCIdOf;
 import me.TheBukor.SkStuff.expressions.ExprNBTListContents;
 import me.TheBukor.SkStuff.expressions.ExprNBTListIndex;
 import me.TheBukor.SkStuff.expressions.ExprNBTOf;
@@ -58,6 +62,7 @@ import me.TheBukor.SkStuff.expressions.ExprSchematicArea;
 import me.TheBukor.SkStuff.expressions.ExprSelectionArea;
 import me.TheBukor.SkStuff.expressions.ExprSelectionOfPlayer;
 import me.TheBukor.SkStuff.expressions.ExprSelectionPos;
+import me.TheBukor.SkStuff.expressions.ExprSerializedInv;
 import me.TheBukor.SkStuff.expressions.ExprTagOf;
 import me.TheBukor.SkStuff.expressions.ExprTimespanToNumber;
 import me.TheBukor.SkStuff.expressions.ExprToLowerCase;
@@ -87,13 +92,32 @@ public class SkStuff extends JavaPlugin {
 			getLogger().info("SkStuff " + this.getDescription().getVersion() + " has been successfully enabled!");
 			getLogger().info("Registering general non version specific stuff...");
 			Skript.registerEffect(EffShowEntityEffect.class, "(display|play|show) entity effect (0¦firework[s] explo(de|sion)|1¦hurt|2¦[[iron] golem] (give|offer) (rose|poppy)|3¦[sheep] eat grass|4¦wolf shake) at %entity%");
+			Skript.registerEffect(EffRestoreInv.class, "[(skstuff|1.9)] restore %inventory% (to|from) [serialized [inventory [conents]]] %string%");
 			Skript.registerExpression(ExprToUpperCase.class, String.class, ExpressionType.SIMPLE, "%string% [converted] to [all] (cap[ital]s|upper[ ]case)", "convert %string% to [all] (cap[ital]s|upper[ ]case)", "capitalize [all] [char[acter]s (of|in)] %string%");
 			Skript.registerExpression(ExprToLowerCase.class, String.class, ExpressionType.SIMPLE, "%string% [converted] to [all] lower[ ]case", "convert %string% to [all] lower[ ]case", "un[( |-)]capitalize [all] [char[acter]s (of|in)] %string%");
 			Skript.registerExpression(ExprWordsToUpperCase.class, String.class, ExpressionType.SIMPLE, "(first|1st) (letter|char[acter]) (of|in) (each word|[all] words) (of|in) %string% [converted] to (cap[ital]s|upper[ ]case) (0¦|1¦ignoring [other] upper[ ]case [(char[acter]s|letters)])", "convert (first|1st) (letter|char[acter]) (of|in) (each word|[all] words) (of|in) %string% to (cap[ital]s|upper[ ]case) (0¦|1¦ignoring [other] upper[ ]case [(char[acter]s|letters)])", "capitalize (first|1st) (letter|char[acter]) (of|in) (each word|[all] words) (of|in) %string% (0¦|1¦ignoring [other] upper[ ]case [(char[acter]s|letters)])");
 			Skript.registerExpression(ExprTimespanToNumber.class, Number.class, ExpressionType.SIMPLE, "%timespan% [converted] [in]to (0¦ticks|1¦sec[ond]s|2¦min[ute]s|3¦hours|4¦days)");
 			Skript.registerExpression(ExprClickedInventory.class, Inventory.class, ExpressionType.SIMPLE, "[skstuff] clicked inventory");
-			effAmount += 1;
-			exprAmount += 5;
+			Skript.registerExpression(ExprSerializedInv.class, String.class, ExpressionType.PROPERTY, "[(skstuff|1.9)] serialized [contents of] %inventory%");
+			Skript.registerExpression(ExprMCIdOf.class, String.class, ExpressionType.PROPERTY, "minecraft [(string|native)] id of %itemtype%", "%itemtype%'s minecraft [(string|native)] id");
+			effAmount += 2;
+			exprAmount += 7;
+			if (Skript.isRunningMinecraft(1, 9)) {
+				getLogger().info("WOW! You're using Minecraft 1.9! Lemme register some cool stuff right away!");
+				Skript.registerEvent("Elytra glide toggle", SimpleEvent.class, EntityToggleGlideEvent.class, "[entity] elytra (fl(y|ight)|glid(e|ing)) toggl(e|ing)", "[entity] toggle elytra (fl(y|ight)|glid(e|ing))");
+				Skript.registerExpression(ExprGlideState.class, Boolean.class, ExpressionType.PROPERTY, "elytra (fl(y|ight)|glid(e|ing)) state of %player%", "%player%'s elytra (fl(y|ight)|glid(e|ing)) state");
+				/* Don't register it yet, Spigot isn't doing it properly as of now.
+				EventValues.registerEventValue(EntityToggleGlideEvent.class, Entity.class, new Getter<Entity, EntityToggleGlideEvent>() {
+					@Override
+					@Nullable
+					public Entity get(EntityToggleGlideEvent e) {
+						return e.getEntity();
+					}
+				}, 0);
+				*/
+				evtAmount += 1;
+				exprAmount += 1;
+			}
 			if (setupNMSVersion()) {
 				getLogger().info("Trying to register version specific stuff...");
 				Skript.registerEffect(EffClearPathGoals.class, "(clear|delete) [all] pathfind[er] goals (of|from) %livingentities%");

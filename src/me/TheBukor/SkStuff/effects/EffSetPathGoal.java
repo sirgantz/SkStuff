@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Material;
 import org.bukkit.entity.Animals;
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Blaze;
 import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Enderman;
@@ -149,7 +150,7 @@ public class EffSetPathGoal extends Effect {
 	protected void execute(Event e) {
 		LivingEntity[] ents = entities.getAll(e);
 		for (LivingEntity ent : ents) {
-			if (ent == null || ent instanceof Player)
+			if (ent == null || ent instanceof Player || ent instanceof ArmorStand)
 				return;
 			int priority = (goalPriority == null ? 4 : goalPriority.getSingle(e).intValue());
 
@@ -174,7 +175,7 @@ public class EffSetPathGoal extends Effect {
 						for (EntityData<?> entData : types) {
 							if (!LivingEntity.class.isAssignableFrom(entData.getType()))
 								return;
-							String className = entData.getType().getClass().getSimpleName();
+							String className = entData.getType().getSimpleName();
 							if (className.equals("HumanEntity")) {
 								className = "Human";
 							} else if (className.equals("EntityLiving")) {
@@ -188,7 +189,7 @@ public class EffSetPathGoal extends Effect {
 						for (EntityData<?> entData : types) {
 							if (!LivingEntity.class.isAssignableFrom(entData.getType()))
 								return;
-							String className = entData.getType().getClass().getSimpleName();
+							String className = entData.getType().getSimpleName();
 							if (className.equals("HumanEntity")) {
 								className = "Human";
 							} else if (className.equals("EntityLiving")) {
@@ -239,7 +240,7 @@ public class EffSetPathGoal extends Effect {
 					for (EntityData<?> entData : types) {
 						if (!LivingEntity.class.isAssignableFrom(entData.getType()))
 							return;
-						String className = entData.getType().getClass().getSimpleName();
+						String className = entData.getType().getSimpleName();
 						if (className.equals("HumanEntity")) {
 							className = "Human";
 						} else if (className.equals("EntityLiving")) {
@@ -268,7 +269,7 @@ public class EffSetPathGoal extends Effect {
 					for (EntityData<?> entData : types) {
 						if (!LivingEntity.class.isAssignableFrom(entData.getType()))
 							return;
-						String className = entData.getType().getClass().getSimpleName();
+						String className = entData.getType().getSimpleName();
 						if (className.equals("HumanEntity")) {
 							className = "Human";
 						} else if (className.equals("EntityLiving")) {
@@ -284,7 +285,7 @@ public class EffSetPathGoal extends Effect {
 						for (EntityData<?> entData : types) {
 							if (!LivingEntity.class.isAssignableFrom(entData.getType()))
 								return;
-							String className = entData.getType().getClass().getSimpleName();
+							String className = entData.getType().getSimpleName();
 							if (className.equals("HumanEntity")) {
 								className = "Human";
 							} else if (className.equals("EntityLiving")) {
@@ -297,18 +298,7 @@ public class EffSetPathGoal extends Effect {
 						double spd = (meleeSpeed == null ? 1.0D : meleeSpeed.getSingle(e).doubleValue());
 						boolean memorize = (meleeMemorize == null ? false : meleeMemorize.getSingle(e));
 						Class<?> goalMeleeAttack = ReflectionUtils.getNMSClass("PathfinderGoalMeleeAttack");
-						for (EntityData<?> entData : types) {
-							if (!LivingEntity.class.isAssignableFrom(entData.getType()))
-								return;
-							String className = entData.getType().getClass().getSimpleName();
-							if (className.equals("HumanEntity")) {
-								className = "Human";
-							} else if (className.equals("EntityLiving")) {
-								className = "Living";
-							}
-							Class<?> nmsClass = ReflectionUtils.getNMSClass("Entity" + className);
-							newGoals.add(goalMeleeAttack.getConstructor(entCreature, Class.class, double.class, boolean.class).newInstance(nmsEnt, nmsClass, spd, memorize));
-						}
+						newGoals.add(goalMeleeAttack.getConstructor(entCreature, double.class, boolean.class).newInstance(nmsEnt, spd, memorize));
 					}
 				} else if (mark == 13) {
 					double spd = (moveTargetSpeed == null ? 1.0D : moveTargetSpeed.getSingle(e).doubleValue());
@@ -323,7 +313,7 @@ public class EffSetPathGoal extends Effect {
 						for (EntityData<?> entData : types) {
 							if (!LivingEntity.class.isAssignableFrom(entData.getType()))
 								return;
-							String className = entData.getType().getClass().getSimpleName();
+							String className = entData.getType().getSimpleName();
 							if (className.equals("HumanEntity")) {
 								className = "Human";
 							} else if (className.equals("EntityLiving")) {
@@ -338,7 +328,7 @@ public class EffSetPathGoal extends Effect {
 						for (EntityData<?> entData : types) {
 							if (!LivingEntity.class.isAssignableFrom(entData.getType()))
 								return;
-							String className = entData.getType().getClass().getSimpleName();
+							String className = entData.getType().getSimpleName();
 							if (className.equals("HumanEntity")) {
 								className = "Human";
 							} else if (className.equals("EntityLiving")) {
@@ -449,7 +439,7 @@ public class EffSetPathGoal extends Effect {
 					for (EntityData<?> entData : types) {
 						if (!LivingEntity.class.isAssignableFrom(entData.getType()))
 							return;
-						String className = entData.getType().getClass().getSimpleName();
+						String className = entData.getType().getSimpleName();
 						if (className.equals("HumanEntity")) {
 							className = "Human";
 						} else if (className.equals("EntityLiving")) {

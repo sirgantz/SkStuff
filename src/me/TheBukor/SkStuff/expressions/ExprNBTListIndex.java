@@ -26,7 +26,7 @@ public class ExprNBTListIndex extends SimpleExpression<Object> {
 
 	@Override
 	public boolean isSingle() {
-		return false;
+		return true;
 	}
 
 	@SuppressWarnings("unchecked")

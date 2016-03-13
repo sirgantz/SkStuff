@@ -30,20 +30,21 @@ import ch.njol.skript.classes.Parser;
 import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
 import ch.njol.util.coll.CollectionUtils;
+import net.minecraft.server.v1_7_R4.Item;
 import net.minecraft.server.v1_7_R4.MojangsonParser;
 import net.minecraft.server.v1_7_R4.NBTBase;
 import net.minecraft.server.v1_7_R4.NBTCompressedStreamTools;
+import net.minecraft.server.v1_7_R4.NBTTagByte;
 import net.minecraft.server.v1_7_R4.NBTTagCompound;
 import net.minecraft.server.v1_7_R4.NBTTagDouble;
 import net.minecraft.server.v1_7_R4.NBTTagFloat;
 import net.minecraft.server.v1_7_R4.NBTTagInt;
 import net.minecraft.server.v1_7_R4.NBTTagList;
+import net.minecraft.server.v1_7_R4.NBTTagLong;
+import net.minecraft.server.v1_7_R4.NBTTagShort;
 import net.minecraft.server.v1_7_R4.NBTTagString;
 import net.minecraft.server.v1_7_R4.TileEntity;
 import net.minecraft.server.v1_7_R4.World;
-import net.minecraft.server.v1_8_R3.NBTTagByte;
-import net.minecraft.server.v1_8_R3.NBTTagLong;
-import net.minecraft.server.v1_8_R3.NBTTagShort;
 
 public class NMS_v1_7_R4 implements NMSInterface {
 
@@ -456,48 +457,33 @@ public class NMS_v1_7_R4 implements NMSInterface {
 		}
 	}
 
-	public NBTTagByte convertToNBT(byte b) {
-		return new NBTTagByte(b);
+	@Override
+	public NBTBase convertToNBT(Number number) {
+		if (number instanceof Byte) {
+			return new NBTTagByte((byte) number);
+		} else if (number instanceof Short) {
+			return new NBTTagShort((short) number);
+		} else if (number instanceof Integer) {
+			return new NBTTagInt((int) number);
+		} else if (number instanceof Long) {
+			return new NBTTagLong((long) number);
+		} else if (number instanceof Float) {
+			return new NBTTagFloat((float) number);
+		} else if (number instanceof Double) {
+			return new NBTTagDouble((double) number);
+		}
+		return null;
 	}
 
-	public NBTTagShort convertToNBT(short s) {
-		return new NBTTagShort(s);
-	}
-
-	public NBTTagInt convertToNBT(int i) {
-		return new NBTTagInt(i);
-	}
-
-	public NBTTagLong convertToNBT(long l) {
-		return new NBTTagLong(l);
-	}
-
-	public NBTTagFloat convertToNBT(float f) {
-		return new NBTTagFloat(f);
-	}
-
-	public NBTTagDouble convertToNBT(double d) {
-		return new NBTTagDouble(d);
-	}
-
+	@Override
 	public NBTTagString convertToNBT(String string) {
 		return new NBTTagString(string);
 	}
 
 	@Override
-	public Object convertToNBT(Number number) {
-		if (number instanceof Byte)
-			return convertToNBT((byte) number);
-		else if (number instanceof Short)
-			return convertToNBT((short) number);
-		else if (number instanceof Integer)
-			return convertToNBT((int) number);
-		else if (number instanceof Long)
-			return convertToNBT((long) number);
-		else if (number instanceof Float)
-			return convertToNBT((float) number);
-		else if (number instanceof Double)
-			return convertToNBT((double) number);
-		return number;
+	public String getMCId(ItemStack itemStack) {
+		net.minecraft.server.v1_7_R4.ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
+		String test = Item.REGISTRY.c(nmsItem.getItem());
+		return test;
 	}
 }

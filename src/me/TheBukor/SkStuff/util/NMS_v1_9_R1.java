@@ -11,11 +11,9 @@ import java.io.OutputStream;
 import java.io.StreamCorruptedException;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_9_R1.CraftWorld;
@@ -36,6 +34,8 @@ import ch.njol.yggdrasil.Fields;
 import net.minecraft.server.v1_9_R1.BlockPosition;
 import net.minecraft.server.v1_9_R1.EntityInsentient;
 import net.minecraft.server.v1_9_R1.IBlockData;
+import net.minecraft.server.v1_9_R1.Item;
+import net.minecraft.server.v1_9_R1.MinecraftKey;
 import net.minecraft.server.v1_9_R1.MojangsonParseException;
 import net.minecraft.server.v1_9_R1.MojangsonParser;
 import net.minecraft.server.v1_9_R1.NBTBase;
@@ -171,7 +171,7 @@ public class NMS_v1_9_R1 implements NMSInterface {
 		if (entity instanceof EntityInsentient) {
 			((EntityInsentient) entity).setGoalTarget(null);
 			if (isTargetSelector) {
-				Iterator<?> goals = ((List<?>) ReflectionUtils.getField("b", PathfinderGoalSelector.class, ((EntityInsentient) entity).targetSelector)).iterator();
+				Iterator<?> goals = ((LinkedHashSet<?>) ReflectionUtils.getField("b", PathfinderGoalSelector.class, ((EntityInsentient) entity).targetSelector)).iterator();
 				while (goals.hasNext()) {
 					Object goal = goals.next();
 					if (ReflectionUtils.getField("a", goal.getClass(), goal).getClass() == goalClass) {
@@ -179,7 +179,7 @@ public class NMS_v1_9_R1 implements NMSInterface {
 					}
 				}
 			} else {
-				Iterator<?> goals = ((List<?>) ReflectionUtils.getField("b", PathfinderGoalSelector.class, ((EntityInsentient) entity).goalSelector)).iterator();
+				Iterator<?> goals = ((LinkedHashSet<?>) ReflectionUtils.getField("b", PathfinderGoalSelector.class, ((EntityInsentient) entity).goalSelector)).iterator();
 				while (goals.hasNext()) {
 					Object goal = goals.next();
 					if (ReflectionUtils.getField("a", goal.getClass(), goal).getClass() == goalClass) {
@@ -208,26 +208,15 @@ public class NMS_v1_9_R1 implements NMSInterface {
 			@Override
 			@Nullable
 			public Class<?>[] acceptChange(ChangeMode mode) {
-				if (mode == ChangeMode.ADD || mode == ChangeMode.REMOVE || mode == ChangeMode.SET) {
-					return CollectionUtils.array(String[].class, NBTTagCompound[].class);
+				if (mode == ChangeMode.ADD || mode == ChangeMode.REMOVE) {
+					return CollectionUtils.array(String.class, NBTTagCompound.class);
 				}
 				return null;
 			}
 
 			@Override
 			public void change(NBTTagCompound[] NBT, @Nullable Object[] delta, ChangeMode mode) {
-				Bukkit.broadcastMessage("Changing a compound");
-				if (mode == ChangeMode.SET) {
-					Bukkit.broadcastMessage("is setting");
-					if (delta[0] instanceof NBTTagCompound) {
-						NBT[0] = (NBTTagCompound) delta[0];
-					} else {
-						NBTTagCompound parsedNBT = null;
-						parsedNBT = parseRawNBT((String) delta[0]);
-						NBT[0] = parsedNBT;
-					}
-				} else if (mode == ChangeMode.ADD) {
-					Bukkit.broadcastMessage("is adding");
+				if (mode == ChangeMode.ADD) {
 					if (delta[0] instanceof String) {
 						NBTTagCompound parsedNBT = null;
 						parsedNBT = parseRawNBT((String) delta[0]);
@@ -236,7 +225,6 @@ public class NMS_v1_9_R1 implements NMSInterface {
 						addToCompound(NBT[0], delta[0]);
 					}
 				} else if (mode == ChangeMode.REMOVE) {
-					Bukkit.broadcastMessage("is removing");
 					if (delta[0] instanceof NBTTagCompound)
 						return;
 					for (Object s : delta) {
@@ -322,7 +310,7 @@ public class NMS_v1_9_R1 implements NMSInterface {
 			@Override
 			@Nullable
 			public Class<?>[] acceptChange(ChangeMode mode) {
-				if (mode == ChangeMode.ADD || mode == ChangeMode.SET || mode == ChangeMode.DELETE || mode == ChangeMode.RESET) {
+				if (mode == ChangeMode.ADD) {
 					return CollectionUtils.array(Byte.class, Short.class, Integer.class, Long.class, Float.class, Double.class, String.class, NBTTagCompound.class, NBTTagList.class);
 				}
 				return null;
@@ -330,46 +318,16 @@ public class NMS_v1_9_R1 implements NMSInterface {
 
 			@Override
 			public void change(NBTTagList[] nbtList, @Nullable Object[] delta, ChangeMode mode) {
-				Bukkit.broadcastMessage("Changing a NBTList");
-				int typeId = 0;
-				if (delta instanceof Byte[]) {
-					typeId = 1;
-				} else if (delta instanceof Short[]) {
-					typeId = 2;
-				} else if (delta instanceof Integer[]) {
-					typeId = 3;
-				} else if (delta instanceof Long[]) {
-					typeId = 4;
-				} else if (delta instanceof Float[]) {
-					typeId = 5;
-				} else if (delta instanceof Double[]) {
-					typeId = 6;
-				} else if (delta instanceof String[]) {
-					typeId = 8;
-				} else if (delta instanceof NBTTagList[]) {
-					typeId = 9;
-				} else if (delta instanceof NBTTagCompound[]) {
-					typeId = 10;
-				} else {
-					Bukkit.broadcastMessage("No compatible class: " + delta.getClass() + "\nStopping...");
+				if (delta.length == 0)
 					return;
-				}
-				if (mode == ChangeMode.SET) {
-					Bukkit.broadcastMessage("is setting");
-					if (typeId == 9)
-						nbtList[0] = (NBTTagList) delta[0];
-				} else if (mode == ChangeMode.ADD) {
-					if (getContentsId(nbtList[0]) == typeId) {
-						if (delta[0] instanceof Number)
-							addToList(nbtList, convertToNBT((Number) delta[0]));
-						else if (delta[0] instanceof String)
-							addToList(nbtList, convertToNBT((String) delta[0]));
-						else if (delta[0] instanceof NBTTagCompound || delta[0] instanceof NBTTagList)
-							addToList(nbtList, delta[0]);
+				if (mode == ChangeMode.ADD) {
+					if (delta[0] instanceof Number) {
+						addToList(nbtList[0], convertToNBT((Number) delta[0]));
+					} else if (delta[0] instanceof String) {
+						addToList(nbtList[0], convertToNBT((String) delta[0]));
+					} else if (delta[0] instanceof NBTBase) {
+						addToList(nbtList[0], delta[0]);
 					}
-				} else if (mode == ChangeMode.DELETE || mode == ChangeMode.RESET) {
-					Bukkit.broadcastMessage("Is deleting/resetting");
-					nbtList[0] = new NBTTagList();
 				}
 			}
 		}).parser(new Parser<NBTTagList>() {
@@ -558,6 +516,7 @@ public class NMS_v1_9_R1 implements NMSInterface {
 		}
 	}
 
+	@Override
 	public NBTBase convertToNBT(Number number) {
 		if (number instanceof Byte) {
 			return new NBTTagByte((byte) number);
@@ -575,7 +534,15 @@ public class NMS_v1_9_R1 implements NMSInterface {
 		return null;
 	}
 
+	@Override
 	public NBTTagString convertToNBT(String string) {
 		return new NBTTagString(string);
+	}
+
+	@Override
+	public String getMCId(ItemStack itemStack) {
+		net.minecraft.server.v1_9_R1.ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
+		MinecraftKey mcKey = Item.REGISTRY.b(nmsItem.getItem());
+		return mcKey.toString();
 	}
 }

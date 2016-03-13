@@ -48,6 +48,8 @@ import net.minecraft.server.v1_8_R1.PathfinderGoal;
 import net.minecraft.server.v1_8_R1.PathfinderGoalSelector;
 import net.minecraft.server.v1_8_R1.TileEntity;
 import net.minecraft.server.v1_8_R1.World;
+import net.minecraft.server.v1_8_R1.Item;
+import net.minecraft.server.v1_8_R1.MinecraftKey;
 
 public class NMS_v1_8_R1 implements NMSInterface {
 
@@ -559,5 +561,12 @@ public class NMS_v1_8_R1 implements NMSInterface {
 
 	public NBTTagString convertToNBT(String string) {
 		return new NBTTagString(string);
+	}
+
+	@Override
+	public String getMCId(ItemStack itemStack) {
+		net.minecraft.server.v1_8_R1.ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
+		MinecraftKey mcKey = (MinecraftKey) Item.REGISTRY.c(nmsItem.getItem());
+		return mcKey.toString();
 	}
 }

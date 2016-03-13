@@ -55,4 +55,6 @@ public interface NMSInterface {
 	public Object convertToNBT(Number number);
 
 	public Object convertToNBT(String string);
+
+	public String getMCId(ItemStack itemStack);
 }

@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Blaze;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Ghast;
@@ -45,7 +46,7 @@ public class EffRemovePathGoal extends Effect {
 	protected void execute(Event e) {
 		LivingEntity[] ents = entities.getAll(e);
 		for (LivingEntity ent : ents) {
-			if (ent instanceof Player || ent == null)
+			if (ent instanceof Player || ent instanceof ArmorStand || ent == null)
 				return;
 			Object obcEnt = craftLivEnt.cast(ent);
 			Object nmsEnt = null;
