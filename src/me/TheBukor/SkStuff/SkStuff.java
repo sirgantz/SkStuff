@@ -4,19 +4,28 @@ import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityToggleGlideEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.sk89q.worldedit.EditSession;
+import com.sk89q.worldguard.bukkit.WGBukkit;
+import com.sk89q.worldguard.protection.flags.DefaultFlag;
+import com.sk89q.worldguard.protection.flags.Flag;
+import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 
 import ch.njol.skript.Skript;
 import ch.njol.skript.classes.ClassInfo;
+import ch.njol.skript.classes.Parser;
+import ch.njol.skript.expressions.base.EventValueExpression;
 import ch.njol.skript.lang.ExpressionType;
+import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.lang.util.SimpleEvent;
 import ch.njol.skript.registrations.Classes;
 import ch.njol.skript.registrations.EventValues;
@@ -51,6 +60,8 @@ import me.TheBukor.SkStuff.expressions.ExprEditSessionLimit;
 import me.TheBukor.SkStuff.expressions.ExprEndermanBlocks;
 import me.TheBukor.SkStuff.expressions.ExprFileNBT;
 import me.TheBukor.SkStuff.expressions.ExprFireProof;
+import me.TheBukor.SkStuff.expressions.ExprFlagOfWGRegion;
+import me.TheBukor.SkStuff.expressions.ExprFlagsOfWGRegion;
 import me.TheBukor.SkStuff.expressions.ExprGlideState;
 import me.TheBukor.SkStuff.expressions.ExprItemNBT;
 import me.TheBukor.SkStuff.expressions.ExprMCIdOf;
@@ -87,6 +98,7 @@ public class SkStuff extends JavaPlugin {
 
 	private static NMSInterface nmsMethods;
 
+	@SuppressWarnings("rawtypes")
 	public void onEnable() {
 		if (Bukkit.getPluginManager().getPlugin("Skript") != null && Skript.isAcceptRegistrations()) {
 			Skript.registerAddon(this);
@@ -106,7 +118,7 @@ public class SkStuff extends JavaPlugin {
 			if (Skript.isRunningMinecraft(1, 9)) {
 				getLogger().info("WOW! You're using Minecraft 1.9! Lemme register some cool stuff right away!");
 				Skript.registerEvent("Elytra glide toggle", SimpleEvent.class, EntityToggleGlideEvent.class, "[entity] elytra (fl(y|ight)|glid(e|ing)) toggl(e|ing)", "[entity] toggle elytra (fl(y|ight)|glid(e|ing))");
-				Skript.registerExpression(ExprGlideState.class, Boolean.class, ExpressionType.PROPERTY, "elytra (fl(y|ight)|glid(e|ing)) state of %player%", "%player%'s elytra (fl(y|ight)|glid(e|ing)) state");
+				Skript.registerExpression(ExprGlideState.class, Boolean.class, ExpressionType.PROPERTY, "elytra (fl(y|ight)|glid(e|ing)) state of %livingentity%", "%livingentity%'s elytra (fl(y|ight)|glid(e|ing)) state");
 
 				EventValues.registerEventValue(EntityToggleGlideEvent.class, Entity.class, new Getter<Entity, EntityToggleGlideEvent>() {
 					@Override
@@ -186,12 +198,78 @@ public class SkStuff extends JavaPlugin {
 					evtAmount += 1;
 				} catch (ClassNotFoundException ex) {
 					Skript.error("Unable to register \"On WorldEdit block change\" event! You will need to upgrade to WorldEdit 6.0");
-					return;
 				}
 				condAmount += 1;
 				effAmount += 13;
 				exprAmount += 7;
 				typeAmount += 1;
+				if (Bukkit.getPluginManager().getPlugin("WorldGuard") != null) { //WorldGuard depends on WorldEdit
+					Plugin umbaska = Bukkit.getPluginManager().getPlugin("Umbaska");
+					Plugin skRambled = Bukkit.getPluginManager().getPlugin("SkRambled");
+					boolean registerNewTypes = (umbaska == null && skRambled == null);
+					if (registerNewTypes) {
+						Skript.registerExpression(ExprFlagOfWGRegion.class, Flag.class, ExpressionType.PROPERTY, "[w[orld[ ]]g[uard]] flag %wgflag% of %wgregion%");
+						Skript.registerExpression(ExprFlagsOfWGRegion.class, Flag.class, ExpressionType.PROPERTY, "all [w[orld[ ]]g[uard]] flags of %wgregion%");
+						Classes.registerClass(new ClassInfo<Flag>(Flag.class, "wgflag").name("WorldGuard Flag").user("(w(orld ?)?g(uard)? )?flags?").defaultExpression(new EventValueExpression<Flag>(Flag.class)).parser(new Parser<Flag<?>>() {
+
+							@Override
+							@Nullable
+							public Flag<?> parse(String flag, ParseContext context) {
+								return DefaultFlag.fuzzyMatchFlag(flag);
+							}
+
+							@Override
+							public String toString(Flag<?> flag, int flags) {
+								return flag.getName().toLowerCase();
+							}
+
+							@Override
+							public String toVariableNameString(Flag<?> flag) {
+								return flag.getName().toLowerCase();
+							}
+
+							@Override
+							public String getVariableNamePattern() {
+								return ".+";
+							}
+						}));
+						Classes.registerClass(new ClassInfo<ProtectedRegion>(ProtectedRegion.class, "wgregion").name("WorldGuard Region").user("(w(orld ?)?g(uard)? )?regions?").defaultExpression(new EventValueExpression<>(ProtectedRegion.class)).parser(new Parser<ProtectedRegion>() {
+	
+							@Override
+							@Nullable
+							public ProtectedRegion parse(String region, ParseContext context) {
+								for (World w : Bukkit.getWorlds()) {
+									if (WGBukkit.getRegionManager(w).hasRegion(region)) {
+										return WGBukkit.getRegionManager(w).getRegion(region);
+									}
+								}
+								return null;
+							}
+	
+							@Override
+							public String toString(ProtectedRegion region, int flags) {
+								return region.getId();
+							}
+	
+							@Override
+							public String toVariableNameString(ProtectedRegion region) {
+								return region.getId();
+							}
+	
+							@Override
+							public String getVariableNamePattern() {
+								return ".+";
+							}
+							
+						}));
+					} else {
+						Skript.registerExpression(ExprFlagOfWGRegion.class, Flag.class, ExpressionType.PROPERTY, "[skstuff] [w[orld[ ]]g[uard]] flag %flag% of %protectedregion%");
+						Skript.registerExpression(ExprFlagsOfWGRegion.class, Flag.class, ExpressionType.PROPERTY, "[skstuff] [all] [w[orld[ ]]g[uard]] flags of %protectedregion%");
+					}
+					exprAmount += 2;
+					if (registerNewTypes)
+						typeAmount += 2;
+				}
 			}
 			if (Bukkit.getPluginManager().getPlugin("VanishNoPacket") != null) {
 				getLogger().info("VanishNoPacket was found! Registering vanishing features...");

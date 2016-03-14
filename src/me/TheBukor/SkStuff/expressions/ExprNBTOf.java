@@ -128,18 +128,19 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 				}
 			}
 		} else if (tar instanceof Slot) {
-			Object itemNBT = SkStuff.getNMSMethods().getItemNBT(((Slot) tar).getItem());
+			ItemStack slotItem = ((Slot) tar).getItem();
+			Object itemNBT = SkStuff.getNMSMethods().getItemNBT(slotItem);
 			if (mode == ChangeMode.ADD) {
 				SkStuff.getNMSMethods().addToCompound(itemNBT, parsedNBT);
-				ItemStack newItem = SkStuff.getNMSMethods().getItemWithNBT((ItemStack) tar, itemNBT);
+				ItemStack newItem = SkStuff.getNMSMethods().getItemWithNBT(slotItem, itemNBT);
 				((Slot) tar).setItem(newItem);
 			} else if (mode == ChangeMode.REMOVE) {
 				String[] toRemove = Arrays.copyOf(delta, delta.length, String[].class);
 				SkStuff.getNMSMethods().removeFromCompound(itemNBT, toRemove);
-				ItemStack newItem = SkStuff.getNMSMethods().getItemWithNBT((ItemStack) tar, itemNBT);
+				ItemStack newItem = SkStuff.getNMSMethods().getItemWithNBT(slotItem, itemNBT);
 				((Slot) tar).setItem(newItem);
 			} else if (mode == ChangeMode.DELETE || mode == ChangeMode.RESET) {
-				ItemStack newItem = SkStuff.getNMSMethods().getItemWithNBT((ItemStack) tar, null);
+				ItemStack newItem = SkStuff.getNMSMethods().getItemWithNBT(slotItem, null);
 				((Slot) tar).setItem(newItem);
 			}
 		}
