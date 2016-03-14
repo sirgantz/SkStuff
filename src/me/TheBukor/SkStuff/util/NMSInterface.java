@@ -14,8 +14,6 @@ public interface NMSInterface {
 	
 	public Object parseRawNBT(String rawNBT);
 
-	public int getContentsId(Object nbtList);
-
 	public Object[] getContents(Object nbtList);
 
 	public void addToList(Object nbtList, Object toAdd);
@@ -57,4 +55,6 @@ public interface NMSInterface {
 	public Object convertToNBT(String string);
 
 	public String getMCId(ItemStack itemStack);
+
+	public ItemStack getItemFromMcId(String mcId);
 }

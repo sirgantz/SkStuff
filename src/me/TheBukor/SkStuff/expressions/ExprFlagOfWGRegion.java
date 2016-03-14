@@ -1,16 +1,10 @@
 package me.TheBukor.SkStuff.expressions;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.bukkit.craftbukkit.libs.jline.internal.Nullable;
-import org.bukkit.entity.EntityType;
 import org.bukkit.event.Event;
 
 import com.sk89q.worldguard.protection.flags.BooleanFlag;
-import com.sk89q.worldguard.protection.flags.EntityTypeFlag;
 import com.sk89q.worldguard.protection.flags.Flag;
-import com.sk89q.worldguard.protection.flags.SetFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag;
 import com.sk89q.worldguard.protection.flags.StateFlag.State;
 import com.sk89q.worldguard.protection.flags.StringFlag;
@@ -25,8 +19,7 @@ import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import ch.njol.util.coll.CollectionUtils;
 
-@SuppressWarnings("rawtypes")
-public class ExprFlagOfWGRegion extends SimpleExpression<Flag> {
+public class ExprFlagOfWGRegion extends SimpleExpression<String> {
 	private Expression<Flag<?>> flag;
 	private Expression<ProtectedRegion> region;
 
@@ -39,10 +32,10 @@ public class ExprFlagOfWGRegion extends SimpleExpression<Flag> {
 	}
 
 	@Override
-	protected Flag<?>[] get(final Event e) {
+	protected String[] get(final Event e) {
 		ProtectedRegion region = this.region.getSingle(e);
 		Flag<?> flag = this.flag.getSingle(e);
-		return new Flag<?>[] { (Flag<?>) region.getFlag(flag) };
+		return new String[] { region.getFlag(flag).toString() };
 	}
 
 	@Override
@@ -50,10 +43,9 @@ public class ExprFlagOfWGRegion extends SimpleExpression<Flag> {
 		return true;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public Class<? extends Flag<?>> getReturnType() {
-		return (Class<? extends Flag<?>>) Flag.class;
+	public Class<? extends String> getReturnType() {
+		return String.class;
 	}
 
 	@Override
@@ -61,7 +53,6 @@ public class ExprFlagOfWGRegion extends SimpleExpression<Flag> {
 		return "worldguard flag " + flag.toString(e, debug) + " of " + region.toString(e, debug);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void change(Event e, Object[] delta, ChangeMode mode) {
 		ProtectedRegion region = this.region.getSingle(e);
@@ -82,6 +73,7 @@ public class ExprFlagOfWGRegion extends SimpleExpression<Flag> {
 			} else if (flag instanceof BooleanFlag && delta[0] instanceof Boolean) {
 				boolean newValue = (boolean) delta[0];
 				region.setFlag((BooleanFlag) flag, newValue);
+			/*
 			} else if (flag instanceof SetFlag) {
 				if (delta instanceof EntityData[]) {
 					if (((SetFlag) flag).getType() instanceof EntityTypeFlag) {
@@ -98,10 +90,7 @@ public class ExprFlagOfWGRegion extends SimpleExpression<Flag> {
 							}
 						}
 						region.setFlag((SetFlag<EntityType>) flag, newSet);
-					} else {
-						Skript.error("Sorry, this flag type isn't supported yet! Flag type: SetFlag of type " + ((SetFlag) flag).getType().getName());
-					}
-				}
+			*/
 			} else {
 				Skript.error("Sorry, this flag type isn't supported yet! Flag type: " + flag.getClass().getSimpleName());
 			}

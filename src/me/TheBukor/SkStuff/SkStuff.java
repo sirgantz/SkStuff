@@ -65,6 +65,7 @@ import me.TheBukor.SkStuff.expressions.ExprFlagsOfWGRegion;
 import me.TheBukor.SkStuff.expressions.ExprGlideState;
 import me.TheBukor.SkStuff.expressions.ExprItemNBT;
 import me.TheBukor.SkStuff.expressions.ExprMCIdOf;
+import me.TheBukor.SkStuff.expressions.ExprMCIdToItem;
 import me.TheBukor.SkStuff.expressions.ExprNBTListContents;
 import me.TheBukor.SkStuff.expressions.ExprNBTListIndex;
 import me.TheBukor.SkStuff.expressions.ExprNBTOf;
@@ -115,7 +116,7 @@ public class SkStuff extends JavaPlugin {
 			effAmount += 2;
 			exprAmount += 6;
 			if (Skript.isRunningMinecraft(1, 9)) {
-				getLogger().info("WOW! You're using Minecraft 1.9! Lemme register some cool stuff right away!");
+				getLogger().info("WOW! You're using Minecraft 1.9! Lemme register some cool elytra stuff right away!");
 				Skript.registerEvent("Elytra glide toggle", SimpleEvent.class, EntityToggleGlideEvent.class, "[entity] elytra (fl(y|ight)|glid(e|ing)) toggl(e|ing)", "[entity] toggle elytra (fl(y|ight)|glid(e|ing))");
 				Skript.registerExpression(ExprGlideState.class, Boolean.class, ExpressionType.PROPERTY, "elytra (fl(y|ight)|glid(e|ing)) state of %livingentity%", "%livingentity%'s elytra (fl(y|ight)|glid(e|ing)) state");
 
@@ -146,11 +147,12 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerExpression(ExprNoClip.class, Boolean.class, ExpressionType.PROPERTY, "no[( |-)]clip (state|mode) of %entities%", "%entities%'s no[( |-)]clip (state|mode)");
 				Skript.registerExpression(ExprFireProof.class, Boolean.class, ExpressionType.PROPERTY, "fire[ ]proof (state|mode) of %entities%", "%entities%'s fire[ ]proof (state|mode)");
 				Skript.registerExpression(ExprEndermanBlocks.class, ItemStack.class, ExpressionType.PROPERTY, "blocks that %entity% can (carry|hold|grab|steal)");
-				Skript.registerExpression(ExprMCIdOf.class, String.class, ExpressionType.PROPERTY, "minecraft [(string|native)] id of %itemtype%", "%itemtype%'s minecraft [(string|native)] id");
+				Skript.registerExpression(ExprMCIdOf.class, String.class, ExpressionType.PROPERTY, "(mc|minecraft) [(string|native)] id of %itemtype%", "%itemtype%'s minecraft [(string|native)] id");
+				Skript.registerExpression(ExprMCIdToItem.class, ItemStack.class, ExpressionType.SIMPLE, "item[[ ](stack|type)] (of|from) (mc|minecraft) [(string|native)] id %string%");
 				nmsMethods.registerCompoundClassInfo();
 				nmsMethods.registerNBTListClassInfo();
 				effAmount += 5;
-				exprAmount += 10;
+				exprAmount += 11;
 				typeAmount += 2;
 			}
 			if (Bukkit.getPluginManager().getPlugin("WorldEdit") != null) {
@@ -208,7 +210,7 @@ public class SkStuff extends JavaPlugin {
 					Plugin skRambled = Bukkit.getPluginManager().getPlugin("SkRambled");
 					boolean registerNewTypes = (umbaska == null && skRambled == null);
 					if (registerNewTypes) {
-						Skript.registerExpression(ExprFlagOfWGRegion.class, Flag.class, ExpressionType.PROPERTY, "[w[orld[ ]]g[uard]] flag %wgflag% of %wgregion%");
+						Skript.registerExpression(ExprFlagOfWGRegion.class, String.class, ExpressionType.PROPERTY, "[w[orld[ ]]g[uard]] flag %wgflag% of %wgregion%");
 						Skript.registerExpression(ExprFlagsOfWGRegion.class, Flag.class, ExpressionType.PROPERTY, "all [w[orld[ ]]g[uard]] flags of %wgregion%");
 						Classes.registerClass(new ClassInfo<Flag>(Flag.class, "wgflag").name("WorldGuard Flag").user("(w(orld ?)?g(uard)? )?flags?").defaultExpression(new EventValueExpression<Flag>(Flag.class)).parser(new Parser<Flag<?>>() {
 
@@ -263,7 +265,7 @@ public class SkStuff extends JavaPlugin {
 							
 						}));
 					} else {
-						Skript.registerExpression(ExprFlagOfWGRegion.class, Flag.class, ExpressionType.PROPERTY, "[skstuff] [w[orld[ ]]g[uard]] flag %flag% of %protectedregion%");
+						Skript.registerExpression(ExprFlagOfWGRegion.class, String.class, ExpressionType.PROPERTY, "[skstuff] [w[orld[ ]]g[uard]] flag %flag% of %protectedregion%");
 						Skript.registerExpression(ExprFlagsOfWGRegion.class, Flag.class, ExpressionType.PROPERTY, "[skstuff] [all] [w[orld[ ]]g[uard]] flags of %protectedregion%");
 					}
 					exprAmount += 2;

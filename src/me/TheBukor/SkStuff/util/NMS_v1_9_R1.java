@@ -79,16 +79,9 @@ public class NMS_v1_9_R1 implements NMSInterface {
 			parsedNBT = MojangsonParser.parse(rawNBT);
 		} catch (MojangsonParseException ex) {
 			Skript.warning("Error when parsing NBT - " + ex.getMessage());
+			return null;
 		}
 		return parsedNBT;
-	}
-
-	@Override
-	public int getContentsId(Object nbtList) {
-		if (nbtList instanceof NBTTagList) {
-			return ((NBTTagList) nbtList).d();
-		}
-		return 0;
 	}
 
 	@Override
@@ -150,8 +143,8 @@ public class NMS_v1_9_R1 implements NMSInterface {
 				return ((NBTTagDouble) value).g(); //Double inside a NBTNumber
 			} else if (value instanceof NBTTagString) {
 				return ((NBTTagString) value).a_(); //String inside the NBTTagString
-			} else if (value instanceof NBTTagList || value instanceof NBTTagCompound) {
-				return value; //No need to convert anything, these are registered by the addon.
+			} else if (value instanceof NBTBase) {
+				return value; //No need to convert this
 			}
 		}
 		return null;
@@ -218,8 +211,7 @@ public class NMS_v1_9_R1 implements NMSInterface {
 			public void change(NBTTagCompound[] NBT, @Nullable Object[] delta, ChangeMode mode) {
 				if (mode == ChangeMode.ADD) {
 					if (delta[0] instanceof String) {
-						NBTTagCompound parsedNBT = null;
-						parsedNBT = parseRawNBT((String) delta[0]);
+						NBTTagCompound parsedNBT = parseRawNBT((String) delta[0]);
 						addToCompound(NBT[0], parsedNBT);
 					} else {
 						addToCompound(NBT[0], delta[0]);
@@ -243,8 +235,7 @@ public class NMS_v1_9_R1 implements NMSInterface {
 			@Nullable
 			public NBTTagCompound parse(String rawNBT, ParseContext context) {
 				if (rawNBT.startsWith("nbt:{") && rawNBT.endsWith("}")) {
-					NBTTagCompound NBT = null;
-					NBT = parseRawNBT(rawNBT.substring(4));
+					NBTTagCompound NBT = parseRawNBT(rawNBT.substring(4));
 					return NBT;
 				}
 				return null;
@@ -257,7 +248,7 @@ public class NMS_v1_9_R1 implements NMSInterface {
 
 			@Override
 			public String toVariableNameString(NBTTagCompound compound) {
-				return "nbt:" + compound.toString();
+				return compound.toString();
 			}
 		}).serializer(new Serializer<NBTTagCompound>() {
 
@@ -281,16 +272,14 @@ public class NMS_v1_9_R1 implements NMSInterface {
 			@Override
 			protected NBTTagCompound deserialize(Fields fields) throws StreamCorruptedException, NotSerializableException {
 				String s = fields.getObject("asString", String.class);
-				NBTTagCompound compound = null;
-				compound =  parseRawNBT(s);
+				NBTTagCompound compound =  parseRawNBT(s);
 				return compound;
 			}
 
 			@Override
 			@Nullable
 			public NBTTagCompound deserialize(String s) {
-				NBTTagCompound compound = null;
-				compound =  parseRawNBT(s);
+				NBTTagCompound compound =  parseRawNBT(s);
 				return compound;
 			}
 
@@ -320,14 +309,12 @@ public class NMS_v1_9_R1 implements NMSInterface {
 			public void change(NBTTagList[] nbtList, @Nullable Object[] delta, ChangeMode mode) {
 				if (delta.length == 0)
 					return;
-				if (mode == ChangeMode.ADD) {
-					if (delta[0] instanceof Number) {
-						addToList(nbtList[0], convertToNBT((Number) delta[0]));
-					} else if (delta[0] instanceof String) {
-						addToList(nbtList[0], convertToNBT((String) delta[0]));
-					} else if (delta[0] instanceof NBTBase) {
-						addToList(nbtList[0], delta[0]);
-					}
+				if (delta[0] instanceof Number) {
+					addToList(nbtList[0], convertToNBT((Number) delta[0]));
+				} else if (delta[0] instanceof String) {
+					addToList(nbtList[0], convertToNBT((String) delta[0]));
+				} else if (delta[0] instanceof NBTBase) {
+					addToList(nbtList[0], delta[0]);
 				}
 			}
 		}).parser(new Parser<NBTTagList>() {
@@ -341,8 +328,7 @@ public class NMS_v1_9_R1 implements NMSInterface {
 			@Nullable
 			public NBTTagList parse(String listString, ParseContext context) {
 				if (listString.startsWith("[") && listString.endsWith("]")) {
-					NBTTagCompound tempNBT = null;
-					tempNBT =  parseRawNBT("{SkStuffIsCool:[0:" + listString.substring(1) + "}");
+					NBTTagCompound tempNBT =  parseRawNBT("{SkStuffIsCool:[0:" + listString.substring(1) + "}");
 					NBTTagList parsedList = (NBTTagList) tempNBT.get("SkStuffIsCool");
 					return parsedList;
 				}
@@ -380,8 +366,7 @@ public class NMS_v1_9_R1 implements NMSInterface {
 			@Override
 			protected NBTTagList deserialize(Fields fields) throws StreamCorruptedException, NotSerializableException {
 				String s = fields.getObject("asString", String.class);
-				NBTTagCompound tempNBT = null;
-				tempNBT =  parseRawNBT("{SkStuffIsCool:" + s + "}");
+				NBTTagCompound tempNBT =  parseRawNBT("{SkStuffIsCool:" + s + "}");
 				NBTTagList nbtList = (NBTTagList) tempNBT.get("SkStuffIsCool");
 				return nbtList;
 			}
@@ -389,8 +374,7 @@ public class NMS_v1_9_R1 implements NMSInterface {
 			@Override
 			@Nullable
 			public NBTTagList deserialize(String s) {
-				NBTTagCompound tempNBT = null;
-				tempNBT =  parseRawNBT("{SkStuffIsCool:" + s + "}");
+				NBTTagCompound tempNBT =  parseRawNBT("{SkStuffIsCool:" + s + "}");
 				NBTTagList nbtList = (NBTTagList) tempNBT.get("SkStuffIsCool");
 				return nbtList;
 			}
@@ -426,7 +410,7 @@ public class NMS_v1_9_R1 implements NMSInterface {
 		if (itemStack == null || itemStack.getType() == Material.AIR)
 			return null;
 		NBTTagCompound itemNBT = CraftItemStack.asNMSCopy(itemStack).getTag();
-		if (String.valueOf(itemNBT).equals("{}"))
+		if (itemNBT.isEmpty())
 			itemNBT = null;
 		return itemNBT;
 	}
@@ -544,5 +528,12 @@ public class NMS_v1_9_R1 implements NMSInterface {
 		net.minecraft.server.v1_9_R1.ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
 		MinecraftKey mcKey = Item.REGISTRY.b(nmsItem.getItem());
 		return mcKey.toString();
+	}
+
+	@Override
+	public ItemStack getItemFromMcId(String mcId) {
+		MinecraftKey mcKey = new MinecraftKey(mcId);
+		Item nmsItem = (Item) Item.REGISTRY.get(mcKey);
+		return CraftItemStack.asNewCraftStack(nmsItem);
 	}
 }

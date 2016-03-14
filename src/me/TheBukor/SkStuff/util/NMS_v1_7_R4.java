@@ -6,7 +6,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.NotSerializableException;
 import java.io.OutputStream;
+import java.io.StreamCorruptedException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -27,9 +29,11 @@ import ch.njol.skript.Skript;
 import ch.njol.skript.classes.Changer;
 import ch.njol.skript.classes.ClassInfo;
 import ch.njol.skript.classes.Parser;
+import ch.njol.skript.classes.Serializer;
 import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
 import ch.njol.util.coll.CollectionUtils;
+import ch.njol.yggdrasil.Fields;
 import net.minecraft.server.v1_7_R4.Item;
 import net.minecraft.server.v1_7_R4.MojangsonParser;
 import net.minecraft.server.v1_7_R4.NBTBase;
@@ -45,6 +49,7 @@ import net.minecraft.server.v1_7_R4.NBTTagShort;
 import net.minecraft.server.v1_7_R4.NBTTagString;
 import net.minecraft.server.v1_7_R4.TileEntity;
 import net.minecraft.server.v1_7_R4.World;
+import net.minecraft.server.v1_9_R1.MinecraftKey;
 
 public class NMS_v1_7_R4 implements NMSInterface {
 
@@ -90,14 +95,6 @@ public class NMS_v1_7_R4 implements NMSInterface {
 	}
 
 	@Override
-	public int getContentsId(Object nbtList) {
-		if (nbtList instanceof NBTTagList) {
-			return ((NBTTagList) nbtList).d();
-		}
-		return 0;
-	}
-
-	@Override
 	public Object[] getContents(Object nbtList) {
 		if (nbtList instanceof NBTTagList) {
 			Object[] contents = new Object[((NBTTagList) nbtList).size()];
@@ -132,7 +129,7 @@ public class NMS_v1_7_R4 implements NMSInterface {
 	@Override
 	public void setIndex(Object nbtList, int index, Object toSet) {
 		if (nbtList instanceof NBTTagList && index >= 0 && index < ((NBTTagList) nbtList).size()) {
-			int typeId = getContentsId(nbtList);
+			int typeId = ((NBTTagList) nbtList).d(); //Contents ID
 			NBTBase toSetNBT = null;
 			if (toSet instanceof NBTBase)
 				toSetNBT = (NBTBase) toSet;
@@ -149,8 +146,7 @@ public class NMS_v1_7_R4 implements NMSInterface {
 				Skript.warning("Adding mismatching tag types to NBT list");
 				return;
 			}
-			List<Object> actualList = null;
-			actualList = (List<Object>) ReflectionUtils.getField("list", NBTTagList.class, nbtList);
+			List<Object> actualList = (List<Object>) ReflectionUtils.getField("list", NBTTagList.class, nbtList);
 			actualList.set(index, toSetNBT);
 		}
 	}
@@ -190,22 +186,15 @@ public class NMS_v1_7_R4 implements NMSInterface {
 			@Override
 			@Nullable
 			public Class<?>[] acceptChange(ChangeMode mode) {
-				if (mode == ChangeMode.ADD || mode == ChangeMode.REMOVE || mode == ChangeMode.SET) {
-					return CollectionUtils.array(String[].class, NBTTagCompound[].class);
+				if (mode == ChangeMode.ADD || mode == ChangeMode.REMOVE) {
+					return CollectionUtils.array(String.class, NBTTagCompound.class);
 				}
 				return null;
 			}
 
 			@Override
 			public void change(NBTTagCompound[] NBT, @Nullable Object[] delta, ChangeMode mode) {
-				if (mode == ChangeMode.SET) {
-					if (delta[0] instanceof NBTTagCompound) {
-						NBT[0] = (NBTTagCompound) delta[0];
-					} else {
-						NBTTagCompound parsedNBT = parseRawNBT((String) delta[0]);
-						NBT[0] = parsedNBT;
-					}
-				} else if (mode == ChangeMode.ADD) {
+				if (mode == ChangeMode.ADD) {
 					if (delta[0] instanceof String) {
 						NBTTagCompound parsedNBT = parseRawNBT((String) delta[0]);
 						addToCompound(NBT[0], parsedNBT);
@@ -233,9 +222,6 @@ public class NMS_v1_7_R4 implements NMSInterface {
 				if (rawNBT.startsWith("nbt:{") && rawNBT.endsWith("}")) {
 					rawNBT.substring(4);
 					NBTTagCompound NBT = parseRawNBT(rawNBT);
-					if (NBT.toString().equals("{}")) {
-						return null;
-					}
 					return NBT;
 				}
 				return null;
@@ -248,7 +234,7 @@ public class NMS_v1_7_R4 implements NMSInterface {
 
 			@Override
 			public String toVariableNameString(NBTTagCompound compound) {
-				return "nbt:" + compound.toString();
+				return compound.toString();
 			}
 		}));
 
@@ -262,53 +248,22 @@ public class NMS_v1_7_R4 implements NMSInterface {
 			@Override
 			@Nullable
 			public Class<?>[] acceptChange(ChangeMode mode) {
-				if (mode == ChangeMode.ADD || mode == ChangeMode.SET || mode == ChangeMode.DELETE || mode == ChangeMode.RESET) {
-					return CollectionUtils.array(Float[].class, Double[].class, String[].class, NBTTagCompound[].class, Integer[].class, NBTTagList[].class);
+				if (mode == ChangeMode.ADD) {
+					return CollectionUtils.array(Byte.class, Short.class, Integer.class, Long.class, Float.class, Double.class, String.class, NBTBase.class);
 				}
 				return null;
 			}
 
 			@Override
 			public void change(NBTTagList[] nbtList, @Nullable Object[] delta, ChangeMode mode) {
-				int typeId = 0;
-				if (delta instanceof Float[]) {
-					typeId = 5;
-				} else if (delta instanceof Double[]) {
-					typeId = 6;
-				} else if (delta instanceof String[]) {
-					typeId = 8;
-				} else if (delta instanceof NBTTagList[]) {
-					typeId = 9;
-				} else if (delta instanceof NBTTagCompound[]) {
-					typeId = 10;
-				} else if (delta instanceof Integer[]) {
-					typeId = 11;
-				} else {
+				if (delta.length == 0)
 					return;
-				}
-				if (mode == ChangeMode.SET) {
-					if (typeId == 9)
-						nbtList[0] = (NBTTagList) delta[0];
-				} else if (mode == ChangeMode.ADD) {
-					if (getContentsId(nbtList[0]) == typeId) {
-						if (typeId == 5) {
-							NBTTagFloat floatTag = new NBTTagFloat((float) delta[0]);
-							addToList(nbtList[0], floatTag);
-						} else if (typeId == 6) {
-							NBTTagDouble doubleTag = new NBTTagDouble((double) delta[0]);
-							addToList(nbtList[0], doubleTag);
-						} else if (typeId == 8) {
-							NBTTagString stringTag = new NBTTagString((String) delta [0]);
-							addToList(nbtList[0], stringTag);
-						} else if (typeId == 10) {
-							addToList(nbtList[0], delta[0]);
-						} else if (typeId == 11) {
-							NBTTagInt intTag = new NBTTagInt((int) delta[0]);
-							addToList(nbtList[0], intTag);
-						}
-					}
-				} else if (mode == ChangeMode.DELETE || mode == ChangeMode.RESET) {
-					nbtList[0] = new NBTTagList();
+				if (delta[0] instanceof Number) {
+					addToList(nbtList, convertToNBT((Number) delta[0]));
+				} else if (delta[0] instanceof String) {
+					addToList(nbtList, convertToNBT((String) delta[0]));
+				} else if (delta[0] instanceof NBTBase) {
+					addToList(nbtList, delta[0]);
 				}
 			}
 		}).parser(new Parser<NBTTagList>() {
@@ -320,7 +275,12 @@ public class NMS_v1_7_R4 implements NMSInterface {
 
 			@Override
 			@Nullable
-			public NBTTagList parse(String ignored, ParseContext context) {
+			public NBTTagList parse(String listString, ParseContext context) {
+				if (listString.startsWith("[") && listString.endsWith("]")) {
+					NBTTagCompound tempNBT =  parseRawNBT("{SkStuffIsCool:[0:" + listString.substring(1) + "}");
+					NBTTagList parsedList = (NBTTagList) tempNBT.get("SkStuffIsCool");
+					return parsedList;
+				}
 				return null;
 			}
 
@@ -332,6 +292,45 @@ public class NMS_v1_7_R4 implements NMSInterface {
 			@Override
 			public String toVariableNameString(NBTTagList nbtList) {
 				return nbtList.toString();
+			}
+		}).serializer(new Serializer<NBTTagList>() {
+
+			@Override
+			public Fields serialize(NBTTagList nbtList) throws NotSerializableException {
+				Fields f = new Fields();
+				f.putObject("asString", nbtList.toString());
+				return f;
+			}
+
+			@Override
+			public void deserialize(NBTTagList nbtList, Fields f) throws StreamCorruptedException, NotSerializableException {
+				assert false;
+			}
+
+			@Override
+			protected boolean canBeInstantiated() {
+				return false;
+			}
+
+			@Override
+			protected NBTTagList deserialize(Fields fields) throws StreamCorruptedException, NotSerializableException {
+				String s = fields.getObject("asString", String.class);
+				NBTTagCompound tempNBT =  parseRawNBT("{SkStuffIsCool:" + s + "}");
+				NBTTagList nbtList = (NBTTagList) tempNBT.get("SkStuffIsCool");
+				return nbtList;
+			}
+
+			@Override
+			@Nullable
+			public NBTTagList deserialize(String s) {
+				NBTTagCompound tempNBT =  parseRawNBT("{SkStuffIsCool:" + s + "}");
+				NBTTagList nbtList = (NBTTagList) tempNBT.get("SkStuffIsCool");
+				return nbtList;
+			}
+
+			@Override
+			public boolean mustSyncDeserialization() {
+				return true;
 			}
 		}));
 	}
@@ -357,13 +356,9 @@ public class NMS_v1_7_R4 implements NMSInterface {
 
 	@Override
 	public NBTTagCompound getItemNBT(ItemStack itemStack) {
-		if (itemStack.getType() == Material.AIR)
+		if (itemStack == null || itemStack.getType() == Material.AIR)
 			return null;
-		NBTTagCompound NBT = new NBTTagCompound();
-		net.minecraft.server.v1_7_R4.ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
-		NBT = nmsItem.getTag();
-		if (NBT == null || NBT.toString().equals("{}")) //Null or empty.
-			return null;
+		NBTTagCompound NBT = CraftItemStack.asNMSCopy(itemStack).getTag();
 		return NBT;
 	}
 
@@ -390,17 +385,21 @@ public class NMS_v1_7_R4 implements NMSInterface {
 
 	@Override
 	public ItemStack getItemWithNBT(ItemStack itemStack, Object compound) {
-		if (compound instanceof NBTTagCompound) {
-			if (itemStack.getType() == Material.AIR || itemStack == null)
+		net.minecraft.server.v1_7_R4.ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
+		if (compound instanceof NBTTagCompound && itemStack != null) {
+			if (itemStack.getType() == Material.AIR)
 				return null;
-			if (compound == null || compound.toString().equals("{}"))
+			if (((NBTTagCompound) compound).isEmpty())
 				return itemStack;
-			net.minecraft.server.v1_7_R4.ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
 			nmsItem.setTag((NBTTagCompound) compound);
-			ItemStack newItem = CraftItemStack.asCraftMirror(nmsItem);
+			ItemStack newItem = CraftItemStack.asBukkitCopy(nmsItem);
+			return newItem;
+		} else if (compound == null) {
+			nmsItem.setTag(null);
+			ItemStack newItem = CraftItemStack.asBukkitCopy(nmsItem);
 			return newItem;
 		}
-		return null;
+		return itemStack;
 	}
 
 	@Override
@@ -485,5 +484,12 @@ public class NMS_v1_7_R4 implements NMSInterface {
 		net.minecraft.server.v1_7_R4.ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
 		String test = Item.REGISTRY.c(nmsItem.getItem());
 		return test;
+	}
+
+	@Override
+	public ItemStack getItemFromMcId(String mcId) {
+		MinecraftKey mcKey = new MinecraftKey(mcId);
+		Item nmsItem = (Item) Item.REGISTRY.get(mcKey);
+		return CraftItemStack.asNewCraftStack(nmsItem);
 	}
 }

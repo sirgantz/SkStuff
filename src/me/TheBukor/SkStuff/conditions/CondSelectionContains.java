@@ -1,13 +1,13 @@
 package me.TheBukor.SkStuff.conditions;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
-
-import javax.annotation.Nullable;
 
 import ch.njol.skript.lang.Condition;
 import ch.njol.skript.lang.Expression;
