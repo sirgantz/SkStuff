@@ -112,9 +112,8 @@ public class SkStuff extends JavaPlugin {
 			Skript.registerExpression(ExprTimespanToNumber.class, Number.class, ExpressionType.SIMPLE, "%timespan% [converted] [in]to (0¦ticks|1¦sec[ond]s|2¦min[ute]s|3¦hours|4¦days)");
 			Skript.registerExpression(ExprClickedInventory.class, Inventory.class, ExpressionType.SIMPLE, "[skstuff] clicked inventory");
 			Skript.registerExpression(ExprSerializedInv.class, String.class, ExpressionType.PROPERTY, "[(skstuff|1.9)] serialized [contents of] %inventory%");
-			Skript.registerExpression(ExprMCIdOf.class, String.class, ExpressionType.PROPERTY, "minecraft [(string|native)] id of %itemtype%", "%itemtype%'s minecraft [(string|native)] id");
 			effAmount += 2;
-			exprAmount += 7;
+			exprAmount += 6;
 			if (Skript.isRunningMinecraft(1, 9)) {
 				getLogger().info("WOW! You're using Minecraft 1.9! Lemme register some cool stuff right away!");
 				Skript.registerEvent("Elytra glide toggle", SimpleEvent.class, EntityToggleGlideEvent.class, "[entity] elytra (fl(y|ight)|glid(e|ing)) toggl(e|ing)", "[entity] toggle elytra (fl(y|ight)|glid(e|ing))");
@@ -147,10 +146,11 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerExpression(ExprNoClip.class, Boolean.class, ExpressionType.PROPERTY, "no[( |-)]clip (state|mode) of %entities%", "%entities%'s no[( |-)]clip (state|mode)");
 				Skript.registerExpression(ExprFireProof.class, Boolean.class, ExpressionType.PROPERTY, "fire[ ]proof (state|mode) of %entities%", "%entities%'s fire[ ]proof (state|mode)");
 				Skript.registerExpression(ExprEndermanBlocks.class, ItemStack.class, ExpressionType.PROPERTY, "blocks that %entity% can (carry|hold|grab|steal)");
+				Skript.registerExpression(ExprMCIdOf.class, String.class, ExpressionType.PROPERTY, "minecraft [(string|native)] id of %itemtype%", "%itemtype%'s minecraft [(string|native)] id");
 				nmsMethods.registerCompoundClassInfo();
 				nmsMethods.registerNBTListClassInfo();
 				effAmount += 5;
-				exprAmount += 9;
+				exprAmount += 10;
 				typeAmount += 2;
 			}
 			if (Bukkit.getPluginManager().getPlugin("WorldEdit") != null) {

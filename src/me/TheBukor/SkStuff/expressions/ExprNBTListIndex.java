@@ -53,6 +53,7 @@ public class ExprNBTListIndex extends SimpleExpression<Object> {
 	@Override
 	public void change(Event e, @Nullable Object[] delta, ChangeMode mode) {
 		int i = index.getSingle(e).intValue();
+		i--;
 		Object list = nbtList.getSingle(e);
 		if (mode == ChangeMode.SET) {
 			if (!(delta[0] instanceof Number || delta[0] instanceof String || nbtBaseClass.isAssignableFrom(delta[0].getClass())))
