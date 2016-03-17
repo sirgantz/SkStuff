@@ -38,7 +38,10 @@ import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.util.Timespan;
 import ch.njol.util.Kleenean;
 import me.TheBukor.SkStuff.SkStuff;
+import me.TheBukor.SkStuff.pathfinders.PathfinderGoalFollow_v1_8_R3;
+import me.TheBukor.SkStuff.pathfinders.PathfinderGoalFollow_v1_9_R1;
 import me.TheBukor.SkStuff.util.ReflectionUtils;
+import net.minecraft.server.v1_8_R3.EntityCreature;
 
 public class EffSetPathGoal extends Effect {
 	private Expression<Integer> goalPriority;
@@ -72,6 +75,10 @@ public class EffSetPathGoal extends Effect {
 	private Expression<Number> temptSpeed;
 	private Expression<Boolean> temptScared;
 	private Expression<? extends EntityData<?>> nonTamedTarget;
+	private Expression<? extends EntityData<?>> followedTypes;
+	private Expression<Number> followedRadius;
+	private Expression<Number> followedSpeed;
+	private Expression<String> followedName;
 	private Expression<LivingEntity> entities;
 
 	private int mark;
@@ -135,8 +142,13 @@ public class EffSetPathGoal extends Effect {
 			temptScared = (Expression<Boolean>) expr[29];
 		} else if (mark == 32) {
 			nonTamedTarget = (Expression<EntityData<?>>) expr[30];
+		} else if (mark == 41) {
+			followedTypes = (Expression<EntityData<?>>) expr[31];
+			followedRadius = (Expression<Number>) expr[32];
+			followedSpeed = (Expression<Number>) expr[33];
+			followedName = (Expression<String>) expr[34];
 		}
-		entities = (Expression<LivingEntity>) expr[31];
+		entities = (Expression<LivingEntity>) expr[35];
 		return true;
 	}
 
@@ -174,7 +186,7 @@ public class EffSetPathGoal extends Effect {
 						Class<?> goalRabbitAvoid = ReflectionUtils.getNMSClass("EntityRabbit$PathfinderGoalRabbitAvoidTarget");
 						for (EntityData<?> entData : types) {
 							if (!LivingEntity.class.isAssignableFrom(entData.getType()))
-								return;
+								continue;
 							String className = entData.getType().getSimpleName();
 							if (className.equals("HumanEntity")) {
 								className = "Human";
@@ -188,7 +200,7 @@ public class EffSetPathGoal extends Effect {
 						Class<?> goalAvoid = ReflectionUtils.getNMSClass("PathfinderGoalAvoidTarget");
 						for (EntityData<?> entData : types) {
 							if (!LivingEntity.class.isAssignableFrom(entData.getType()))
-								return;
+								continue;
 							String className = entData.getType().getSimpleName();
 							if (className.equals("HumanEntity")) {
 								className = "Human";
@@ -239,7 +251,7 @@ public class EffSetPathGoal extends Effect {
 					List<Class<?>> typesClasses = new ArrayList<Class<?>>();
 					for (EntityData<?> entData : types) {
 						if (!LivingEntity.class.isAssignableFrom(entData.getType()))
-							return;
+							continue;
 						String className = entData.getType().getSimpleName();
 						if (className.equals("HumanEntity")) {
 							className = "Human";
@@ -268,7 +280,7 @@ public class EffSetPathGoal extends Effect {
 					Class<?> goalLookEntities = ReflectionUtils.getNMSClass("PathfinderGoalLookAtPlayer");
 					for (EntityData<?> entData : types) {
 						if (!LivingEntity.class.isAssignableFrom(entData.getType()))
-							return;
+							continue;
 						String className = entData.getType().getSimpleName();
 						if (className.equals("HumanEntity")) {
 							className = "Human";
@@ -284,7 +296,7 @@ public class EffSetPathGoal extends Effect {
 						Class<?> goalSpiderMelee = ReflectionUtils.getNMSClass("EntitySpider$PathfinderGoalSpiderMeleeAttack");
 						for (EntityData<?> entData : types) {
 							if (!LivingEntity.class.isAssignableFrom(entData.getType()))
-								return;
+								continue;
 							String className = entData.getType().getSimpleName();
 							if (className.equals("HumanEntity")) {
 								className = "Human";
@@ -312,7 +324,7 @@ public class EffSetPathGoal extends Effect {
 						Class<?> goalSpiderNearTarget = ReflectionUtils.getNMSClass("EntitySpider$PathfinderGoalSpiderNearestAttackableTarget");
 						for (EntityData<?> entData : types) {
 							if (!LivingEntity.class.isAssignableFrom(entData.getType()))
-								return;
+								continue;
 							String className = entData.getType().getSimpleName();
 							if (className.equals("HumanEntity")) {
 								className = "Human";
@@ -327,7 +339,7 @@ public class EffSetPathGoal extends Effect {
 						Class<?> goalNearTarget = ReflectionUtils.getNMSClass("PathfinderGoalNearestAttackableTarget");
 						for (EntityData<?> entData : types) {
 							if (!LivingEntity.class.isAssignableFrom(entData.getType()))
-								return;
+								continue;
 							String className = entData.getType().getSimpleName();
 							if (className.equals("HumanEntity")) {
 								className = "Human";
@@ -438,7 +450,7 @@ public class EffSetPathGoal extends Effect {
 					Class<?> goalTargetNonTamed = ReflectionUtils.getNMSClass("PathfinderGoalRandomTargetNonTamed");
 					for (EntityData<?> entData : types) {
 						if (!LivingEntity.class.isAssignableFrom(entData.getType()))
-							return;
+							continue;
 						String className = entData.getType().getSimpleName();
 						if (className.equals("HumanEntity")) {
 							className = "Human";
@@ -490,7 +502,31 @@ public class EffSetPathGoal extends Effect {
 						return;
 					Class<?> goalSlimeWander = ReflectionUtils.getNMSClass("EntitySlime$PathfinderGoalSlimeIdle");
 					newGoals.add(ReflectionUtils.getConstructor(goalSlimeWander, nmsEnt.getClass()).newInstance(nmsEnt));
+				} else if (mark == 41) {
+					String version = ReflectionUtils.getVersion();
+					EntityData<?>[] types = followedTypes.getAll(e);
+					float radius = (followedRadius == null ? 32 : followedRadius.getSingle(e).floatValue());
+					double spd = (followedSpeed == null ? 1 : followedSpeed.getSingle(e).doubleValue());
+					boolean usesName = followedName != null;
+					String customName = (usesName ? followedName.getSingle(e) : null);
+					for (EntityData<?> entData : types) {
+						if (!LivingEntity.class.isAssignableFrom(entData.getType()))
+							continue;
+						String className = entData.getType().getSimpleName();
+						if (className.equals("HumanEntity")) {
+							className = "Human";
+						} else if (className.equals("EntityLiving")) {
+							className = "Living";
+						}
+						Class<?> nmsClass = ReflectionUtils.getNMSClass("Entity" + className);
+						if (version.equals("v1_8_R3.")) {
+							newGoals.add(new PathfinderGoalFollow_v1_8_R3((EntityCreature) nmsEnt, nmsClass, radius, spd, usesName, customName));
+						} else if (version.equals("v1_9_R1.")) {
+							newGoals.add(new PathfinderGoalFollow_v1_9_R1((net.minecraft.server.v1_9_R1.EntityCreature) nmsEnt, nmsClass, radius, spd, usesName, customName));
+						}
+					}
 				}
+
 				if (newGoals.size() == 0)
 					return;
 				for (Object goal : newGoals) {
