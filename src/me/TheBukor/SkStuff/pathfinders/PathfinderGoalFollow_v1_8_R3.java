@@ -46,7 +46,7 @@ public class PathfinderGoalFollow_v1_8_R3 extends PathfinderGoal {
 				return true;
 			}
 		}
-		return false;
+		return true;
 	}
 
 	// b() is shouldContinueExecuting()
