@@ -53,9 +53,14 @@ public class PathfinderGoalFollow_v1_8_R3 extends PathfinderGoal {
 	@Override
 	public boolean b() {
 		if (followed.dead) {
+			followed = null;
 			return false;
+		} else if (followed.h(follower) < 9.0D || followed.h(follower) > Math.pow(radius, 2)) {  // h() = distanceSquaredFrom()
+			return false; // if 3 blocks away or not in radius, stop moving.
+			//Maybe I'll add a teleport feature later.
 		} else if (isByName) {
 			if (!followed.getCustomName().equals(customName)) {
+				followed = null;
 				return false;
 			}
 		}
@@ -65,6 +70,6 @@ public class PathfinderGoalFollow_v1_8_R3 extends PathfinderGoal {
 	// c() is execute()
 	@Override
 	public void c() {
-		follower.getNavigation().a(followed, speed);
+		follower.getNavigation().a(followed, speed); // a() means moveTo()
 	}
 }

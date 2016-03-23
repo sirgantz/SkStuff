@@ -4,6 +4,7 @@ import java.io.File;
 
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public interface NMSInterface {
@@ -57,4 +58,6 @@ public interface NMSInterface {
 	public String getMCId(ItemStack itemStack);
 
 	public ItemStack getItemFromMcId(String mcId);
+
+	void makeClientSay(String msg, Player p);
 }

@@ -22,7 +22,9 @@ import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_7_R4.CraftWorld;
 import org.bukkit.craftbukkit.v1_7_R4.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_7_R4.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_7_R4.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import ch.njol.skript.Skript;
@@ -49,7 +51,7 @@ import net.minecraft.server.v1_7_R4.NBTTagShort;
 import net.minecraft.server.v1_7_R4.NBTTagString;
 import net.minecraft.server.v1_7_R4.TileEntity;
 import net.minecraft.server.v1_7_R4.World;
-import net.minecraft.server.v1_9_R1.MinecraftKey;
+import net.minecraft.server.v1_7_R4.PacketPlayInChat;
 
 public class NMS_v1_7_R4 implements NMSInterface {
 
@@ -358,8 +360,10 @@ public class NMS_v1_7_R4 implements NMSInterface {
 	public NBTTagCompound getItemNBT(ItemStack itemStack) {
 		if (itemStack == null || itemStack.getType() == Material.AIR)
 			return null;
-		NBTTagCompound NBT = CraftItemStack.asNMSCopy(itemStack).getTag();
-		return NBT;
+		NBTTagCompound itemNBT = CraftItemStack.asNMSCopy(itemStack).getTag();
+		if (itemNBT == null || itemNBT.isEmpty())
+			itemNBT = null;
+		return itemNBT;
 	}
 
 	@Override
@@ -488,8 +492,12 @@ public class NMS_v1_7_R4 implements NMSInterface {
 
 	@Override
 	public ItemStack getItemFromMcId(String mcId) {
-		MinecraftKey mcKey = new MinecraftKey(mcId);
-		Item nmsItem = (Item) Item.REGISTRY.get(mcKey);
-		return CraftItemStack.asNewCraftStack(nmsItem);
+		return null; //Not supported in 1.7
+	}
+
+	@Override
+	public void makeClientSay(String msg, Player p) {
+		PacketPlayInChat chatPacket = new PacketPlayInChat(msg);
+		((CraftPlayer) p).getHandle().playerConnection.a(chatPacket);
 	}
 }

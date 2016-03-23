@@ -104,28 +104,8 @@ public class ExprNBTOf extends SimpleExpression<Object> {
 				SkStuff.getNMSMethods().setTileNBT((Block) tar, blockNBT);
 			}
 		} else if (tar instanceof ItemStack) {
-			Object itemNBT = SkStuff.getNMSMethods().getItemNBT((ItemStack) tar);
-			if (mode == ChangeMode.ADD) {
-				SkStuff.getNMSMethods().addToCompound(itemNBT, parsedNBT);
-				ItemStack newItem = SkStuff.getNMSMethods().getItemWithNBT((ItemStack) tar, itemNBT);
-				Object slot = target.getSource().getSingle(e);
-				if (slot instanceof Slot) {
-					((Slot) slot).setItem(newItem);
-				}
-			} else if (mode == ChangeMode.REMOVE) {
-				String[] toRemove = Arrays.copyOf(delta, delta.length, String[].class);
-				SkStuff.getNMSMethods().removeFromCompound(itemNBT, toRemove);
-				ItemStack newItem = SkStuff.getNMSMethods().getItemWithNBT((ItemStack) tar, itemNBT);
-				Object slot = target.getSource().getSingle(e);
-				if (slot instanceof Slot) {
-					((Slot) slot).setItem(newItem);
-				}
-			} else if (mode == ChangeMode.DELETE || mode == ChangeMode.RESET) {
-				ItemStack newItem = SkStuff.getNMSMethods().getItemWithNBT((ItemStack) tar, null);
-				Object slot = target.getSource().getSingle(e);
-				if (slot instanceof Slot) {
-					((Slot) slot).setItem(newItem);
-				}
+			if (mode == ChangeMode.ADD || mode == ChangeMode.REMOVE || mode == ChangeMode.DELETE || mode == ChangeMode.RESET) {
+				Skript.warning("Failed to change the NBT of an item: Itemstack didn't have any slot attached to it.");
 			}
 		} else if (tar instanceof Slot) {
 			ItemStack slotItem = ((Slot) tar).getItem();

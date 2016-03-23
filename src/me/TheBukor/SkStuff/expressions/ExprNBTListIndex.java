@@ -32,14 +32,19 @@ public class ExprNBTListIndex extends SimpleExpression<Object> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean arg2, ParseResult result) {
-		nbtList = (Expression<Object>) expr[0];
-		index = (Expression<Number>) expr[1];
+		if (matchedPattern == 0) {
+			nbtList = (Expression<Object>) expr[0];
+			index = (Expression<Number>) expr[1];
+		} else {
+			index = (Expression<Number>) expr[0];
+			nbtList = (Expression<Object>) expr[1];
+		}
 		return true;
 	}
 
 	@Override
 	public String toString(@Nullable Event e, boolean debug) {
-		return "NBT list" + nbtList.toString(e, debug) + " index " + index.toString(e, debug);
+		return "index " + index.toString(e, debug) + " from nbt list " + nbtList.toString(e, debug);
 	}
 
 	@Override

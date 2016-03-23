@@ -44,7 +44,7 @@ public class ExprGlideState extends SimpleExpression<Boolean> {
 	protected Boolean[] get(Event e) {
 		LivingEntity ent = entity.getSingle(e);
 		EntityLiving nmsEntity = ((CraftLivingEntity) ent).getHandle();
-		return new Boolean[] { nmsEntity.cB() };
+		return new Boolean[] { nmsEntity.getFlag(7) };
 	}
 
 	@SuppressWarnings("unchecked")

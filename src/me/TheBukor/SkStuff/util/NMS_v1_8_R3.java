@@ -19,7 +19,9 @@ import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import ch.njol.skript.Skript;
@@ -52,6 +54,7 @@ import net.minecraft.server.v1_8_R3.PathfinderGoal;
 import net.minecraft.server.v1_8_R3.PathfinderGoalSelector;
 import net.minecraft.server.v1_8_R3.TileEntity;
 import net.minecraft.server.v1_8_R3.World;
+import net.minecraft.server.v1_8_R3.PacketPlayInChat;
 
 public class NMS_v1_8_R3 implements NMSInterface {
 
@@ -409,6 +412,8 @@ public class NMS_v1_8_R3 implements NMSInterface {
 		if (itemStack == null || itemStack.getType() == Material.AIR)
 			return null;
 		NBTTagCompound itemNBT = CraftItemStack.asNMSCopy(itemStack).getTag();
+		if (itemNBT == null || itemNBT.isEmpty())
+			itemNBT = null;
 		return itemNBT;
 	}
 
@@ -530,5 +535,11 @@ public class NMS_v1_8_R3 implements NMSInterface {
 		MinecraftKey mcKey = new MinecraftKey(mcId);
 		Item nmsItem = (Item) Item.REGISTRY.get(mcKey);
 		return CraftItemStack.asNewCraftStack(nmsItem);
+	}
+
+	@Override
+	public void makeClientSay(String msg, Player p) {
+		PacketPlayInChat chatPacket = new PacketPlayInChat(msg);
+		((CraftPlayer) p).getHandle().playerConnection.a(chatPacket);
 	}
 }
