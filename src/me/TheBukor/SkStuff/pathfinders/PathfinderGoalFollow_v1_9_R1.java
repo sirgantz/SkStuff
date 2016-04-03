@@ -64,7 +64,7 @@ public class PathfinderGoalFollow_v1_9_R1 extends PathfinderGoal {
 				return false;
 			}
 		}
-		return !follower.getNavigation().n(); // n() means hasNoPath()
+		return follower.getNavigation().n(); // n() means hasNoPath()
 	}
 
 	// c() is execute()
@@ -72,4 +72,6 @@ public class PathfinderGoalFollow_v1_9_R1 extends PathfinderGoal {
 	public void c() {
 		follower.getNavigation().a(followed, speed); // a() means moveTo()
 	}
+
+	
 }

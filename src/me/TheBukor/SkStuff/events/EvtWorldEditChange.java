@@ -12,7 +12,7 @@ public class EvtWorldEditChange extends Event implements Cancellable {
 	private boolean cancelled;
 	private static final HandlerList handlers = new HandlerList();
 
-	public EvtWorldEditChange(Player player, Block block) {
+	EvtWorldEditChange(Player player, Block block) {
 		EvtWorldEditChange.player = player;
 		EvtWorldEditChange.block = block;
 		this.cancelled = false;

@@ -51,6 +51,7 @@ public class ExprNBTListIndex extends SimpleExpression<Object> {
 	@Nullable
 	protected Object[] get(Event e) {
 		int i = index.getSingle(e).intValue();
+		i--;
 		Object list = nbtList.getSingle(e);
 		return new Object[] { SkStuff.getNMSMethods().getIndex(list, i) };
 	}

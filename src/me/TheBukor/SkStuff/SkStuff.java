@@ -32,7 +32,6 @@ import ch.njol.skript.registrations.EventValues;
 import ch.njol.skript.util.Getter;
 import me.TheBukor.SkStuff.conditions.CondSelectionContains;
 import me.TheBukor.SkStuff.effects.EffClearPathGoals;
-import me.TheBukor.SkStuff.effects.EffClientChat;
 import me.TheBukor.SkStuff.effects.EffDrainLiquid;
 import me.TheBukor.SkStuff.effects.EffDrawLineWE;
 import me.TheBukor.SkStuff.effects.EffGZipFile;
@@ -58,7 +57,6 @@ import me.TheBukor.SkStuff.events.WorldEditChangeHandler;
 import me.TheBukor.SkStuff.expressions.ExprChangedBlocksSession;
 import me.TheBukor.SkStuff.expressions.ExprClickedInventory;
 import me.TheBukor.SkStuff.expressions.ExprEditSessionLimit;
-import me.TheBukor.SkStuff.expressions.ExprEndermanBlocks;
 import me.TheBukor.SkStuff.expressions.ExprFileNBT;
 import me.TheBukor.SkStuff.expressions.ExprFireProof;
 import me.TheBukor.SkStuff.expressions.ExprFlagOfWGRegion;
@@ -66,6 +64,7 @@ import me.TheBukor.SkStuff.expressions.ExprFlagsOfWGRegion;
 import me.TheBukor.SkStuff.expressions.ExprGlideState;
 import me.TheBukor.SkStuff.expressions.ExprInventoryOwner;
 import me.TheBukor.SkStuff.expressions.ExprItemNBT;
+import me.TheBukor.SkStuff.expressions.ExprLastLocation;
 import me.TheBukor.SkStuff.expressions.ExprMCIdOf;
 import me.TheBukor.SkStuff.expressions.ExprMCIdToItem;
 import me.TheBukor.SkStuff.expressions.ExprNBTListContents;
@@ -77,6 +76,7 @@ import me.TheBukor.SkStuff.expressions.ExprSchematicArea;
 import me.TheBukor.SkStuff.expressions.ExprSelectionArea;
 import me.TheBukor.SkStuff.expressions.ExprSelectionOfPlayer;
 import me.TheBukor.SkStuff.expressions.ExprSelectionPos;
+import me.TheBukor.SkStuff.expressions.ExprStepLength;
 import me.TheBukor.SkStuff.expressions.ExprTagOf;
 import me.TheBukor.SkStuff.expressions.ExprTimespanToNumber;
 import me.TheBukor.SkStuff.expressions.ExprToLowerCase;
@@ -115,7 +115,7 @@ public class SkStuff extends JavaPlugin {
 			exprAmount += 6;
 			if (Skript.isRunningMinecraft(1, 9)) {
 				getLogger().info("WOW! You're using Minecraft 1.9! Lemme register some cool stuff and fixes right away!");
-				Skript.registerEffect(EffResourceSound.class, "play [raw] [([resource[ ]]pack)] sound %string% for %players% at %location% [[with] (0¦volume|1¦pitch) %-number%[[(,| and)] (0¦pitch|1¦volume) %-number%]]");
+				Skript.registerEffect(EffResourceSound.class, "play [raw] [([resource[ ]]pack)] sound %string% (for|to) %players% at %location% [[with] volume %-number%[[(,| and)] pitch %-number%]]", "play [raw] [([resource[ ]]pack)] sound %string% for %players% at %location% [[with] pitch %-number%[[(,| and)] volume %-number%]]");
 				Skript.registerEvent("Elytra glide toggle", SimpleEvent.class, EntityToggleGlideEvent.class, "[entity] elytra (fl(y|ight)|glid(e|ing)) toggl(e|ing)", "[entity] toggle elytra (fl(y|ight)|glid(e|ing))");
 				Skript.registerExpression(ExprGlideState.class, Boolean.class, ExpressionType.PROPERTY, "elytra (fl(y|ight)|glid(e|ing)) state of %livingentity%", "%livingentity%'s elytra (fl(y|ight)|glid(e|ing)) state");
 				EventValues.registerEventValue(EntityToggleGlideEvent.class, Entity.class, new Getter<Entity, EntityToggleGlideEvent>() {
@@ -136,7 +136,6 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerEffect(EffSetPathGoal.class, "add pathfind[er] goal [[with] priority %-integer%] (0¦(avoid|run away from) %*entitydatas%[, radius %-number%[, speed %-number%[, speed (if|when) (close|near) %-number%]]]|1¦break door[s]|2¦breed[,[move[ment]] speed %-number%]|3¦eat grass|4¦(flee from the sun|seek shad(e|ow))[, [move[ment]] speed %-number%]|5¦(float (in[side]|on) water|swim)|6¦follow (owner|tamer)[, speed %-number%[, min[imum] distance %-number%[, max[imum] distance %-number%]]]|7¦follow (adult|parent)[s][, [move[ment]] speed %-number%]|8¦(fight back|react to|target) (damager|attacker) [[of] type] %*entitydatas%[, call ([for] help|reinforcement) %-boolean%]|9¦o(c|z)elot jump on blocks[, [move[ment]] speed %-number%]|10¦leap at target[, [leap] height %-number%]|11¦look at %*entitydatas%[, (radius|max[imum] distance) %-number%]|12¦melee attack %*entitydatas%[, [move[ment]] speed %-number%[, (memorize|do('nt| not) forget) target [for [a] long[er] time] %-boolean%]]|13¦move to[wards] target[, [move[ment]] speed %-number%[, (radius|max[imum] distance) %-number%]]|14¦target nearest [entity [of] type] %*entitydatas%[, check sight %-boolean%]|15¦o(c|z)elot attack|16¦open door[s]|17¦(panic|flee)[, [move[ment]] speed %-number%]|18¦look around randomly|19¦(walk around randomly|wander)[, [move[ment]] speed %-number%[, min[imum] [of] %-timespan% between mov(e[ment][s]|ing)]]|20¦sit|21¦[creeper] (explode|inflate|swell)|22¦squid (swim around|wander)|23¦shoot fireball[s]|24¦[silverfish] hide (in[side]|on) block[s]|25¦((call|summon|wake) [other] [hidden] silverfish[es])|26¦[enderman] pick[[ ]up] block[s]|27¦[enderman] place block[s]|28¦[enderman] attack player (staring|looking) at [their] eye[s]]|29¦ghast move to[wards] target|30¦ghast (idle move[ment]|wander|random fl(ight|y[ing]))|31¦(tempt to|follow players (holding|with)) %-itemstack%[, [move[ment]] speed %number%[, scared of player movement %-boolean%]]|32¦target [random] %*entitydatas% (if|when) (not |un)tamed|33¦guardian attack [entities]|34¦[z[ombie[ ]]pig[man]] attack [player[s]] (if|when) angry|35¦[z[ombie[ ]]pig[man]] (react to|fight back|target) (attacker|damager) (if|when) angry|36¦[rabbit] eat carrot crops|37¦[killer] rabbit [melee] attack|38¦slime [random] jump|39¦slime change (direction|facing) randomly|40¦slime (idle move[ment]|wander)|41¦follow %*entitydatas%[, radius %-number%[, speed %-number%[, [custom[ ]]name[d] %-string%]]]) to %livingentities%");
 				Skript.registerEffect(EffMakeJump.class, "make %livingentities% jump", "force %livingentities% to jump");
 				Skript.registerEffect(EffGZipFile.class, "create [a] gzip[ped] file [at] [path] %string%");
-				Skript.registerEffect(EffClientChat.class, "make %player% (say|chat) %string% client[( |-)]side", "force %player% to (say|chat) %string% client[( |-)]side");
 				Skript.registerExpression(ExprNBTOf.class, Object.class, ExpressionType.PROPERTY, "nbt[[ ]tag[s]] of %~object%", "%~object%'s nbt[[ ]tag[s]]");
 				Skript.registerExpression(ExprItemNBT.class, ItemStack.class, ExpressionType.SIMPLE, "%itemstack% with [custom] nbt[[ ]tag[s]] %string%");
 				Skript.registerExpression(ExprTagOf.class, Object.class, ExpressionType.PROPERTY, "[nbt[ ]]tag %string% of [[nbt] compound] %compound%");
@@ -145,13 +144,16 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerExpression(ExprNBTListContents.class, Object.class, ExpressionType.PROPERTY, "[all] contents (of|from) [nbt[ ]list] %nbtlist%", "[nbt[ ]list] %nbtlist% contents");
 				Skript.registerExpression(ExprNoClip.class, Boolean.class, ExpressionType.PROPERTY, "no[( |-)]clip (state|mode) of %entities%", "%entities%'s no[( |-)]clip (state|mode)");
 				Skript.registerExpression(ExprFireProof.class, Boolean.class, ExpressionType.PROPERTY, "fire[ ]proof (state|mode) of %entities%", "%entities%'s fire[ ]proof (state|mode)");
-				Skript.registerExpression(ExprEndermanBlocks.class, ItemStack.class, ExpressionType.PROPERTY, "blocks that %entity% can (carry|hold|grab|steal)");
+				//Skript.registerExpression(ExprEndermanBlocks.class, ItemStack.class, ExpressionType.PROPERTY, "blocks that %entity% can (carry|hold|grab|steal)");
 				Skript.registerExpression(ExprMCIdOf.class, String.class, ExpressionType.PROPERTY, "(mc|minecraft) [(string|native)] id of %itemtype%", "%itemtype%'s minecraft [(string|native)] id");
 				Skript.registerExpression(ExprMCIdToItem.class, ItemStack.class, ExpressionType.SIMPLE, "item[[ ](stack|type)] (of|from) (mc|minecraft) [(string|native)] id %string%");
+				Skript.registerExpression(ExprLastLocation.class, Location.class, ExpressionType.SIMPLE, "	");
+				Skript.registerExpression(ExprStepLength.class, Number.class, ExpressionType.PROPERTY, "[the] step length of %entity%", "%entity%'s step length");
 				nmsMethods.registerCompoundClassInfo();
 				nmsMethods.registerNBTListClassInfo();
-				effAmount += 6;
-				exprAmount += 11;
+				effAmount += 5;
+				exprAmount += 12;
+				// 13 with the ender blocks expression
 				typeAmount += 2;
 			}
 			if (Bukkit.getPluginManager().getPlugin("WorldEdit") != null) {
@@ -198,7 +200,7 @@ public class SkStuff extends JavaPlugin {
 					}, 0);
 					evtAmount += 1;
 				} catch (ClassNotFoundException ex) {
-					Skript.error("Unable to register \"On WorldEdit block change\" event! You will need to upgrade to WorldEdit 6.0");
+					Skript.error("Unable to register \"On WorldEdit block change\" event! You will need to upgrade to WorldEdit 6.x if you want to use it!");
 				}
 				condAmount += 1;
 				effAmount += 13;

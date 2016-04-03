@@ -82,7 +82,6 @@ public class ExprEndermanBlocks extends SimpleExpression<ItemStack> {
 				items.add(bukkitItem);
 			} catch (Exception ex) {
 				ex.printStackTrace();
-				;
 			}
 		}
 		return Arrays.copyOf(items.toArray(), items.size(), ItemStack[].class);

@@ -64,7 +64,7 @@ public class PathfinderGoalFollow_v1_8_R3 extends PathfinderGoal {
 				return false;
 			}
 		}
-		return !follower.getNavigation().m(); // m() means hasNoPath()
+		return follower.getNavigation().m(); // m() means hasNoPath()
 	}
 
 	// c() is execute()

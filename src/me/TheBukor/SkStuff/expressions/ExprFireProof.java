@@ -1,9 +1,5 @@
 package me.TheBukor.SkStuff.expressions;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import javax.annotation.Nullable;
 
 import org.bukkit.entity.Entity;
@@ -15,12 +11,11 @@ import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import ch.njol.util.coll.CollectionUtils;
-import me.TheBukor.SkStuff.util.ReflectionUtils;
+import me.TheBukor.SkStuff.SkStuff;
 
 public class ExprFireProof extends SimpleExpression<Boolean> {
 	private Expression<Entity> entities;
 
-	private Class<?> craftEntClass = ReflectionUtils.getOBCClass("entity.CraftEntity");
 	@Override
 	public Class<? extends Boolean> getReturnType() {
 		return Boolean.class;
@@ -47,40 +42,30 @@ public class ExprFireProof extends SimpleExpression<Boolean> {
 	@Nullable
 	protected Boolean[] get(Event e) {
 		Entity[] ents = entities.getAll(e); 
-		if (ents == null)
+		if (ents.length == 0)
 			return null;
-		List<Boolean> fireProofStates = new ArrayList<Boolean>();
+		Boolean[] fireProofStates = new Boolean[ents.length];
+		int i = 0;
 		for (Entity ent : ents) {
 			if (ent == null)
 				continue;
-			Object nmsEnt = null;
-			try {
-				nmsEnt = craftEntClass.cast(ent).getClass().getMethod("getHandle").invoke(ent); //nmsEnt = ((CraftEntity) ent).getHandle();
-			} catch (Exception ex) {
-				ex.printStackTrace();
-			}
-			fireProofStates.add((Boolean) ReflectionUtils.getField("fireProof", nmsEnt.getClass(), nmsEnt));
+			fireProofStates[i] = SkStuff.getNMSMethods().getFireProof(ent);
+			i++;
 		}
-		return Arrays.copyOf(fireProofStates.toArray(), fireProofStates.size(), Boolean[].class);
+		return fireProofStates;
 	}
 
 	@Override
 	public void change(Event e, @Nullable Object[] delta, ChangeMode mode) {
 		Entity[] ents = entities.getAll(e);
-		if (ents == null) 
+		if (ents.length == 0) 
 			return;
 		if (mode == ChangeMode.SET) {
 			Boolean newValue = (Boolean) delta[0];
 			for (Entity ent : ents) {
 				if (ent == null)
 					continue;
-				Object nmsEnt = null;
-				try {
-					nmsEnt = craftEntClass.cast(ent).getClass().getMethod("getHandle").invoke(ent); //nmsEnt = ((CraftEntity) ent).getHandle();
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-				ReflectionUtils.setField("fireProof", nmsEnt.getClass(), nmsEnt, newValue);
+				SkStuff.getNMSMethods().setFireProof(ent, newValue);
 			}
 		}
 	}

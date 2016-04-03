@@ -2,12 +2,22 @@ package me.TheBukor.SkStuff.util;
 
 import java.io.File;
 
+import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public interface NMSInterface {
+
+	public Object getNBTTag(Object compound, String tag);
+
+	public void setNBTTag(Object compound, String tag, Object toSet);
+
+	public void removeNBTTag(Object compound, String tag);
+
+	public byte getTypeId(Object nbtBase);
+
+	public Object getNBTTagValue(Object compound, String tag, byte typeId);
 
 	public void addToCompound(Object compound, Object toAdd);
 
@@ -59,5 +69,24 @@ public interface NMSInterface {
 
 	public ItemStack getItemFromMcId(String mcId);
 
-	void makeClientSay(String msg, Player p);
+	public boolean getNoClip(Entity entity);
+
+	public void setNoClip(Entity entity, boolean noclip);
+
+	public boolean getFireProof(Entity entity);
+
+	public void setFireProof(Entity entity, boolean fireProof);
+
+	/*
+	public ItemStack[] getEndermanBlocks(Entity enderman);
+
+	public void setEndermanBlocks(Entity enderman, ItemStack... blocks);
+	*/
+
+	public Location getLastLocation(Entity entity);
+
+	public float getEntityStepLength(Entity entity);
+
+	public void setEntityStepLength(Entity entity, float length);
+
 }

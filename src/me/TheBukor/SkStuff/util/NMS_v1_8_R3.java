@@ -14,14 +14,13 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_8_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_8_R3.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import ch.njol.skript.Skript;
@@ -54,9 +53,88 @@ import net.minecraft.server.v1_8_R3.PathfinderGoal;
 import net.minecraft.server.v1_8_R3.PathfinderGoalSelector;
 import net.minecraft.server.v1_8_R3.TileEntity;
 import net.minecraft.server.v1_8_R3.World;
-import net.minecraft.server.v1_8_R3.PacketPlayInChat;
 
 public class NMS_v1_8_R3 implements NMSInterface {
+
+	@Override
+	public Object getNBTTag(Object compound, String tag) {
+		if (compound instanceof NBTTagCompound) {
+			return ((NBTTagCompound) compound).get(tag);
+		}
+		return null;
+	}
+
+	@Override
+	public void setNBTTag(Object compound, String tag, Object toSet) {
+		if (compound instanceof NBTTagCompound && (toSet instanceof NBTBase || toSet instanceof Number || toSet instanceof String)) {
+			NBTBase converted = null;
+			if (toSet instanceof Number) {
+				converted = convertToNBT((Number) toSet);
+			} else if (toSet instanceof String) {
+				converted = convertToNBT((String) toSet);
+			} else { //Already an NBTBase
+				converted = (NBTBase) toSet; //No need to convert anything
+			}
+			((NBTTagCompound) compound).set(tag, converted);
+		}
+	}
+
+	@Override
+	public void removeNBTTag(Object compound, String tag) {
+		if (compound instanceof NBTTagCompound) {
+			((NBTTagCompound) compound).remove(tag);
+		}
+	}
+
+	@Override
+	public byte getTypeId(Object nbtBase) {
+		if (nbtBase instanceof NBTBase) {
+			return ((NBTBase) nbtBase).getTypeId();
+		}
+		return 0;
+	}
+
+	 @Override
+	public Object getNBTTagValue(Object compound, String tag, byte typeId) {
+		if (compound instanceof NBTTagCompound) {
+			switch (typeId) {
+			case 1:
+				return ((NBTTagCompound) compound).getByte(tag);
+			case 2:
+				return ((NBTTagCompound) compound).getShort(tag);
+			case 3:
+				return ((NBTTagCompound) compound).getInt(tag);
+			case 4:
+				return ((NBTTagCompound) compound).getLong(tag);
+			case 5:
+				return ((NBTTagCompound) compound).getFloat(tag);
+			case 6:
+				return ((NBTTagCompound) compound).getDouble(tag);
+			case 7: //Byte array, only used in chunk files. Also doesn't have support for the MojangsonParser.
+				break;
+			case 8:
+				return ((NBTTagCompound) compound).getString(tag);
+			case 9:
+				int i;
+				NBTTagList list = null;
+				for (i = 1; i <= 11; i++) { //To get a list I need to know the type of the tags it contains inside,
+					//since I can't predict what type the list will have, I just loop all of the IDs until I find a non-empty list.
+					list = ((NBTTagCompound) compound).getList(tag, i); //Try to get the list with the ID "loop-number".
+					if (!list.isEmpty()) { //If list is not empty.
+						break; //Stop loop.
+					}
+				}
+				return list; //May be null
+			case 10:
+				return ((NBTTagCompound) compound).getCompound(tag);
+			case 11: //Integer array, this one is only used on the chunk files (and maybe schematic files?).
+				return ((NBTTagCompound) compound).getIntArray(tag);
+			default: //This should never happen, but it's better to have this just in case it spills errors everywhere.
+				break;
+			}
+		}
+		return null;
+	}
 
 	@Override
 	public void addToCompound(Object compound, Object toAdd) {
@@ -538,8 +616,46 @@ public class NMS_v1_8_R3 implements NMSInterface {
 	}
 
 	@Override
-	public void makeClientSay(String msg, Player p) {
-		PacketPlayInChat chatPacket = new PacketPlayInChat(msg);
-		((CraftPlayer) p).getHandle().playerConnection.a(chatPacket);
+	public boolean getNoClip(Entity entity) {
+		net.minecraft.server.v1_8_R3.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+		return nmsEntity.noclip;
+	}
+
+	@Override
+	public void setNoClip(Entity entity, boolean noclip) {
+		net.minecraft.server.v1_8_R3.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+		nmsEntity.noclip = noclip;
+	}
+
+	@Override
+	public boolean getFireProof(Entity entity) {
+		net.minecraft.server.v1_8_R3.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+		return nmsEntity.isFireProof();
+	}
+
+	@Override
+	public void setFireProof(Entity entity, boolean fireProof) {
+		net.minecraft.server.v1_8_R3.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+		ReflectionUtils.setField("fireProof", nmsEntity.getClass(), nmsEntity, fireProof);
+	}
+
+	@Override
+	public Location getLastLocation(Entity entity) {
+		net.minecraft.server.v1_8_R3.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+		org.bukkit.World world = nmsEntity.world.getWorld();
+		Location lastEntLoc = new Location(world, nmsEntity.P, nmsEntity.Q, nmsEntity.R);
+		return lastEntLoc;
+	}
+
+	@Override
+	public float getEntityStepLength(Entity entity) {
+		net.minecraft.server.v1_8_R3.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+		return nmsEntity.S;
+	}
+
+	@Override
+	public void setEntityStepLength(Entity entity, float length) {
+		net.minecraft.server.v1_8_R3.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+		nmsEntity.S = length;
 	}
 }
