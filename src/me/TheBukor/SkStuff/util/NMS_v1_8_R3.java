@@ -94,7 +94,7 @@ public class NMS_v1_8_R3 implements NMSInterface {
 		return 0;
 	}
 
-	 @Override
+	@Override
 	public Object getNBTTagValue(Object compound, String tag, byte typeId) {
 		if (compound instanceof NBTTagCompound) {
 			switch (typeId) {
@@ -351,8 +351,11 @@ public class NMS_v1_8_R3 implements NMSInterface {
 
 			@Override
 			protected NBTTagCompound deserialize(Fields fields) throws StreamCorruptedException, NotSerializableException {
-				String s = fields.getObject("asString", String.class);
-				NBTTagCompound compound =  parseRawNBT(s);
+				String raw = fields.getObject("asString", String.class);
+				NBTTagCompound compound =  parseRawNBT(raw);
+				if (compound == null) {
+					throw new StreamCorruptedException("Unable to parse NBT from a variable: " + raw);
+				}
 				return compound;
 			}
 
@@ -448,6 +451,9 @@ public class NMS_v1_8_R3 implements NMSInterface {
 				String s = fields.getObject("asString", String.class);
 				NBTTagCompound tempNBT =  parseRawNBT("{SkStuffIsCool:" + s + "}");
 				NBTTagList nbtList = (NBTTagList) tempNBT.get("SkStuffIsCool");
+				if (tempNBT == null || nbtList == null) {
+					throw new StreamCorruptedException("Unable to parse NBT list from a variable: " + s);
+				}
 				return nbtList;
 			}
 

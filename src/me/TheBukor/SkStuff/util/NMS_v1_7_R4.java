@@ -316,7 +316,47 @@ public class NMS_v1_7_R4 implements NMSInterface {
 			public String toVariableNameString(NBTTagCompound compound) {
 				return compound.toString();
 			}
-		}));
+		}).serializer(new Serializer<NBTTagCompound>() {
+
+				@Override
+				public Fields serialize(NBTTagCompound compound) throws NotSerializableException {
+					Fields f = new Fields();
+					f.putObject("asString", compound.toString());
+					return f;
+				}
+
+				@Override
+				public void deserialize(NBTTagCompound compound, Fields f) throws StreamCorruptedException, NotSerializableException {
+					assert false;
+				}
+
+				@Override
+				protected boolean canBeInstantiated() {
+					return false;
+				}
+
+				@Override
+				protected NBTTagCompound deserialize(Fields fields) throws StreamCorruptedException, NotSerializableException {
+					String raw = fields.getObject("asString", String.class);
+					NBTTagCompound compound =  parseRawNBT(raw);
+					if (compound == null) {
+						throw new StreamCorruptedException("Unable to parse NBT compound from a variable: " + raw);
+					}
+					return compound;
+				}
+
+				@Override
+				@Nullable
+				public NBTTagCompound deserialize(String s) {
+					NBTTagCompound compound =  parseRawNBT(s);
+					return compound;
+				}
+
+				@Override
+				public boolean mustSyncDeserialization() {
+					return true;
+				}
+			}));
 
 	}
 
@@ -397,6 +437,9 @@ public class NMS_v1_7_R4 implements NMSInterface {
 				String s = fields.getObject("asString", String.class);
 				NBTTagCompound tempNBT =  parseRawNBT("{SkStuffIsCool:" + s + "}");
 				NBTTagList nbtList = (NBTTagList) tempNBT.get("SkStuffIsCool");
+				if (tempNBT == null || nbtList == null) {
+					throw new StreamCorruptedException("Unable to parse NBT list from a variable: " + s);
+				}
 				return nbtList;
 			}
 
