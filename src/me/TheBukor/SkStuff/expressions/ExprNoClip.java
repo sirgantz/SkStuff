@@ -23,7 +23,7 @@ public class ExprNoClip extends SimpleExpression<Boolean> {
 
 	@Override
 	public boolean isSingle() {
-		return false;
+		return entities.isSingle();
 	}
 
 	@SuppressWarnings("unchecked")

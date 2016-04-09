@@ -1,9 +1,12 @@
 package me.TheBukor.SkStuff;
 
+import java.io.IOException;
+
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
@@ -13,6 +16,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.mcstats.Metrics;
 
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldguard.bukkit.WGBukkit;
@@ -77,11 +81,13 @@ import me.TheBukor.SkStuff.expressions.ExprSelectionArea;
 import me.TheBukor.SkStuff.expressions.ExprSelectionOfPlayer;
 import me.TheBukor.SkStuff.expressions.ExprSelectionPos;
 import me.TheBukor.SkStuff.expressions.ExprStepLength;
+import me.TheBukor.SkStuff.expressions.ExprSuperPickaxe;
 import me.TheBukor.SkStuff.expressions.ExprTagOf;
 import me.TheBukor.SkStuff.expressions.ExprTimespanToNumber;
 import me.TheBukor.SkStuff.expressions.ExprToLowerCase;
 import me.TheBukor.SkStuff.expressions.ExprToUpperCase;
 import me.TheBukor.SkStuff.expressions.ExprVanishState;
+import me.TheBukor.SkStuff.expressions.ExprWGMemberOwner;
 import me.TheBukor.SkStuff.expressions.ExprWordsToUpperCase;
 import me.TheBukor.SkStuff.util.NMSInterface;
 import me.TheBukor.SkStuff.util.NMS_v1_7_R4;
@@ -147,7 +153,7 @@ public class SkStuff extends JavaPlugin {
 				//Skript.registerExpression(ExprEndermanBlocks.class, ItemStack.class, ExpressionType.PROPERTY, "blocks that %entity% can (carry|hold|grab|steal)");
 				Skript.registerExpression(ExprMCIdOf.class, String.class, ExpressionType.PROPERTY, "(mc|minecraft) [(string|native)] id of %itemtype%", "%itemtype%'s minecraft [(string|native)] id");
 				Skript.registerExpression(ExprMCIdToItem.class, ItemStack.class, ExpressionType.SIMPLE, "item[[ ](stack|type)] (of|from) (mc|minecraft) [(string|native)] id %string%");
-				Skript.registerExpression(ExprLastLocation.class, Location.class, ExpressionType.SIMPLE, "	");
+				Skript.registerExpression(ExprLastLocation.class, Location.class, ExpressionType.SIMPLE, "[the] (last|past|former) location of %entity%", "%entity%'s (last|past|former) location", "[the] location of %entity% (1|one) tick before", "%entity%'s location (1|one) tick before");
 				Skript.registerExpression(ExprStepLength.class, Number.class, ExpressionType.PROPERTY, "[the] step length of %entity%", "%entity%'s step length");
 				nmsMethods.registerCompoundClassInfo();
 				nmsMethods.registerNBTListClassInfo();
@@ -179,6 +185,7 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerExpression(ExprSelectionPos.class, Location.class, ExpressionType.PROPERTY, "[(world[ ]edit|we)] po(s|int)[ ](0¦1|1¦2) of %player%", "%player%'s [(world[ ]edit|we)] po(s|int)[ ](0¦1|1¦2)");
 				Skript.registerExpression(ExprSelectionArea.class, Integer.class, ExpressionType.SIMPLE, "(0¦volume|1¦(x( |-)size|width)|2¦(y( |-)size|height)|3¦(z( |-)size|length)|4¦area) of [(world[ ]edit|we)] selection of %player%", "%player%'s [(world[ ]edit|we)] selection (0¦volume|1¦(x( |-)size|width)|2¦(y( |-)size|height)|3¦(z( |-)size|length)|4¦area)");
 				Skript.registerExpression(ExprSchematicArea.class, Integer.class, ExpressionType.SIMPLE, "(0¦volume|1¦(x( |-)size|width)|2¦(y( |-)size|height)|3¦(z( |-)size|length)|4¦area) of schem[atic] [from] %string%");
+				Skript.registerExpression(ExprSuperPickaxe.class, Boolean.class, ExpressionType.PROPERTY, "[(world[ ]edit|we)] super[ ]pick[axe] (state|mode) of %players%", "%players%'s [(world[ ]edit|we)] super[ ]pick[axe] (state|mode)");
 				Classes.registerClass(new ClassInfo<EditSession>(EditSession.class, "editsession").name("Edit Session").user("edit ?sessions?"));
 				try {
 					Class.forName("com.sk89q.worldedit.extent.logging.AbstractLoggingExtent");
@@ -204,16 +211,17 @@ public class SkStuff extends JavaPlugin {
 				}
 				condAmount += 1;
 				effAmount += 13;
-				exprAmount += 7;
+				exprAmount += 8;
 				typeAmount += 1;
 				if (Bukkit.getPluginManager().getPlugin("WorldGuard") != null) { //WorldGuard depends on WorldEdit
 					Plugin umbaska = Bukkit.getPluginManager().getPlugin("Umbaska");
 					Plugin skRambled = Bukkit.getPluginManager().getPlugin("SkRambled");
 					boolean registerNewTypes = (umbaska == null && skRambled == null);
 					if (registerNewTypes) {
-						Skript.registerExpression(ExprFlagOfWGRegion.class, String.class, ExpressionType.PROPERTY, "[w[orld[ ]]g[uard]] flag %wgflag% of %wgregion%");
-						Skript.registerExpression(ExprFlagsOfWGRegion.class, Flag.class, ExpressionType.PROPERTY, "all [w[orld[ ]]g[uard]] flags of %wgregion%");
-						Classes.registerClass(new ClassInfo<Flag>(Flag.class, "wgflag").name("WorldGuard Flag").user("(w(orld ?)?g(uard)? )?flags?").defaultExpression(new EventValueExpression<Flag>(Flag.class)).parser(new Parser<Flag<?>>() {
+						Skript.registerExpression(ExprFlagOfWGRegion.class, String.class, ExpressionType.PROPERTY, "[(world[ ]guard|wg)] flag %wgflag% of %wgregion%");
+						Skript.registerExpression(ExprFlagsOfWGRegion.class, Flag.class, ExpressionType.PROPERTY, "[(all|the)] [(world[ ]guard|wg)] flags of %wgregion%");
+						Skript.registerExpression(ExprWGMemberOwner.class, OfflinePlayer.class, ExpressionType.PROPERTY, "[the] (0¦members|1¦owner[s]) of [[the] (world[ ]guard|wg) region] %wgregion%");
+						Classes.registerClass(new ClassInfo<Flag>(Flag.class, "wgflag").name("WorldGuard Flag").user("((world ?guard|wg) )?flags?").defaultExpression(new EventValueExpression<Flag>(Flag.class)).parser(new Parser<Flag<?>>() {
 
 							@Override
 							@Nullable
@@ -236,7 +244,7 @@ public class SkStuff extends JavaPlugin {
 								return ".+";
 							}
 						}));
-						Classes.registerClass(new ClassInfo<ProtectedRegion>(ProtectedRegion.class, "wgregion").name("WorldGuard Region").user("(w(orld ?)?g(uard)? )?regions?").defaultExpression(new EventValueExpression<>(ProtectedRegion.class)).parser(new Parser<ProtectedRegion>() {
+						Classes.registerClass(new ClassInfo<ProtectedRegion>(ProtectedRegion.class, "wgregion").name("WorldGuard Region").user("((world ?guard|wg) )?regions?").defaultExpression(new EventValueExpression<>(ProtectedRegion.class)).parser(new Parser<ProtectedRegion>() {
 	
 							@Override
 							@Nullable
@@ -269,8 +277,9 @@ public class SkStuff extends JavaPlugin {
 					} else {
 						Skript.registerExpression(ExprFlagOfWGRegion.class, String.class, ExpressionType.PROPERTY, "[skstuff] [w[orld[ ]]g[uard]] flag %flag% of %protectedregion%");
 						Skript.registerExpression(ExprFlagsOfWGRegion.class, Flag.class, ExpressionType.PROPERTY, "[skstuff] [all] [w[orld[ ]]g[uard]] flags of %protectedregion%");
+						Skript.registerExpression(ExprWGMemberOwner.class, OfflinePlayer.class, ExpressionType.PROPERTY, "[the] [skstuff] (0¦members|1¦owner[s]) of [[the] (world[ ]guard|wg) region] %protectedregion%");
 					}
-					exprAmount += 2;
+					exprAmount += 3;
 				}
 			}
 			if (Bukkit.getPluginManager().getPlugin("VanishNoPacket") != null) {
@@ -279,6 +288,13 @@ public class SkStuff extends JavaPlugin {
 				Skript.registerExpression(ExprVanishState.class, Boolean.class, ExpressionType.PROPERTY, "vanish (state|mode) of %player%", "%player%'s vanish (state|mode)");
 				effAmount += 1;
 				exprAmount += 1;
+			}
+			try {
+				Metrics metrics = new Metrics(this);
+				metrics.start();
+			} catch (IOException ex) {
+				getLogger().warning("Sorry, I've failed to hook SkStuff into Metrics. I'm really sorry.");
+				getLogger().warning("Here's an error for you: " + ex.getMessage());
 			}
 			getLogger().info("Everything ready! Loaded a total of " + condAmount + " conditions, " + effAmount + " effects, " + evtAmount + "events, " + exprAmount + " expressions and " + typeAmount + " types!");
 		} else {

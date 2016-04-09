@@ -23,7 +23,7 @@ public class ExprFireProof extends SimpleExpression<Boolean> {
 
 	@Override
 	public boolean isSingle() {
-		return true;
+		return entities.isSingle();
 	}
 
 	@SuppressWarnings("unchecked")
