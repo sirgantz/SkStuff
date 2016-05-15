@@ -7,10 +7,11 @@
 	<classpathentry kind="lib" path="C:/Users/DELL/AppData/Roaming/.minecraft/workspace/eclipse/Build Path/1.8.8.jar"/>
 	<classpathentry kind="lib" path="C:/Users/DELL/AppData/Roaming/.minecraft/workspace/eclipse/Build Path/1.8.jar"/>
 	<classpathentry kind="lib" path="C:/Users/DELL/AppData/Roaming/.minecraft/workspace/eclipse/Build Path/Skript.jar"/>
-	<classpathentry kind="lib" path="C:/Users/DELL/AppData/Roaming/.minecraft/workspace/eclipse/Build Path/1.9 (2).jar"/>
 	<classpathentry kind="lib" path="C:/Users/DELL/AppData/Roaming/.minecraft/workspace/eclipse/Build Path/VanishNoPacket.jar"/>
 	<classpathentry kind="lib" path="C:/Users/DELL/AppData/Roaming/.minecraft/workspace/eclipse/Build Path/WorldEdit.jar"/>
 	<classpathentry kind="lib" path="C:/Users/DELL/AppData/Roaming/.minecraft/workspace/eclipse/Build Path/WorldGuard.jar"/>
 	<classpathentry kind="lib" path="C:/Users/DELL/AppData/Roaming/.minecraft/workspace/eclipse/Build Path/ProtocolLib.jar"/>
+	<classpathentry kind="lib" path="C:/Users/DELL/AppData/Roaming/.minecraft/workspace/eclipse/Build Path/1.9.4.jar"/>
+	<classpathentry kind="lib" path="C:/Users/DELL/AppData/Roaming/.minecraft/workspace/eclipse/Build Path/1.9.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

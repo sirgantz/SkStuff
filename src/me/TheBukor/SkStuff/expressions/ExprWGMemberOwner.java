@@ -54,7 +54,7 @@ public class ExprWGMemberOwner extends SimpleExpression<OfflinePlayer> {
 	protected OfflinePlayer[] get(Event e) {
 		ProtectedRegion reg = region.getSingle(e);
 		Set<UUID> uuids;
-		if (mark == 0) { 
+		if (mark == 0) {
 			uuids = reg.getMembers().getUniqueIds();
 		} else {
 			uuids = reg.getOwners().getUniqueIds();

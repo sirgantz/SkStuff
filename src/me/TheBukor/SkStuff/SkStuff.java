@@ -16,6 +16,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.kitteh.vanish.event.VanishStatusChangeEvent;
 import org.mcstats.Metrics;
 
 import com.sk89q.worldedit.EditSession;
@@ -76,6 +77,7 @@ import me.TheBukor.SkStuff.expressions.ExprNBTListIndex;
 import me.TheBukor.SkStuff.expressions.ExprNBTOf;
 import me.TheBukor.SkStuff.expressions.ExprNewEditSession;
 import me.TheBukor.SkStuff.expressions.ExprNoClip;
+import me.TheBukor.SkStuff.expressions.ExprRegionsWithinLocation;
 import me.TheBukor.SkStuff.expressions.ExprSchematicArea;
 import me.TheBukor.SkStuff.expressions.ExprSelectionArea;
 import me.TheBukor.SkStuff.expressions.ExprSelectionOfPlayer;
@@ -93,6 +95,7 @@ import me.TheBukor.SkStuff.util.NMSInterface;
 import me.TheBukor.SkStuff.util.NMS_v1_7_R4;
 import me.TheBukor.SkStuff.util.NMS_v1_8_R3;
 import me.TheBukor.SkStuff.util.NMS_v1_9_R1;
+import me.TheBukor.SkStuff.util.NMS_v1_9_R2;
 import me.TheBukor.SkStuff.util.ReflectionUtils;
 
 public class SkStuff extends JavaPlugin {
@@ -279,24 +282,35 @@ public class SkStuff extends JavaPlugin {
 						Skript.registerExpression(ExprFlagsOfWGRegion.class, Flag.class, ExpressionType.PROPERTY, "[skstuff] [all] [w[orld[ ]]g[uard]] flags of %protectedregion%");
 						Skript.registerExpression(ExprWGMemberOwner.class, OfflinePlayer.class, ExpressionType.PROPERTY, "[the] [skstuff] (0¦members|1¦owner[s]) of [[the] (world[ ]guard|wg) region] %protectedregion%");
 					}
-					exprAmount += 3;
+					Skript.registerExpression(ExprRegionsWithinLocation.class, ProtectedRegion.class, ExpressionType.SIMPLE, "[all] [the] regions (containing|within|inside) %location%");
+					exprAmount += 4;
 				}
 			}
 			if (Bukkit.getPluginManager().getPlugin("VanishNoPacket") != null) {
 				getLogger().info("VanishNoPacket was found! Registering vanishing features...");
 				Skript.registerEffect(EffToggleVanish.class, "toggle vanish (state|mode) of %player% (0¦|1¦(silently|quietly))", "toggle %player%'s vanish (state|mode) (0¦|1¦(silently|quietly))");
+				Skript.registerEvent("Vanish toggle event", SimpleEvent.class, VanishStatusChangeEvent.class, "[player] vanish [(state|mode)] (chang|toggl)(e|ing)");
 				Skript.registerExpression(ExprVanishState.class, Boolean.class, ExpressionType.PROPERTY, "vanish (state|mode) of %player%", "%player%'s vanish (state|mode)");
+				EventValues.registerEventValue(VanishStatusChangeEvent.class, Player.class, new Getter<Player, VanishStatusChangeEvent>() {
+					@Override
+					@Nullable
+					public Player get(VanishStatusChangeEvent e) {
+						return e.getPlayer();
+					}
+				}, 0);
 				effAmount += 1;
+				evtAmount += 1;
 				exprAmount += 1;
 			}
 			try {
 				Metrics metrics = new Metrics(this);
 				metrics.start();
+				getLogger().info("Hooked into Metrics! Woohoo!!");
 			} catch (IOException ex) {
 				getLogger().warning("Sorry, I've failed to hook SkStuff into Metrics. I'm really sorry.");
 				getLogger().warning("Here's an error for you: " + ex.getMessage());
 			}
-			getLogger().info("Everything ready! Loaded a total of " + condAmount + " conditions, " + effAmount + " effects, " + evtAmount + "events, " + exprAmount + " expressions and " + typeAmount + " types!");
+			getLogger().info("Everything ready! Loaded a total of " + condAmount + " conditions, " + effAmount + " effects, " + evtAmount + " events, " + exprAmount + " expressions and " + typeAmount + " types!");
 		} else {
 			getLogger().info("Unable to find Skript or Skript isn't accepting registrations, disabling SkStuff...");
 			Bukkit.getPluginManager().disablePlugin(this);;
@@ -313,7 +327,10 @@ public class SkStuff extends JavaPlugin {
 			getLogger().info("It looks like you're either running 1.8.4, 1.8.7, 1.8.8 or 1.8.9!");
 		} else if (version.equals("v1_9_R1.")) {
 			nmsMethods = new NMS_v1_9_R1();
-			getLogger().info("It looks like you're running 1.9!");
+			getLogger().info("It looks like you're either running 1.9.0 or 1.9.2!");
+		} else if (version.equals("v1_9_R2.")) {
+			nmsMethods = new NMS_v1_9_R2();
+			getLogger().info("It looks like you're running 1.9.4!");
 		} else {
 			getLogger().warning("It looks like you're running an unsupported server version, some features will not be available :(");
 		}

@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.DoubleChest;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
 import org.bukkit.inventory.Inventory;
@@ -50,8 +51,8 @@ public class ExprInventoryOwner extends SimpleExpression<Object> {
 			return new Entity[] { (Entity) holder };
 		} else if (holder instanceof BlockState) {
 			return new Block[] { ((BlockState) holder).getBlock() };
-		} else if (holder instanceof Block) { //Only happens for double chests, I believe
-			return new Block[] { (Block) holder };
+		} else if (holder instanceof DoubleChest) {
+			return new Block[] { ((DoubleChest) holder).getLocation().getBlock() };
 		} else {
 			Skript.error("Something went wrong when trying to get the owner of the specified inventory!");
 			Skript.error("Post the below info on the SkStuff thread in SkUnity:");

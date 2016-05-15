@@ -497,8 +497,8 @@ public class NMS_v1_9_R1 implements NMSInterface {
 		if (itemStack == null || itemStack.getType() == Material.AIR)
 			return null;
 		NBTTagCompound itemNBT = CraftItemStack.asNMSCopy(itemStack).getTag();
-		if (itemNBT == null || itemNBT.isEmpty())
-			itemNBT = null;
+		if (itemNBT == null)
+			itemNBT = new NBTTagCompound();
 		return itemNBT;
 	}
 
