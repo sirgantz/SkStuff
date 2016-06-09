@@ -51,7 +51,7 @@ public class EffResourceSound extends Effect {
 		float vol = (volume == null ? 1.0F : volume.getSingle(e).floatValue());
 		float pitch = (this.pitch == null ? 1.0F : this.pitch.getSingle(e).floatValue());
 		for (Player p : ps) {
-			p.playSound(loc, s, vol, pitch	);
+			p.playSound(loc, s, vol, pitch);
 		}
 	}
 }
