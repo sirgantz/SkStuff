@@ -93,6 +93,7 @@ import me.TheBukor.SkStuff.expressions.ExprVanishState;
 import me.TheBukor.SkStuff.expressions.ExprWGMemberOwner;
 import me.TheBukor.SkStuff.expressions.ExprWordsToUpperCase;
 import me.TheBukor.SkStuff.util.NMSInterface;
+import me.TheBukor.SkStuff.util.NMS_v1_10_R1;
 import me.TheBukor.SkStuff.util.NMS_v1_7_R4;
 import me.TheBukor.SkStuff.util.NMS_v1_8_R3;
 import me.TheBukor.SkStuff.util.NMS_v1_9_R1;
@@ -342,6 +343,9 @@ public class SkStuff extends JavaPlugin {
 		} else if (version.equals("v1_9_R2.")) {
 			nmsMethods = new NMS_v1_9_R2();
 			getLogger().info("It looks like you're running 1.9.4!");
+		} else if (version.equals("v1_10_R1.")) {
+			nmsMethods = new NMS_v1_10_R1();
+			getLogger().info("It looks like you're running 1.10!");
 		} else {
 			getLogger().warning("It looks like you're running an unsupported server version, some features will not be available :(");
 		}
