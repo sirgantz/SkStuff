@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.craftbukkit.v1_9_R1.entity.CraftLivingEntity;
 import org.bukkit.craftbukkit.v1_9_R2.CraftWorld;
 import org.bukkit.craftbukkit.v1_9_R2.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_9_R2.inventory.CraftItemStack;
@@ -32,6 +33,7 @@ import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
 import ch.njol.util.coll.CollectionUtils;
 import ch.njol.yggdrasil.Fields;
+import net.minecraft.server.v1_9_R1.EntityLiving;
 import net.minecraft.server.v1_9_R2.BlockPosition;
 import net.minecraft.server.v1_9_R2.EntityInsentient;
 import net.minecraft.server.v1_9_R2.IBlockData;
@@ -699,5 +701,16 @@ public class NMS_v1_9_R2 implements NMSInterface {
 	public void setEntityStepLength(Entity entity, float length) {
 		net.minecraft.server.v1_9_R2.Entity nmsEntity = ((CraftEntity) entity).getHandle();
 		nmsEntity.P = length;
+	}
+
+	@Override
+	public boolean getElytraGlideState(Entity entity) {
+		EntityLiving nmsEntity = ((CraftLivingEntity) entity).getHandle();
+		return nmsEntity.getFlag(7);
+	}
+	
+	public void setElytraGlideState(Entity entity, boolean glide) {
+		EntityLiving nmsEntity = ((CraftLivingEntity) entity).getHandle();
+		nmsEntity.setFlag(7, glide);
 	}
 }

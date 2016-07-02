@@ -89,4 +89,7 @@ public interface NMSInterface {
 
 	public void setEntityStepLength(Entity entity, float length);
 
+	public boolean getElytraGlideState(Entity entity);
+
+	public void setElytraGlideState(Entity entity, boolean glide);
 }

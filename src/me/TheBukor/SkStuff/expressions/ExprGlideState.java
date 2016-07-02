@@ -2,7 +2,6 @@ package me.TheBukor.SkStuff.expressions;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.craftbukkit.v1_9_R1.entity.CraftLivingEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Event;
 
@@ -12,7 +11,7 @@ import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import ch.njol.util.coll.CollectionUtils;
-import net.minecraft.server.v1_9_R1.EntityLiving;
+import me.TheBukor.SkStuff.SkStuff;
 
 public class ExprGlideState extends SimpleExpression<Boolean> {
 	private Expression<LivingEntity> entity;
@@ -43,8 +42,7 @@ public class ExprGlideState extends SimpleExpression<Boolean> {
 	@Nullable
 	protected Boolean[] get(Event e) {
 		LivingEntity ent = entity.getSingle(e);
-		EntityLiving nmsEntity = ((CraftLivingEntity) ent).getHandle();
-		return new Boolean[] { nmsEntity.getFlag(7) };
+		return new Boolean[] { SkStuff.getNMSMethods().getElytraGlideState(ent) };
 	}
 
 	@SuppressWarnings("unchecked")
@@ -60,10 +58,9 @@ public class ExprGlideState extends SimpleExpression<Boolean> {
 	@Override
 	public void change(Event e, @Nullable Object[] delta, ChangeMode mode) {
 		LivingEntity ent = entity.getSingle(e);
-		EntityLiving nmsEntity = ((CraftLivingEntity) ent).getHandle();
 		if (mode == ChangeMode.SET) {
 			boolean newValue = (boolean) delta[0];
-			nmsEntity.setFlag(7, newValue);
+			SkStuff.getNMSMethods().setElytraGlideState(ent, newValue);
 		}
 	}
 }

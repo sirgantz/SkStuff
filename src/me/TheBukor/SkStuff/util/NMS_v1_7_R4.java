@@ -657,4 +657,14 @@ public class NMS_v1_7_R4 implements NMSInterface {
 		net.minecraft.server.v1_7_R4.Entity nmsEntity = ((CraftEntity) entity).getHandle();
 		nmsEntity.V = length;
 	}
+
+	@Override
+	public boolean getElytraGlideState(Entity entity) {
+		Bukkit.getLogger().warning("Executed \"Elytra Glide State\" code on 1.7! How the hell did this even happen!!");
+		return false;
+	}
+	
+	public void setElytraGlideState(Entity entity, boolean glide) {
+		Bukkit.getLogger().warning("Executed \"Elytra Glide State\" code on 1.7! How the hell did this even happen!!");
+	}
 }

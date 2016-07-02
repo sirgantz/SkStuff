@@ -14,6 +14,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -663,5 +664,15 @@ public class NMS_v1_8_R3 implements NMSInterface {
 	public void setEntityStepLength(Entity entity, float length) {
 		net.minecraft.server.v1_8_R3.Entity nmsEntity = ((CraftEntity) entity).getHandle();
 		nmsEntity.S = length;
+	}
+
+	@Override
+	public boolean getElytraGlideState(Entity entity) {
+		Bukkit.getLogger().warning("Executed \"Elytra Glide State\" code on 1.8! How the hell did this even happen!!");
+		return false;
+	}
+	
+	public void setElytraGlideState(Entity entity, boolean glide) {
+		Bukkit.getLogger().warning("Executed \"Elytra Glide State\" code on 1.8! How the hell did this even happen!!");
 	}
 }
