@@ -20,7 +20,7 @@ import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_10_R1.CraftWorld;
 import org.bukkit.craftbukkit.v1_10_R1.entity.CraftEntity;
 import org.bukkit.craftbukkit.v1_10_R1.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_9_R1.entity.CraftLivingEntity;
+import org.bukkit.craftbukkit.v1_10_R1.entity.CraftLivingEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 
@@ -55,7 +55,7 @@ import net.minecraft.server.v1_10_R1.PathfinderGoal;
 import net.minecraft.server.v1_10_R1.PathfinderGoalSelector;
 import net.minecraft.server.v1_10_R1.TileEntity;
 import net.minecraft.server.v1_10_R1.World;
-import net.minecraft.server.v1_9_R1.EntityLiving;
+import net.minecraft.server.v1_10_R1.EntityLiving;
 
 public class NMS_v1_10_R1 implements NMSInterface {
 
