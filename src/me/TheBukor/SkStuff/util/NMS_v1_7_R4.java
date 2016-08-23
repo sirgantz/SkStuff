@@ -397,7 +397,7 @@ public class NMS_v1_7_R4 implements NMSInterface {
 			@Nullable
 			public NBTTagList parse(String listString, ParseContext context) {
 				if (listString.startsWith("[") && listString.endsWith("]")) {
-					NBTTagCompound tempNBT =  parseRawNBT("{SkStuffIsCool:[0:" + listString.substring(1) + "}");
+					NBTTagCompound tempNBT =  parseRawNBT("{SkStuffIsCool:" + listString + "}");
 					NBTTagList parsedList = (NBTTagList) tempNBT.get("SkStuffIsCool");
 					return parsedList;
 				}
