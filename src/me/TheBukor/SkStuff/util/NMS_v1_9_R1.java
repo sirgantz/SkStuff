@@ -413,9 +413,15 @@ public class NMS_v1_9_R1 implements NMSInterface {
 			@Override
 			@Nullable
 			public NBTTagList parse(String listString, ParseContext context) {
-				if (listString.startsWith("[") && listString.endsWith("]")) {
-					NBTTagCompound tempNBT =  parseRawNBT("{SkStuffIsCool:" + listString + "}");
-					NBTTagList parsedList = (NBTTagList) tempNBT.get("SkStuffIsCool");
+				if ((listString.startsWith("nbt:[") || listString.startsWith("nbtlist:[")) && listString.endsWith("]")) {
+					int substring;
+					if (listString.startsWith("nbt:[")) {
+						substring = 4;
+					} else { // "nbtlist:[WHATEVER]"
+						substring = 8;
+					}
+					NBTTagCompound tempNBT =  parseRawNBT("{temp:" + listString.substring(substring) + "}");
+					NBTTagList parsedList = (NBTTagList) tempNBT.get("temp");
 					return parsedList;
 				}
 				return null;
@@ -452,19 +458,19 @@ public class NMS_v1_9_R1 implements NMSInterface {
 			@Override
 			protected NBTTagList deserialize(Fields fields) throws StreamCorruptedException, NotSerializableException {
 				String s = fields.getObject("asString", String.class);
-				NBTTagCompound tempNBT =  parseRawNBT("{SkStuffIsCool:" + s + "}");
-				NBTTagList nbtList = (NBTTagList) tempNBT.get("SkStuffIsCool");
-				if (tempNBT == null || nbtList == null) {
+				NBTTagCompound tempNBT =  parseRawNBT("{temp:" + s + "}");
+				if (tempNBT == null || !tempNBT.hasKey("temp")) {
 					throw new StreamCorruptedException("Unable to parse NBT list from a variable: " + s);
 				}
+				NBTTagList nbtList = (NBTTagList) tempNBT.get("temp");
 				return nbtList;
 			}
 
 			@Override
 			@Nullable
 			public NBTTagList deserialize(String s) {
-				NBTTagCompound tempNBT =  parseRawNBT("{SkStuffIsCool:" + s + "}");
-				NBTTagList nbtList = (NBTTagList) tempNBT.get("SkStuffIsCool");
+				NBTTagCompound tempNBT =  parseRawNBT("{temp:" + s + "}");
+				NBTTagList nbtList = (NBTTagList) tempNBT.get("temp");
 				return nbtList;
 			}
 
