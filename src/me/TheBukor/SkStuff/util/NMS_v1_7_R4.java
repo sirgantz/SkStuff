@@ -665,11 +665,20 @@ public class NMS_v1_7_R4 implements NMSInterface {
 
 	@Override
 	public boolean getElytraGlideState(Entity entity) {
-		Bukkit.getLogger().warning("Executed \"Elytra Glide State\" code on 1.7! How the hell did this even happen!!");
+		Bukkit.getLogger().warning("Executed \"Get elytra glide state\" code on 1.7! How the hell did this even happen!!");
 		return false;
 	}
 	
 	public void setElytraGlideState(Entity entity, boolean glide) {
-		Bukkit.getLogger().warning("Executed \"Elytra Glide State\" code on 1.7! How the hell did this even happen!!");
+		Bukkit.getLogger().warning("Executed \"Set elytra glide state\" code on 1.7! How the hell did this even happen!!");
+	}
+	
+	public boolean getNoGravity(Entity entity) {
+		Bukkit.getLogger().warning("Executed \"Get no gravity state of entity\" code on 1.7! How the hell did this even happen!!");
+		return false;
+	}
+	
+	public void setNoGravity(Entity entity, boolean noGravity) {
+		Bukkit.getLogger().warning("Executed \"Set no gravity state of entity\" code on 1.7! How the hell did this even happen!!");
 	}
 }

@@ -92,4 +92,8 @@ public interface NMSInterface {
 	public boolean getElytraGlideState(Entity entity);
 
 	public void setElytraGlideState(Entity entity, boolean glide);
+	
+	public boolean getNoGravity(Entity entity);
+	
+	public void setNoGravity(Entity entity, boolean noGravity);
 }

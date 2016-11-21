@@ -17,10 +17,10 @@ import javax.annotation.Nullable;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_10_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_10_R1.entity.CraftEntity;
-import org.bukkit.craftbukkit.v1_10_R1.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_10_R1.entity.CraftLivingEntity;
+import org.bukkit.craftbukkit.v1_11_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_11_R1.entity.CraftEntity;
+import org.bukkit.craftbukkit.v1_11_R1.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_11_R1.entity.CraftLivingEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.inventory.ItemStack;
 
@@ -33,31 +33,31 @@ import ch.njol.skript.lang.ParseContext;
 import ch.njol.skript.registrations.Classes;
 import ch.njol.util.coll.CollectionUtils;
 import ch.njol.yggdrasil.Fields;
-import net.minecraft.server.v1_10_R1.BlockPosition;
-import net.minecraft.server.v1_10_R1.EntityInsentient;
-import net.minecraft.server.v1_10_R1.IBlockData;
-import net.minecraft.server.v1_10_R1.Item;
-import net.minecraft.server.v1_10_R1.MinecraftKey;
-import net.minecraft.server.v1_10_R1.MojangsonParseException;
-import net.minecraft.server.v1_10_R1.MojangsonParser;
-import net.minecraft.server.v1_10_R1.NBTBase;
-import net.minecraft.server.v1_10_R1.NBTCompressedStreamTools;
-import net.minecraft.server.v1_10_R1.NBTTagByte;
-import net.minecraft.server.v1_10_R1.NBTTagCompound;
-import net.minecraft.server.v1_10_R1.NBTTagDouble;
-import net.minecraft.server.v1_10_R1.NBTTagFloat;
-import net.minecraft.server.v1_10_R1.NBTTagInt;
-import net.minecraft.server.v1_10_R1.NBTTagList;
-import net.minecraft.server.v1_10_R1.NBTTagLong;
-import net.minecraft.server.v1_10_R1.NBTTagShort;
-import net.minecraft.server.v1_10_R1.NBTTagString;
-import net.minecraft.server.v1_10_R1.PathfinderGoal;
-import net.minecraft.server.v1_10_R1.PathfinderGoalSelector;
-import net.minecraft.server.v1_10_R1.TileEntity;
-import net.minecraft.server.v1_10_R1.World;
-import net.minecraft.server.v1_10_R1.EntityLiving;
+import net.minecraft.server.v1_11_R1.BlockPosition;
+import net.minecraft.server.v1_11_R1.EntityInsentient;
+import net.minecraft.server.v1_11_R1.IBlockData;
+import net.minecraft.server.v1_11_R1.Item;
+import net.minecraft.server.v1_11_R1.MinecraftKey;
+import net.minecraft.server.v1_11_R1.MojangsonParseException;
+import net.minecraft.server.v1_11_R1.MojangsonParser;
+import net.minecraft.server.v1_11_R1.NBTBase;
+import net.minecraft.server.v1_11_R1.NBTCompressedStreamTools;
+import net.minecraft.server.v1_11_R1.NBTTagByte;
+import net.minecraft.server.v1_11_R1.NBTTagCompound;
+import net.minecraft.server.v1_11_R1.NBTTagDouble;
+import net.minecraft.server.v1_11_R1.NBTTagFloat;
+import net.minecraft.server.v1_11_R1.NBTTagInt;
+import net.minecraft.server.v1_11_R1.NBTTagList;
+import net.minecraft.server.v1_11_R1.NBTTagLong;
+import net.minecraft.server.v1_11_R1.NBTTagShort;
+import net.minecraft.server.v1_11_R1.NBTTagString;
+import net.minecraft.server.v1_11_R1.PathfinderGoal;
+import net.minecraft.server.v1_11_R1.PathfinderGoalSelector;
+import net.minecraft.server.v1_11_R1.TileEntity;
+import net.minecraft.server.v1_11_R1.World;
+import net.minecraft.server.v1_11_R1.EntityLiving;
 
-public class NMS_v1_10_R1 implements NMSInterface {
+public class NMS_v1_11_R1 implements NMSInterface {
 
 	@Override
 	public Object getNBTTag(Object compound, String tag) {
@@ -223,7 +223,7 @@ public class NMS_v1_10_R1 implements NMSInterface {
 			} else if (value instanceof NBTTagFloat) {
 				return ((NBTTagFloat) value).i(); //Float inside a NBTNumber
 			} else if (value instanceof NBTTagDouble) {
-				return ((NBTTagDouble) value).h(); //Double inside a NBTNumber
+				return ((NBTTagDouble) value).asDouble(); //Double inside a NBTNumber
 			} else if (value instanceof NBTTagString) {
 				return ((NBTTagString) value).c_(); //String inside the NBTTagString
 			} else if (value instanceof NBTBase) {
@@ -483,7 +483,7 @@ public class NMS_v1_10_R1 implements NMSInterface {
 
 	@Override
 	public NBTTagCompound getEntityNBT(Entity entity) {
-		net.minecraft.server.v1_10_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+		net.minecraft.server.v1_11_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
 		NBTTagCompound NBT = new NBTTagCompound();
 		nmsEntity.e(NBT);
 		return NBT;
@@ -513,7 +513,7 @@ public class NMS_v1_10_R1 implements NMSInterface {
 	@Override
 	public void setEntityNBT(Entity entity, Object newCompound) {
 		if (newCompound instanceof NBTTagCompound) {
-			net.minecraft.server.v1_10_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+			net.minecraft.server.v1_11_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
 			nmsEntity.f((NBTTagCompound) newCompound);
 		}
 	}
@@ -534,7 +534,7 @@ public class NMS_v1_10_R1 implements NMSInterface {
 
 	@Override
 	public ItemStack getItemWithNBT(ItemStack itemStack, Object compound) {
-		net.minecraft.server.v1_10_R1.ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
+		net.minecraft.server.v1_11_R1.ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
 		if (compound instanceof NBTTagCompound && itemStack != null) {
 			if (itemStack.getType() == Material.AIR)
 				return null;
@@ -620,7 +620,7 @@ public class NMS_v1_10_R1 implements NMSInterface {
 
 	@Override
 	public String getMCId(ItemStack itemStack) {
-		net.minecraft.server.v1_10_R1.ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
+		net.minecraft.server.v1_11_R1.ItemStack nmsItem = CraftItemStack.asNMSCopy(itemStack);
 		MinecraftKey mcKey = Item.REGISTRY.b(nmsItem.getItem());
 		return mcKey.toString();
 	}
@@ -634,25 +634,25 @@ public class NMS_v1_10_R1 implements NMSInterface {
 
 	@Override
 	public boolean getNoClip(Entity entity) {
-		net.minecraft.server.v1_10_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+		net.minecraft.server.v1_11_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
 		return nmsEntity.noclip;
 	}
 
 	@Override
 	public void setNoClip(Entity entity, boolean noclip) {
-		net.minecraft.server.v1_10_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+		net.minecraft.server.v1_11_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
 		nmsEntity.noclip = noclip;
 	}
 
 	@Override
 	public boolean getFireProof(Entity entity) {
-		net.minecraft.server.v1_10_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+		net.minecraft.server.v1_11_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
 		return nmsEntity.isFireProof();
 	}
 
 	@Override
 	public void setFireProof(Entity entity, boolean fireProof) {
-		net.minecraft.server.v1_10_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+		net.minecraft.server.v1_11_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
 		ReflectionUtils.setField("fireProof", nmsEntity.getClass(), nmsEntity, fireProof);
 	}
 
@@ -661,13 +661,13 @@ public class NMS_v1_10_R1 implements NMSInterface {
 	@Override
 	public ItemStack[] getEndermanBlocks(Entity enderman) {
 		EntityEnderman nmsEnder = ((CraftEnderman) enderman).getHandle();
-		Set<net.minecraft.server.v1_10_R1.Block> nmsBlocks = (Set<net.minecraft.server.v1_10_R1.Block>) ReflectionUtils.getField("c", EntityEnderman.class, nmsEnder);
+		Set<net.minecraft.server.v1_11_R1.Block> nmsBlocks = (Set<net.minecraft.server.v1_11_R1.Block>) ReflectionUtils.getField("c", EntityEnderman.class, nmsEnder);
 		ItemStack[] items = new ItemStack[nmsBlocks.size()];
 		int i = 0;
-		for (net.minecraft.server.v1_10_R1.Block nmsBlock : nmsBlocks) {
+		for (net.minecraft.server.v1_11_R1.Block nmsBlock : nmsBlocks) {
 			IBlockData nmsBlockData = nmsBlock.getBlockData();
 			int dataValue = nmsBlock.toLegacyData(nmsBlockData);
-			net.minecraft.server.v1_10_R1.ItemStack nmsItem = new net.minecraft.server.v1_10_R1.ItemStack(nmsBlock, 1, dataValue);
+			net.minecraft.server.v1_11_R1.ItemStack nmsItem = new net.minecraft.server.v1_11_R1.ItemStack(nmsBlock, 1, dataValue);
 			ItemStack bukkitItem = CraftItemStack.asCraftMirror(nmsItem);
 			items[i] = bukkitItem;
 			i++;
@@ -679,7 +679,7 @@ public class NMS_v1_10_R1 implements NMSInterface {
 	@Override
 	public void setEndermanBlocks(Entity enderman, ItemStack... blocks) {
 		EntityEnderman nmsEnder = ((CraftEnderman) enderman).getHandle();
-		Set<net.minecraft.server.v1_10_R1.Block> nmsBlocks = (Set<net.minecraft.server.v1_10_R1.Block>) ReflectionUtils.getField("c", EntityEnderman.class, nmsEnder);
+		Set<net.minecraft.server.v1_11_R1.Block> nmsBlocks = (Set<net.minecraft.server.v1_11_R1.Block>) ReflectionUtils.getField("c", EntityEnderman.class, nmsEnder);
 		for (ItemStack block : blocks) {
 			if (!block.getType().isBlock())
 				return;
@@ -691,7 +691,7 @@ public class NMS_v1_10_R1 implements NMSInterface {
 
 	@Override
 	public Location getLastLocation(Entity entity) {
-		net.minecraft.server.v1_10_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+		net.minecraft.server.v1_11_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
 		org.bukkit.World world = nmsEntity.world.getWorld();
 		Location lastEntLoc = new Location(world, nmsEntity.M, nmsEntity.N, nmsEntity.O);
 		return lastEntLoc;
@@ -699,13 +699,13 @@ public class NMS_v1_10_R1 implements NMSInterface {
 
 	@Override
 	public float getEntityStepLength(Entity entity) {
-		net.minecraft.server.v1_10_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+		net.minecraft.server.v1_11_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
 		return nmsEntity.P;
 	}
 
 	@Override
 	public void setEntityStepLength(Entity entity, float length) {
-		net.minecraft.server.v1_10_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+		net.minecraft.server.v1_11_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
 		nmsEntity.P = length;
 	}
 
@@ -721,12 +721,12 @@ public class NMS_v1_10_R1 implements NMSInterface {
 	}
 	
 	public boolean getNoGravity(Entity entity) {
-		net.minecraft.server.v1_10_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+		net.minecraft.server.v1_11_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
 		return nmsEntity.isNoGravity();
 	}
 	
 	public void setNoGravity(Entity entity, boolean noGravity) {
-		net.minecraft.server.v1_10_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
+		net.minecraft.server.v1_11_R1.Entity nmsEntity = ((CraftEntity) entity).getHandle();
 		nmsEntity.setNoGravity(noGravity);
 	}
 }

@@ -681,4 +681,13 @@ public class NMS_v1_8_R3 implements NMSInterface {
 	public void setElytraGlideState(Entity entity, boolean glide) {
 		Bukkit.getLogger().warning("Executed \"Elytra Glide State\" code on 1.8! How the hell did this even happen!!");
 	}
+	
+	public boolean getNoGravity(Entity entity) {
+		Bukkit.getLogger().warning("Executed \"Get no gravity state of entity\" code on 1.8! How the hell did this even happen!!");
+		return false;
+	}
+	
+	public void setNoGravity(Entity entity, boolean noGravity) {
+		Bukkit.getLogger().warning("Executed \"Set no gravity state of entity\" code on 1.8! How the hell did this even happen!!");
+	}
 }

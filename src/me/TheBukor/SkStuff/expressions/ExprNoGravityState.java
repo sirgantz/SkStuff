@@ -2,7 +2,6 @@ package me.TheBukor.SkStuff.expressions;
 
 import javax.annotation.Nullable;
 
-import org.bukkit.craftbukkit.v1_10_R1.entity.CraftEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.Event;
 
@@ -12,13 +11,14 @@ import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.skript.lang.util.SimpleExpression;
 import ch.njol.util.Kleenean;
 import ch.njol.util.coll.CollectionUtils;
+import me.TheBukor.SkStuff.SkStuff;
 
 public class ExprNoGravityState extends SimpleExpression<Boolean> {
 	private Expression<Entity> entities;
 
 	@Override
 	public boolean isSingle() {
-		return false;
+		return entities.isSingle();
 	}
 
 	@Override
@@ -31,7 +31,7 @@ public class ExprNoGravityState extends SimpleExpression<Boolean> {
 	public boolean init(Expression<?>[] expr, int matchedPattern, Kleenean isDelayed, ParseResult parseResult) {
 		entities = (Expression<Entity>) expr[0];
 		return true;
-	}
+	}	
 
 	@Override
 	public String toString(@Nullable Event e, boolean debug) {
@@ -49,8 +49,8 @@ public class ExprNoGravityState extends SimpleExpression<Boolean> {
 		for (Entity ent : ents) {
 			if (ent == null)
 				continue;
-			net.minecraft.server.v1_10_R1.Entity nmsEnt = ((CraftEntity) ent).getHandle();
-			gravityStates[i] = nmsEnt.isNoGravity();
+			gravityStates[i] = SkStuff.getNMSMethods().getNoGravity(ent);
+			i++;
 		}
 		return gravityStates;
 	}
@@ -74,9 +74,8 @@ public class ExprNoGravityState extends SimpleExpression<Boolean> {
 			boolean newValue = (boolean) delta[0];
 			for (Entity ent : ents) {
 				if (ent == null)
-					return;
-				net.minecraft.server.v1_10_R1.Entity nmsEnt = ((CraftEntity) ent).getHandle();
-				nmsEnt.setNoGravity(newValue);
+					continue;
+				SkStuff.getNMSMethods().setNoGravity(ent, newValue);
 			}
 		}
 	}

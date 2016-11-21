@@ -125,7 +125,6 @@ public class SkStuff extends JavaPlugin {
 			effAmount += 1;
 			exprAmount += 6;
 			if (Skript.isRunningMinecraft(1, 9)) {
-				boolean Running1_10 = false;
 				Skript.registerEffect(EffResourceSound.class, "play [raw] [([resource[ ]]pack)] sound %string% (for|to) %players% at %location% [[with] volume %-number%[[(,| and)] pitch %-number%]]", "play [raw] [([resource[ ]]pack)] sound %string% for %players% at %location% [[with] pitch %-number%[[(,| and)] volume %-number%]]");
 				Skript.registerEvent("Elytra glide toggle", SimpleEvent.class, EntityToggleGlideEvent.class, "[entity] elytra (fl(y|ight)|glid(e|ing)) toggl(e|ing)", "[entity] toggle elytra (fl(y|ight)|glid(e|ing))");
 				Skript.registerExpression(ExprGlideState.class, Boolean.class, ExpressionType.PROPERTY, "elytra (fl(y|ight)|glid(e|ing)) state of %livingentity%", "%livingentity%'s elytra (fl(y|ight)|glid(e|ing)) state");
@@ -140,14 +139,8 @@ public class SkStuff extends JavaPlugin {
 				evtAmount += 1;
 				exprAmount += 1;
 				if (Skript.isRunningMinecraft(1, 10)) {
-					Running1_10 = true;
 					Skript.registerExpression(ExprNoGravityState.class, Boolean.class, ExpressionType.PROPERTY, "no gravity (state|mode) of %entities%", "%entities%'s no gravity (state|mode)");
 					exprAmount += 1;
-				}
-				if (Running1_10) {
-					getLogger().info("WOW! You're using Minecraft 1.10! Lemme register some cool stuff and fixes right away!");
-				} else {
-					getLogger().info("WOW! You're using Minecraft 1.9! Lemme register some cool stuff and fixes right away!");
 				}
 			}
 			if (setupNMSVersion()) {

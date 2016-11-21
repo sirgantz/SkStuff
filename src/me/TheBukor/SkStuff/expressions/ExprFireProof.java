@@ -61,7 +61,7 @@ public class ExprFireProof extends SimpleExpression<Boolean> {
 		if (ents.length == 0) 
 			return;
 		if (mode == ChangeMode.SET) {
-			Boolean newValue = (Boolean) delta[0];
+			boolean newValue = (boolean) delta[0];
 			for (Entity ent : ents) {
 				if (ent == null)
 					continue;

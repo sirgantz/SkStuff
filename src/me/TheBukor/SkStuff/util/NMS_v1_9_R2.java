@@ -14,6 +14,7 @@ import java.util.LinkedHashSet;
 
 import javax.annotation.Nullable;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -718,5 +719,14 @@ public class NMS_v1_9_R2 implements NMSInterface {
 	public void setElytraGlideState(Entity entity, boolean glide) {
 		EntityLiving nmsEntity = ((CraftLivingEntity) entity).getHandle();
 		nmsEntity.setFlag(7, glide);
+	}
+	
+	public boolean getNoGravity(Entity entity) {
+		Bukkit.getLogger().warning("Executed \"Get no gravity state of entity\" code on 1.9! How the hell did this even happen!!");
+		return false;
+	}
+	
+	public void setNoGravity(Entity entity, boolean noGravity) {
+		Bukkit.getLogger().warning("Executed \"Set no gravity state of entity\" code on 1.9! How the hell did this even happen!!");
 	}
 }
