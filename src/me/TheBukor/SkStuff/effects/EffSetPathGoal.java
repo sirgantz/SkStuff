@@ -21,6 +21,7 @@ import org.bukkit.entity.PigZombie;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.Silverfish;
+import org.bukkit.entity.Skeleton;
 import org.bukkit.entity.Slime;
 import org.bukkit.entity.Spider;
 import org.bukkit.entity.Squid;
@@ -31,6 +32,7 @@ import org.bukkit.inventory.ItemStack;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 
+import ch.njol.skript.Skript;
 import ch.njol.skript.entity.EntityData;
 import ch.njol.skript.lang.Effect;
 import ch.njol.skript.lang.Expression;
@@ -79,6 +81,9 @@ public class EffSetPathGoal extends Effect {
 	private Expression<Number> followedRadius;
 	private Expression<Number> followedSpeed;
 	private Expression<String> followedName;
+	private Expression<Number> bowShootMoveSpeed;
+	private Expression<Number> bowShootUnkParam;
+	private Expression<Number> bowShootFollowRange;
 	private Expression<LivingEntity> entities;
 
 	private int mark;
@@ -147,6 +152,10 @@ public class EffSetPathGoal extends Effect {
 			followedRadius = (Expression<Number>) expr[32];
 			followedSpeed = (Expression<Number>) expr[33];
 			followedName = (Expression<String>) expr[34];
+		} else if (mark == 42) {
+			bowShootMoveSpeed = (Expression<Number>) expr[35];
+			bowShootUnkParam = (Expression<Number>) expr[36];
+			bowShootFollowRange = (Expression<Number>) expr[37];
 		}
 		entities = (Expression<LivingEntity>) expr[35];
 		return true;
@@ -525,6 +534,16 @@ public class EffSetPathGoal extends Effect {
 							newGoals.add(new PathfinderGoalFollow_v1_9_R1((net.minecraft.server.v1_9_R1.EntityCreature) nmsEnt, nmsClass, radius, spd, usesName, customName));
 						}
 					}
+				} else if (mark == 42) {
+					if (!(ent instanceof Skeleton)) {
+						Skript.warning("The pathfinder goal \"Bow Shoot\" can only be applied to skeletons!");
+						return;
+					}
+					double moveSpd = (bowShootMoveSpeed == null ? 1.0D : avoidSpeed.getSingle(e).doubleValue());
+					double unkParam = (bowShootUnkParam == null ? 20 : avoidSpeedNear.getSingle(e).intValue());
+					double followRange = (bowShootFollowRange == null ? 15.0F : avoidSpeedNear.getSingle(e).floatValue());
+					Class<?> goalBowShoot = ReflectionUtils.getNMSClass("PathfinderGoalBowShoot");
+					newGoals.add(ReflectionUtils.getConstructor(goalBowShoot, nmsEnt.getClass(), double.class, int.class, float.class).newInstance(nmsEnt, moveSpd, unkParam, followRange));
 				}
 
 				if (newGoals.size() == 0)

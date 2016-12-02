@@ -40,7 +40,7 @@ public class ReflectionUtils {
 			f = clazz.getDeclaredField(field);
 			f.setAccessible(true);
 			obj = f.get(object);
-		} catch (Exception ex) {
+		} catch (IllegalAccessException | NoSuchFieldException ex) {
 			ex.printStackTrace();
 		}
 		return obj;
@@ -52,7 +52,7 @@ public class ReflectionUtils {
 			f = clazz.getDeclaredField(field);
 			f.setAccessible(true);
 			f.set(object, toSet);
-		} catch (Exception ex) {
+		} catch (IllegalAccessException | IllegalArgumentException | NoSuchFieldException ex) {
 			ex.printStackTrace();
 		}
 	}
@@ -62,7 +62,7 @@ public class ReflectionUtils {
 		try {
 			constr = clazz.getDeclaredConstructor(params);
 			constr.setAccessible(true);
-		} catch (Exception ex) {
+		} catch (NoSuchMethodException | SecurityException ex) {
 			ex.printStackTrace();
 		}
 		return constr;

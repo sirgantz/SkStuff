@@ -14,11 +14,14 @@ import org.bukkit.entity.Rabbit;
 import org.bukkit.entity.Spider;
 import org.bukkit.event.Event;
 
+import ch.njol.skript.Skript;
 import ch.njol.skript.lang.Effect;
 import ch.njol.skript.lang.Expression;
 import ch.njol.skript.lang.SkriptParser.ParseResult;
 import ch.njol.util.Kleenean;
 import me.TheBukor.SkStuff.SkStuff;
+import me.TheBukor.SkStuff.pathfinders.PathfinderGoalFollow_v1_8_R3;
+import me.TheBukor.SkStuff.pathfinders.PathfinderGoalFollow_v1_9_R1;
 import me.TheBukor.SkStuff.util.ReflectionUtils;
 
 public class EffRemovePathGoal extends Effect {
@@ -60,165 +63,132 @@ public class EffRemovePathGoal extends Effect {
 			boolean resetGoalTarget = false;
 			if (mark == 0) {
 				if (ent instanceof Rabbit) {
-					Class<?> goalRabbitAvoid = ReflectionUtils.getNMSClass("EntityRabbit$PathfinderGoalRabbitAvoidTarget");
-					toRemove = goalRabbitAvoid;
+					toRemove = ReflectionUtils.getNMSClass("EntityRabbit$PathfinderGoalRabbitAvoidTarget");
 				} else {
-					Class<?> goalAvoid = ReflectionUtils.getNMSClass("PathfinderGoalAvoidTarget");
-					toRemove = goalAvoid;
+					toRemove = ReflectionUtils.getNMSClass("PathfinderGoalAvoidTarget");
 				}
 			} else if (mark == 1) {
-				Class<?> goalBreakDoor = ReflectionUtils.getNMSClass("PathfinderGoalBreakDoor");
-				toRemove = goalBreakDoor;
+				toRemove = ReflectionUtils.getNMSClass("PathfinderGoalBreakDoor");
 			} else if (mark == 2) {
-				Class<?> goalBreed = ReflectionUtils.getNMSClass("PathfinderGoalBreed");
-				toRemove = goalBreed;
+				toRemove = ReflectionUtils.getNMSClass("PathfinderGoalBreed");
 			} else if (mark == 3) {
-				Class<?> goalEatGrass = ReflectionUtils.getNMSClass("PathfinderGoalEatTile");
-				toRemove = goalEatGrass;
+				toRemove = ReflectionUtils.getNMSClass("PathfinderGoalEatTile");
 			} else if (mark == 4) {
-				Class<?> goalFleeSun = ReflectionUtils.getNMSClass("PathfinderGoalFleeSun");
-				toRemove = goalFleeSun;
+				toRemove = ReflectionUtils.getNMSClass("PathfinderGoalFleeSun");
 			} else if (mark == 5) {
-				Class<?> goalFloat = ReflectionUtils.getNMSClass("PathfinderGoalFloat");
-				toRemove = goalFloat;
+				toRemove = ReflectionUtils.getNMSClass("PathfinderGoalFloat");
 			} else if (mark == 6) {
-				Class<?> goalFollowOwner = ReflectionUtils.getNMSClass("PathfinderGoalFollowOwner");
-				toRemove = goalFollowOwner;
+				toRemove = ReflectionUtils.getNMSClass("PathfinderGoalFollowOwner");
 			} else if (mark == 7) {
-				Class<?> goalFollowAdults = ReflectionUtils.getNMSClass("PathfinderGoalFollowParent");
-				toRemove = goalFollowAdults;
+				toRemove = ReflectionUtils.getNMSClass("PathfinderGoalFollowParent");
 			} else if (mark == 8) {
 				target = true;
-				Class<?> goalReactAttack = ReflectionUtils.getNMSClass("PathfinderGoalHurtByTarget");
-				toRemove = goalReactAttack;
+				toRemove = ReflectionUtils.getNMSClass("PathfinderGoalHurtByTarget");
 			} else if (mark == 9) {
-				Class<?> goalJumpOnBlock = ReflectionUtils.getNMSClass("PathfinderGoalJumpOnBlock");
-				toRemove = goalJumpOnBlock;
+				toRemove = ReflectionUtils.getNMSClass("PathfinderGoalJumpOnBlock");
 			} else if (mark == 10) {
-				Class<?> goalLeapTarget = ReflectionUtils.getNMSClass("PathfinderGoalLeapAtTarget");
-				toRemove = goalLeapTarget;
+				toRemove = ReflectionUtils.getNMSClass("PathfinderGoalLeapAtTarget");
 			} else if (mark == 11) {
-				Class<?> goalLookEntities = ReflectionUtils.getNMSClass("PathfinderGoalLookAtPlayer");
-				toRemove = goalLookEntities;
+				toRemove = ReflectionUtils.getNMSClass("PathfinderGoalLookAtPlayer");
 			} else if (mark == 12) {
 				if (ent instanceof Spider) {
-					Class<?> goalSpiderMelee = ReflectionUtils.getNMSClass("EntitySpider$PathfinderGoalSpiderMeleeAttack");
-					toRemove = goalSpiderMelee;
+					toRemove = ReflectionUtils.getNMSClass("EntitySpider$PathfinderGoalSpiderMeleeAttack");
 				} else {
-					Class<?> goalMeleeAttack = ReflectionUtils.getNMSClass("PathfinderGoalMeleeAttack");
-					toRemove = goalMeleeAttack;
+					toRemove = ReflectionUtils.getNMSClass("PathfinderGoalMeleeAttack");
 				}
 			} else if (mark == 13) {
 				if (ent instanceof Ghast) {
-					Class<?> goalGhastGotoTarget = ReflectionUtils.getNMSClass("EntityGhast$PathfinderGoalMoveTowardsTarget");
-					toRemove = goalGhastGotoTarget;
+					toRemove = ReflectionUtils.getNMSClass("EntityGhast$PathfinderGoalMoveTowardsTarget");
 				} else {
-					Class<?> goalGotoTarget = ReflectionUtils.getNMSClass("PathfinderGoalMoveTowardsTarget");
-					toRemove = goalGotoTarget;
+					toRemove = ReflectionUtils.getNMSClass("PathfinderGoalMoveTowardsTarget");
 				}
 			} else if (mark == 14) {
 				target = true;
 				if (ent instanceof Spider) {
-					Class<?> goalSpiderNearTarget = ReflectionUtils.getNMSClass("EntitySpider$PathfinderGoalSpiderNearestAttackableTarget");
-					toRemove = goalSpiderNearTarget;
+					toRemove = ReflectionUtils.getNMSClass("EntitySpider$PathfinderGoalSpiderNearestAttackableTarget");
 				} else {
-					Class<?> goalNearTarget = ReflectionUtils.getNMSClass("PathfinderGoalNearestAttackableTarget");
-					toRemove = goalNearTarget;
+					toRemove = ReflectionUtils.getNMSClass("PathfinderGoalNearestAttackableTarget");
 				}
 			} else if (mark == 15) {
-				Class<?> goalOcelotAttack = ReflectionUtils.getNMSClass("PathfinderGoalOcelotAttack");
-				toRemove = goalOcelotAttack;
+				toRemove = ReflectionUtils.getNMSClass("PathfinderGoalOcelotAttack");
 			} else if (mark == 16) {
-				Class<?> goalOpenDoors = ReflectionUtils.getNMSClass("PathfinderGoalOpenDoor");
-				toRemove = goalOpenDoors;
+				toRemove = ReflectionUtils.getNMSClass("PathfinderGoalOpenDoor");
 			} else if (mark == 17) {
 				if (ent instanceof Rabbit) {
-					Class<?> goalRabbitPanic = ReflectionUtils.getNMSClass("EntityRabbit$PathfinderGoalRabbitPanic");
-					toRemove = goalRabbitPanic;
+					toRemove = ReflectionUtils.getNMSClass("EntityRabbit$PathfinderGoalRabbitPanic");
 				} else {
-					Class<?> goalPanic = ReflectionUtils.getNMSClass("PathfinderGoalPanic");
-					toRemove = goalPanic;
+					toRemove = ReflectionUtils.getNMSClass("PathfinderGoalPanic");
 				}
 			} else if (mark == 18) {
-				Class<?> goalRandomLook = ReflectionUtils.getNMSClass("PathfinderGoalRandomLookaround");
-				toRemove = goalRandomLook;
+				toRemove = ReflectionUtils.getNMSClass("PathfinderGoalRandomLookaround");
 			} else if (mark == 19) {
-				Class<?> goalWander = ReflectionUtils.getNMSClass("PathfinderGoalRandomStroll");
-				toRemove = goalWander;
+				toRemove = ReflectionUtils.getNMSClass("PathfinderGoalRandomStroll");
 			} else if (mark == 20) {
-				Class<?> goalSit = ReflectionUtils.getNMSClass("PathfinderGoalSit");
-				toRemove = goalSit;
+				toRemove = ReflectionUtils.getNMSClass("PathfinderGoalSit");
 			} else if (mark == 21) {
-				Class<?> goalSwell = ReflectionUtils.getNMSClass("PathfinderGoalSwell");
-				toRemove = goalSwell;
+				toRemove = ReflectionUtils.getNMSClass("PathfinderGoalSwell");
 			} else if (mark == 22) {
-				Class<?> goalSquid = ReflectionUtils.getNMSClass("EntitySquid$PathfinderGoalSquid");
-				toRemove = goalSquid;
+				toRemove = ReflectionUtils.getNMSClass("EntitySquid$PathfinderGoalSquid");
 			} else if (mark == 23) {
 				resetGoalTarget = true;
 				if (ent instanceof Blaze) {
-					Class<?> goalBlazeFireball = ReflectionUtils.getNMSClass("EntityBlaze$PathfinderGoalBlazeFireball");
-					toRemove = goalBlazeFireball;
+					toRemove = ReflectionUtils.getNMSClass("EntityBlaze$PathfinderGoalBlazeFireball");
 				} else if (ent instanceof Ghast) {
-					Class<?> goalGhastFireball = ReflectionUtils.getNMSClass("EntityGhast$PathfinderGoalGhastAttackTarget");
-					toRemove = goalGhastFireball;
+					toRemove = ReflectionUtils.getNMSClass("EntityGhast$PathfinderGoalGhastAttackTarget");
 				}
 			} else if (mark == 24) {
-				Class<?> goalHideInBlock = ReflectionUtils.getNMSClass("EntitySilverfish$PathfinderGoalSilverfishHideInBlock");
-				toRemove = goalHideInBlock;
+				toRemove = ReflectionUtils.getNMSClass("EntitySilverfish$PathfinderGoalSilverfishHideInBlock");
 			} else if (mark == 25) {
-				Class<?> goalWakeSilverfish = ReflectionUtils.getNMSClass("EntitySilverfish$PathfinderGoalSilverfishWakeOthers");
-				toRemove = goalWakeSilverfish;
+				toRemove = ReflectionUtils.getNMSClass("EntitySilverfish$PathfinderGoalSilverfishWakeOthers");
 			} else if (mark == 26) {
-				Class<?> goalPickBlocks = ReflectionUtils.getNMSClass("EntityEnderman$PathfinderGoalEndermanPickupBlock");
-				toRemove = goalPickBlocks;
+				toRemove = ReflectionUtils.getNMSClass("EntityEnderman$PathfinderGoalEndermanPickupBlock");
 			} else if (mark == 27) {
-				Class<?> goalPlaceBlocks = ReflectionUtils.getNMSClass("EntityEnderman$PathfinderGoalEndermanPlaceBlock");
-				toRemove = goalPlaceBlocks;
+				toRemove = ReflectionUtils.getNMSClass("EntityEnderman$PathfinderGoalEndermanPlaceBlock");
 			} else if (mark == 28) {
 				target = true;
-				Class<?> goalAttackLooker = ReflectionUtils.getNMSClass("EntityEnderman$PathfinderGoalPlayerWhoLookedAtTarget");
-				toRemove = goalAttackLooker;
+				toRemove = ReflectionUtils.getNMSClass("EntityEnderman$PathfinderGoalPlayerWhoLookedAtTarget");
 			} else if (mark == 29) {
-				Class<?> goalGhastMoveTarget = ReflectionUtils.getNMSClass("EntityGhast$PathfinderGoalGhastMoveTowardsTarget");
-				toRemove = goalGhastMoveTarget;
+				toRemove = ReflectionUtils.getNMSClass("EntityGhast$PathfinderGoalGhastMoveTowardsTarget");
 			} else if (mark == 30) {
-				Class<?> goalGhastIdleMove = ReflectionUtils.getNMSClass("EntityGhast$PathfinderGoalGhastIdleMove");
-				toRemove = goalGhastIdleMove;
+				toRemove = ReflectionUtils.getNMSClass("EntityGhast$PathfinderGoalGhastIdleMove");
 			} else if (mark == 31) {
-				Class<?> goalTempt = ReflectionUtils.getNMSClass("PathfinderGoalTempt");
-				toRemove = goalTempt;
+				toRemove = ReflectionUtils.getNMSClass("PathfinderGoalTempt");
 			} else if (mark == 32) {
 				target = true;
-				Class<?> goalTargetNonTamed = ReflectionUtils.getNMSClass("PathfinderGoalRandomTargetNonTamed");
-				toRemove = goalTargetNonTamed;
+				toRemove = ReflectionUtils.getNMSClass("PathfinderGoalRandomTargetNonTamed");
 			} else if (mark == 33) {
 				resetGoalTarget = true;
-				Class<?> goalGuardianAttack = ReflectionUtils.getNMSClass("EntityGuardian$PathfinderGoalGuardianAttack");
-				toRemove = goalGuardianAttack;
+				toRemove = ReflectionUtils.getNMSClass("EntityGuardian$PathfinderGoalGuardianAttack");
 			} else if (mark == 34) {
 				target = true;
-				Class<?> goalAnger = ReflectionUtils.getNMSClass("EntityPigZombie$PathfinderGoalAnger");
-				toRemove = goalAnger;
+				toRemove = ReflectionUtils.getNMSClass("EntityPigZombie$PathfinderGoalAnger");
 			} else if (mark == 35) {
 				target = true;
-				Class<?> goalAngerOther = ReflectionUtils.getNMSClass("EntityPigZombie$PathfinderGoalAngerOther");
-				toRemove = goalAngerOther;
+				toRemove = ReflectionUtils.getNMSClass("EntityPigZombie$PathfinderGoalAngerOther");
 			} else if (mark == 36) {
-				Class<?> goalEatCarrots = ReflectionUtils.getNMSClass("EntityRabbit$PathfinderGoalEatCarrots");
-				toRemove = goalEatCarrots;
+				toRemove = ReflectionUtils.getNMSClass("EntityRabbit$PathfinderGoalEatCarrots");
 			} else if (mark == 37) {
-				Class<?> goalRabbitAttack = ReflectionUtils.getNMSClass("EntityRabbit$PathfinderGoalKillerRabbitMeleeAttack");
-				toRemove = goalRabbitAttack;
+				toRemove = ReflectionUtils.getNMSClass("EntityRabbit$PathfinderGoalKillerRabbitMeleeAttack");
 			} else if (mark == 38) {
-				Class<?> goalJump = ReflectionUtils.getNMSClass("EntitySlime$PathfinderGoalSlimeRandomJump");
-				toRemove = goalJump;
+				toRemove = ReflectionUtils.getNMSClass("EntitySlime$PathfinderGoalSlimeRandomJump");
 			} else if (mark == 39) {
-				Class<?> goalRandomDir = ReflectionUtils.getNMSClass("EntitySlime$PathfinderGoalSlimeRandomDirection");
-				toRemove = goalRandomDir;
+				toRemove = ReflectionUtils.getNMSClass("EntitySlime$PathfinderGoalSlimeRandomDirection");
 			} else if (mark == 40) {
-				Class<?> goalSlimeWander = ReflectionUtils.getNMSClass("EntitySlime$PathfinderGoalSlimeIdle");
-				toRemove = goalSlimeWander;
+				toRemove = ReflectionUtils.getNMSClass("EntitySlime$PathfinderGoalSlimeIdle");
+			} else if (mark == 41) {
+				String version = ReflectionUtils.getVersion();
+				if (version.equals("v1_8_R3.")) {
+					toRemove = PathfinderGoalFollow_v1_8_R3.class;
+				} else if (version.equals("v1_9_R1.")) {
+					toRemove = PathfinderGoalFollow_v1_9_R1.class;
+				}
+			} else if (mark == 42) {
+				if (Skript.isRunningMinecraft(1, 9)) { 
+					toRemove = ReflectionUtils.getNMSClass("PathfinderGoalBowShoot");
+				} else {
+					Skript.warning("The pathfinder goal \"bow shoot\" is not present in 1.8!");
+					return;
+				}
 			}
 			if (toRemove == null)
 				return;
