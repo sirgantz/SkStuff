@@ -158,6 +158,17 @@ public class EffSetPathGoal extends Effect {
 			bowShootFollowRange = (Expression<Number>) expr[37];
 		}
 		entities = (Expression<LivingEntity>) expr[38];
+		/* Debug stuff, just in case I need it
+		int i = 0;
+		for (Expression<?> expression : expr) {
+			if (expression == null) {
+				Skript.info("Expression index " + i + " is null.");
+			} else {
+				Skript.info("Expression index " + i + " is " + expression.toString());
+			}
+			i++;
+		}
+		*/
 		return true;
 	}
 
