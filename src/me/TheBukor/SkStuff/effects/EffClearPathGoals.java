@@ -32,9 +32,9 @@ public class EffClearPathGoals extends Effect {
 	protected void execute(Event e) {
 		LivingEntity[] ents = entities.getAll(e);
 		for (LivingEntity ent : ents) {
-			if (ent instanceof Player || ent instanceof ArmorStand || ent == null)
-				continue;
-			SkStuff.getNMSMethods().clearPathfinderGoals(ent);
+			if (!(ent instanceof Player || ent instanceof ArmorStand || ent == null)) {
+				SkStuff.getNMSMethods().clearPathfinderGoals(ent);
+			}
 		}
 	}
 }

@@ -41,6 +41,9 @@ public class ExprLastLocation extends SimpleExpression<Location> {
 	@Nullable
 	protected Location[] get(Event e) {
 		Entity ent = entity.getSingle(e);
-		return new Location[] { SkStuff.getNMSMethods().getLastLocation(ent) };
+		if (ent == null) {
+			return null;
+		}
+			return new Location[] { SkStuff.getNMSMethods().getLastLocation(ent) };
 	}
 }

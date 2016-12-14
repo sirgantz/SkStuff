@@ -157,7 +157,7 @@ public class EffSetPathGoal extends Effect {
 			bowShootUnkParam = (Expression<Number>) expr[36];
 			bowShootFollowRange = (Expression<Number>) expr[37];
 		}
-		entities = (Expression<LivingEntity>) expr[35];
+		entities = (Expression<LivingEntity>) expr[38];
 		return true;
 	}
 
@@ -169,7 +169,7 @@ public class EffSetPathGoal extends Effect {
 	@SuppressWarnings("deprecation")
 	@Override
 	protected void execute(Event e) {
-		LivingEntity[] ents = entities.getAll(e);
+		LivingEntity[] ents = entities.getAll(e);	
 		for (LivingEntity ent : ents) {
 			if (ent == null || ent instanceof Player || ent instanceof ArmorStand)
 				return;

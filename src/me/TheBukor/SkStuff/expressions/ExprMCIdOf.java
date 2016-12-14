@@ -42,6 +42,9 @@ public class ExprMCIdOf extends SimpleExpression<String> {
 	@Nullable
 	protected String[] get(Event e) {
 		ItemType type = itemType.getSingle(e);
+		if (type == null) {
+			return null;
+		}
 		ItemStack item = new ItemStack(type.getTypes().get(0).getId());
 		return new String[] { SkStuff.getNMSMethods().getMCId(item) };
 	}

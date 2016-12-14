@@ -40,6 +40,9 @@ public class ExprMCIdToItem extends SimpleExpression<ItemStack> {
 	@Nullable
 	protected ItemStack[] get(Event e) {
 		String id = mcId.getSingle(e);
+		if (id == null) {
+			return null;
+		}
 		return new ItemStack[] { SkStuff.getNMSMethods().getItemFromMcId(id) };
 	}
 

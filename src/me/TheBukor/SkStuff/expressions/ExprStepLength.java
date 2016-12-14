@@ -42,16 +42,18 @@ public class ExprStepLength extends SimpleExpression<Number> {
 	@Nullable
 	protected Number[] get(Event e) {
 		Entity ent = entity.getSingle(e);
-		if (ent == null)
+		if (ent == null) {
 			return null;
+		}
 		return new Number[] { SkStuff.getNMSMethods().getEntityStepLength(ent) };
 	}
 
 	@Override
 	public void change(Event e, @Nullable Object[] delta, ChangeMode mode) {
 		Entity ent = entity.getSingle(e);
-		if (ent == null)
+		if (ent == null) {
 			return;
+		}
 		if (mode == ChangeMode.ADD) {
 			float toAdd = ((Number) delta[0]).floatValue();
 			float currentLength = SkStuff.getNMSMethods().getEntityStepLength(ent);

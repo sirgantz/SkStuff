@@ -38,15 +38,15 @@ public class EffMakeJump extends Effect {
 	protected void execute(Event e) {
 		LivingEntity[] ents = entities.getAll(e);
 		for (Entity ent : ents) {
-			if (ent == null || ent instanceof Player || ent instanceof ArmorStand)
-				continue;
-			Object obcEnt = craftLivEnt.cast(ent);
-			try {
-				Object nmsEnt = entInsent.cast(obcEnt.getClass().getMethod("getHandle").invoke(obcEnt));
-				Object controllerJump = nmsEnt.getClass().getMethod("getControllerJump").invoke(nmsEnt);
-				controllerJump.getClass().getMethod("a").invoke(controllerJump);
-			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
-				ex.printStackTrace();
+			if (!(ent == null || ent instanceof Player || ent instanceof ArmorStand)) {
+				Object obcEnt = craftLivEnt.cast(ent);
+				try {
+					Object nmsEnt = entInsent.cast(obcEnt.getClass().getMethod("getHandle").invoke(obcEnt));
+					Object controllerJump = nmsEnt.getClass().getMethod("getControllerJump").invoke(nmsEnt);
+					controllerJump.getClass().getMethod("a").invoke(controllerJump);
+				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
+					ex.printStackTrace();
+				}
 			}
 		}
 	}
